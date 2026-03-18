@@ -106,9 +106,6 @@ class FileFilter
     {
     }
 
-    /**
-     * @return static
-     */
     public static function loadFromArray(
         array $config,
         string $base_dir,
@@ -326,7 +323,7 @@ class FileFilter
                 if (!is_string($method_id)
                     || (!preg_match('/^[^:]+::[^:]+$/', $method_id) && !static::isRegularExpression($method_id))) {
                     throw new ConfigException(
-                        'Invalid referencedMethod ' . ((string) $method_id),
+                        'Invalid referencedMethod ' . ($method_id),
                     );
                 }
 
@@ -347,7 +344,7 @@ class FileFilter
                         && !preg_match('/^[^:]+::[^:]+$/', $function_id) // methods are also allowed
                         && !static::isRegularExpression($function_id))) {
                     throw new ConfigException(
-                        'Invalid referencedFunction ' . ((string) $function_id),
+                        'Invalid referencedFunction ' . ($function_id),
                     );
                 }
 
@@ -487,11 +484,11 @@ class FileFilter
             } else {
                 $list = array_filter(
                     glob($parts[0], GLOB_NOSORT) ?: [],
-                    'file_exists',
+                    file_exists(...),
                 );
             }
 
-            return array_map('realpath', $list);
+            return array_map(realpath(...), $list);
         }
 
         $first_dir = self::slashify($parts[0]);
@@ -572,11 +569,9 @@ class FileFilter
 
     public function allowsClass(string $fq_classlike_name): bool
     {
-        if ($this->fq_classlike_patterns) {
-            foreach ($this->fq_classlike_patterns as $pattern) {
-                if (preg_match($pattern, $fq_classlike_name)) {
-                    return true;
-                }
+        foreach ($this->fq_classlike_patterns as $pattern) {
+            if (preg_match($pattern, $fq_classlike_name)) {
+                return true;
             }
         }
 

@@ -236,7 +236,7 @@ final class TryAnalyzer
                     $fq_catch_class_lower = strtolower($fq_catch_class);
 
                     foreach ($catch_context->possibly_thrown_exceptions as $exception_fqcln => $_) {
-                        $exception_fqcln_lower = strtolower($exception_fqcln);
+                        $exception_fqcln_lower = strtolower((string) $exception_fqcln);
 
                         if ($exception_fqcln_lower === $fq_catch_class_lower
                             || ($codebase->classExists($exception_fqcln)
@@ -459,15 +459,17 @@ final class TryAnalyzer
         }
 
         foreach ($definitely_newly_assigned_var_ids as $var_id => $_) {
-            if (isset($context->vars_in_scope[$var_id])) {
-                if ($context->vars_in_scope[$var_id]->possibly_undefined_from_try) {
-                    $context->vars_in_scope[$var_id] =
-                        $context->vars_in_scope[$var_id]->setPossiblyUndefined(
-                            false,
-                            false,
-                        );
-                }
+            if (!isset($context->vars_in_scope[$var_id])) {
+                continue;
             }
+            if (!$context->vars_in_scope[$var_id]->possibly_undefined_from_try) {
+                continue;
+            }
+            $context->vars_in_scope[$var_id] =
+                $context->vars_in_scope[$var_id]->setPossiblyUndefined(
+                    false,
+                    false,
+                );
         }
 
         foreach ($existing_thrown_exceptions as $possibly_thrown_exception => $codelocations) {

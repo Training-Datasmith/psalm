@@ -673,33 +673,31 @@ final class TemplateStandinTypeReplacer
 
         $extra_types = [];
 
-        if ($atomic_type->extra_types) {
-            foreach ($atomic_type->extra_types as $extra_type) {
-                $extra_type = self::replace(
-                    new Union([$extra_type]),
-                    $template_result,
-                    $codebase,
-                    $statements_analyzer,
-                    $input_type,
-                    $input_arg_offset,
-                    $calling_class,
-                    $calling_function,
-                    $replace,
-                    $add_lower_bound,
-                    $bound_equality_classlike,
-                    $depth + 1,
-                );
+        foreach ($atomic_type->extra_types as $extra_type) {
+            $extra_type = self::replace(
+                new Union([$extra_type]),
+                $template_result,
+                $codebase,
+                $statements_analyzer,
+                $input_type,
+                $input_arg_offset,
+                $calling_class,
+                $calling_function,
+                $replace,
+                $add_lower_bound,
+                $bound_equality_classlike,
+                $depth + 1,
+            );
 
-                if ($extra_type->isSingle()) {
-                    $extra_type = $extra_type->getSingleAtomic();
+            if ($extra_type->isSingle()) {
+                $extra_type = $extra_type->getSingleAtomic();
 
-                    if ($extra_type instanceof TNamedObject
-                        || $extra_type instanceof TTemplateParam
-                        || $extra_type instanceof TIterable
-                        || $extra_type instanceof TObjectWithProperties
-                    ) {
-                        $extra_types[$extra_type->getKey()] = $extra_type;
-                    }
+                if ($extra_type instanceof TNamedObject
+                    || $extra_type instanceof TTemplateParam
+                    || $extra_type instanceof TIterable
+                    || $extra_type instanceof TObjectWithProperties
+                ) {
+                    $extra_types[$extra_type->getKey()] = $extra_type;
                 }
             }
         }
@@ -1311,32 +1309,30 @@ final class TemplateStandinTypeReplacer
                             ? array_values(
                                 array_filter(
                                     Methods::getExtendedTemplatedTypes($extended_template, $template_extends),
-                                    static fn(Atomic $a) => $a instanceof TTemplateParam,
+                                    static fn(Atomic $a): bool => $a instanceof TTemplateParam,
                                 ),
                             )
                             : [];
 
                         $candidate_param_types = [];
 
-                        if ($extended_templates) {
-                            foreach ($extended_templates as $template) {
-                                if (!isset(
-                                    $input_class_storage->template_types
-                                        [$template->param_name]
-                                        [$template->defining_class],
-                                )) {
-                                    continue;
-                                }
-
-                                $old_params_offset = (int) array_search(
-                                    $template->param_name,
-                                    array_keys($input_class_storage->template_types),
-                                    true,
-                                );
-
-                                $candidate_param_types[] = ($input_type_params[$old_params_offset] ?? Type::getMixed())
-                                    ->setProperties(['from_template_default' => true]);
+                        foreach ($extended_templates as $template) {
+                            if (!isset(
+                                $input_class_storage->template_types
+                                    [$template->param_name]
+                                    [$template->defining_class],
+                            )) {
+                                continue;
                             }
+
+                            $old_params_offset = (int) array_search(
+                                $template->param_name,
+                                array_keys($input_class_storage->template_types),
+                                true,
+                            );
+
+                            $candidate_param_types[] = ($input_type_params[$old_params_offset] ?? Type::getMixed())
+                                ->setProperties(['from_template_default' => true]);
                         }
 
                         $new_input_param = Type::combineUnionTypes(

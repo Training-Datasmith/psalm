@@ -144,17 +144,18 @@ final class MethodVisibilityAnalyzer
                 return null;
 
             case ClassLikeAnalyzer::VISIBILITY_PRIVATE:
-                if (!$context->self || $appearing_method_class !== $context->self) {
-                    if (IssueBuffer::accepts(
-                        new InaccessibleMethod(
-                            'Cannot access private method ' . $codebase_methods->getCasedMethodId($method_id) .
-                                ' from context ' . $context->self,
-                            $code_location,
-                        ),
-                        $suppressed_issues,
-                    )) {
-                        return false;
-                    }
+                if (!(!$context->self || $appearing_method_class !== $context->self)) {
+                    return null;
+                }
+                if (IssueBuffer::accepts(
+                    new InaccessibleMethod(
+                        'Cannot access private method ' . $codebase_methods->getCasedMethodId($method_id) .
+                            ' from context ' . $context->self,
+                        $code_location,
+                    ),
+                    $suppressed_issues,
+                )) {
+                    return false;
                 }
 
                 return null;

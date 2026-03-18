@@ -15,7 +15,7 @@ final class IsEqualIsset extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\Any
     {
         return new Any();
     }

@@ -51,7 +51,6 @@ final class FunctionAnalyzer extends FunctionLikeAnalyzer
     {
         $namespace = $this->source->getNamespace();
 
-        /** @var non-empty-lowercase-string */
         return ($namespace ? strtolower($namespace) . '\\' : '') . strtolower($this->function->name->name);
     }
 
@@ -63,14 +62,15 @@ final class FunctionAnalyzer extends FunctionLikeAnalyzer
         foreach ($stmt->stmts as $function_stmt) {
             if ($function_stmt instanceof PhpParser\Node\Stmt\Global_) {
                 foreach ($function_stmt->vars as $var) {
-                    if ($var instanceof PhpParser\Node\Expr\Variable) {
-                        if (is_string($var->name)) {
-                            $var_id = '$' . $var->name;
-
-                            // registers variable in global context
-                            $context->hasVariable($var_id);
-                        }
+                    if (!$var instanceof PhpParser\Node\Expr\Variable) {
+                        continue;
                     }
+                    if (!is_string($var->name)) {
+                        continue;
+                    }
+                    $var_id = '$' . $var->name;
+                    // registers variable in global context
+                    $context->hasVariable($var_id);
                 }
             } elseif (!$function_stmt instanceof PhpParser\Node\Stmt\Nop) {
                 break;

@@ -457,7 +457,7 @@ final class CallableTypeComparator
                     );
 
                     if ($template_result) {
-                        $callable = TemplateInferredTypeReplacer::replace(
+                        return TemplateInferredTypeReplacer::replace(
                             new Union([$callable]),
                             $template_result,
                             $codebase,

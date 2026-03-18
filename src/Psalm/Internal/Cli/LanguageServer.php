@@ -437,7 +437,7 @@ final class LanguageServer
 
         if ($map_folder === false) {
             // autoconfigured mapper
-            return new PathMapper($server_start_dir, null);
+            return new PathMapper($server_start_dir);
         }
 
         if (is_string($map_folder)) {

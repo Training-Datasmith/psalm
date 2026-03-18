@@ -281,7 +281,6 @@ final class MatchAnalyzer
                     $statements_analyzer,
                     [],
                     $context->inside_loop,
-                    null,
                 );
 
                 if (isset($vars_in_scope_reconciled[$switch_var_id])) {

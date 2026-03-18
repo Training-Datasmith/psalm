@@ -19,7 +19,7 @@ final class IsClassEqual extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsClassNotEqual
     {
         return new IsClassNotEqual($this->type);
     }

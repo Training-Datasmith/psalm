@@ -288,7 +288,6 @@ final class AtomicMethodCallAnalyzer extends CallAnalyzer
                     $fq_class_name,
                     $method_id->method_name,
                     $source,
-                    null,
                 );
 
                 if ($method_exists) {

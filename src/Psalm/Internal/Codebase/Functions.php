@@ -357,7 +357,7 @@ final class Functions
                 }
 
                 if ($function->cased_name) {
-                    $cased_name_parts = explode('\\', $function->cased_name);
+                    $cased_name_parts = explode('\\', (string) $function->cased_name);
                     $pattern_parts = explode('\\', $pattern);
 
                     if (end($cased_name_parts)[0] !== end($pattern_parts)[0]) {

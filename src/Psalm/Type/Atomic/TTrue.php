@@ -13,7 +13,6 @@ use Override;
  */
 final class TTrue extends TBool
 {
-    /** @var true */
     public bool $value = true;
 
     #[Override]

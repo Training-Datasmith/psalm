@@ -20,7 +20,7 @@ final class HasAtLeastCount extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\DoesNotHaveAtLeastCount
     {
         return new DoesNotHaveAtLeastCount($this->count);
     }

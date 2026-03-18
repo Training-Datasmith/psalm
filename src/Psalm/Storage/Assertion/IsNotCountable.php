@@ -25,7 +25,7 @@ final class IsNotCountable extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsCountable
     {
         return new IsCountable();
     }

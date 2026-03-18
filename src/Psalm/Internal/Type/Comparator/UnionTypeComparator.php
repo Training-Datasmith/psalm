@@ -173,13 +173,17 @@ final class UnionTypeComparator
                             }
                         }
                     }
-
                     // too few or too many non-optional params provided in callback
-                    if ($container_all_param_count > $input_all_param_count
-                        || $container_required_param_count > $input_all_param_count
-                        || $input_required_param_count > $container_all_param_count
-                        || $input_required_param_count > $container_required_param_count
-                    ) {
+                    if ($container_all_param_count > $input_all_param_count) {
+                        continue;
+                    }
+                    if ($container_required_param_count > $input_all_param_count) {
+                        continue;
+                    }
+                    if ($input_required_param_count > $container_all_param_count) {
+                        continue;
+                    }
+                    if ($input_required_param_count > $container_required_param_count) {
                         continue;
                     }
                 }

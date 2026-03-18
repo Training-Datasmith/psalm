@@ -253,18 +253,21 @@ final class ReflectorVisitor extends PhpParser\NodeVisitorAbstract implements Fi
 
             if ($functionlike_node_scanner && $functionlike_node_scanner->storage) {
                 foreach ($node->vars as $var) {
-                    if ($var instanceof PhpParser\Node\Expr\Variable) {
-                        if (is_string($var->name) && $var->name !== 'argv' && $var->name !== 'argc') {
-                            $var_id = '$' . $var->name;
-
-                            $functionlike_node_scanner->storage->global_variables[$var_id] = true;
-
-                            if (isset($this->codebase->config->globals[$var_id])) {
-                                $var_type = Type::parseString($this->codebase->config->globals[$var_id]);
-                                /** @psalm-suppress UnusedMethodCall */
-                                $var_type->queueClassLikesForScanning($this->codebase, $this->file_storage);
-                            }
-                        }
+                    if (!$var instanceof PhpParser\Node\Expr\Variable) {
+                        continue;
+                    }
+                    if (!(is_string($var->name) && $var->name !== 'argv')) {
+                        continue;
+                    }
+                    if (!($var->name !== 'argc')) {
+                        continue;
+                    }
+                    $var_id = '$' . $var->name;
+                    $functionlike_node_scanner->storage->global_variables[$var_id] = true;
+                    if (isset($this->codebase->config->globals[$var_id])) {
+                        $var_type = Type::parseString($this->codebase->config->globals[$var_id]);
+                        /** @psalm-suppress UnusedMethodCall */
+                        $var_type->queueClassLikesForScanning($this->codebase, $this->file_storage);
                     }
                 }
             }
@@ -500,9 +503,6 @@ final class ReflectorVisitor extends PhpParser\NodeVisitorAbstract implements Fi
         $this->aliases->uses_end = (int) $node->getAttribute('endFilePos') + 1;
     }
 
-    /**
-     * @return null
-     */
     #[Override]
     public function leaveNode(PhpParser\Node $node)
     {

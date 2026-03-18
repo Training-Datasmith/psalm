@@ -268,10 +268,12 @@ final class ClosureAnalyzer extends FunctionLikeAnalyzer
             }
 
             if (!$context->hasVariable($use_var_id)) {
-                if ($use_var_id === '$argv' || $use_var_id === '$argc') {
+                if ($use_var_id === '$argv') {
                     continue;
                 }
-
+                if ($use_var_id === '$argc') {
+                    continue;
+                }
                 if (!isset($context->vars_possibly_in_scope[$use_var_id])) {
                     if ($context->check_variables) {
                         if (IssueBuffer::accepts(

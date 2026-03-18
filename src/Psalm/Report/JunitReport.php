@@ -171,8 +171,7 @@ final class JunitReport extends Report
         $ret .= 'selected_text: ' . $this->xmlEncode(trim($data->selected_text)) . "\n";
         $ret .= 'line: ' . $data->line_from . "\n";
         $ret .= 'column_from: ' . $data->column_from . "\n";
-        $ret .= 'column_to: ' . $data->column_to . "\n";
 
-        return $ret;
+        return $ret . ('column_to: ' . $data->column_to . "\n");
     }
 }

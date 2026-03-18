@@ -338,17 +338,34 @@ final class SprintfReturnTypeProvider implements FunctionReturnTypeProviderInter
             }
 
             foreach ($atomic_types as $atomic_type) {
-                if ($atomic_type instanceof TNonEmptyString
-                    || $atomic_type instanceof TNonEmptyNonspecificLiteralString
-                    || $atomic_type instanceof TClassString
-                    || ($atomic_type instanceof TLiteralString && $atomic_type->value !== '')
-                    || $atomic_type instanceof TInt
-                    || $atomic_type instanceof TFloat
-                    || $atomic_type instanceof TNumeric) {
+                if ($atomic_type instanceof TNonEmptyString) {
                     // valid non-empty types, potentially there are more though
                     continue;
                 }
-
+                if ($atomic_type instanceof TNonEmptyNonspecificLiteralString) {
+                    // valid non-empty types, potentially there are more though
+                    continue;
+                }
+                if ($atomic_type instanceof TClassString) {
+                    // valid non-empty types, potentially there are more though
+                    continue;
+                }
+                if ($atomic_type instanceof TLiteralString && $atomic_type->value !== '') {
+                    // valid non-empty types, potentially there are more though
+                    continue;
+                }
+                if ($atomic_type instanceof TInt) {
+                    // valid non-empty types, potentially there are more though
+                    continue;
+                }
+                if ($atomic_type instanceof TFloat) {
+                    // valid non-empty types, potentially there are more though
+                    continue;
+                }
+                if ($atomic_type instanceof TNumeric) {
+                    // valid non-empty types, potentially there are more though
+                    continue;
+                }
                 // empty or generic string
                 // or other unhandled type
                 continue 2;

@@ -377,7 +377,6 @@ final class ClassLikeDocblockParser
                         TypeTokenizer::getFullyQualifiedTokens(
                             $method_entry,
                             $aliases,
-                            null,
                         ),
                     );
 

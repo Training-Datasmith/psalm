@@ -18,7 +18,7 @@ final class TDependentGetType extends TString
      */
     public function __construct(public string $typeof)
     {
-        parent::__construct(false);
+        parent::__construct();
     }
 
     #[Override]

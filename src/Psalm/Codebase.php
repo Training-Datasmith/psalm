@@ -565,7 +565,7 @@ final class Codebase
         $locations = $this->file_reference_provider->getClassLocations($fq_class_name_lc);
 
         if (isset($this->use_referencing_locations[$fq_class_name_lc])) {
-            $locations = [...$locations, ...$this->use_referencing_locations[$fq_class_name_lc]];
+            return [...$locations, ...$this->use_referencing_locations[$fq_class_name_lc]];
         }
 
         return $locations;
@@ -655,8 +655,10 @@ final class Codebase
     /** @psalm-mutation-free */
     public function classExtendsOrImplements(string $fq_class_name, string $possible_parent): bool
     {
-        return $this->classlikes->classExtends($fq_class_name, $possible_parent)
-            || $this->classlikes->classImplements($fq_class_name, $possible_parent);
+        if ($this->classlikes->classExtends($fq_class_name, $possible_parent)) {
+            return true;
+        }
+        return $this->classlikes->classImplements($fq_class_name, $possible_parent);
     }
 
     /**
@@ -987,7 +989,7 @@ final class Codebase
                 if (isset($class_storage->pseudo_property_set_types['$'.$property_name])) {
                     return new PHPMarkdownContent(
                         'public '.
-                        (string) $class_storage->pseudo_property_set_types['$'.$property_name].' $'.$property_name,
+                        $class_storage->pseudo_property_set_types['$'.$property_name].' $'.$property_name,
                         $reference->symbol,
                     );
                 }
@@ -996,7 +998,7 @@ final class Codebase
                 if (isset($class_storage->pseudo_property_get_types['$'.$property_name])) {
                     return new PHPMarkdownContent(
                         'public '.
-                        (string) $class_storage->pseudo_property_get_types['$'.$property_name].' $'.$property_name,
+                        $class_storage->pseudo_property_get_types['$'.$property_name].' $'.$property_name,
                         $reference->symbol,
                     );
                 }
@@ -1518,7 +1520,7 @@ final class Codebase
             }
 
             if ($offset <= $end_pos && substr($file_contents, $begin_literal_offset - 2, 2) === '::') {
-                $class_name = explode('::', $possible_reference)[0];
+                $class_name = explode('::', (string) $possible_reference)[0];
                 return [$class_name, '::', $offset];
             }
 
@@ -1564,7 +1566,10 @@ final class Codebase
             return null;
         }
         foreach ($argument_map as $start_pos => [$end_pos, $function, $argument_num]) {
-            if ($offset < $start_pos || $offset > $end_pos) {
+            if ($offset < $start_pos) {
+                continue;
+            }
+            if ($offset > $end_pos) {
                 continue;
             }
             // First parameter to a function-like
@@ -1769,7 +1774,7 @@ final class Codebase
 
         $res = [];
         foreach ($items as $item) {
-            if ($item->insertText && str_starts_with($item->insertText, $literal_part)) {
+            if ($item->insertText && str_starts_with((string) $item->insertText, $literal_part)) {
                 $res[] = $item;
             }
         }

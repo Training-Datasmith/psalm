@@ -15,7 +15,7 @@ final class NotNonEmptyCountable extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\NonEmptyCountable
     {
         return new NonEmptyCountable(true);
     }

@@ -954,7 +954,6 @@ final class ReturnTypeAnalyzer
                     $codebase,
                     null,
                     null,
-                    null,
                 );
             }
         }

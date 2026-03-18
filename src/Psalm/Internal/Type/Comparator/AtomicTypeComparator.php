@@ -92,7 +92,8 @@ final class AtomicTypeComparator
                     false,
                     false,
                 );
-            } elseif ($container_type_part instanceof Scalar) {
+            }
+            if ($container_type_part instanceof Scalar) {
                 return UnionTypeComparator::isContainedBy(
                     $codebase,
                     TValueOf::getValueType($input_type_part->type, $codebase) ?? $input_type_part->type,
@@ -510,18 +511,16 @@ final class AtomicTypeComparator
         }
 
         if ($input_type_part instanceof TTemplateParam) {
-            if ($input_type_part->extra_types) {
-                foreach ($input_type_part->extra_types as $extra_type) {
-                    if (self::isContainedBy(
-                        $codebase,
-                        $extra_type,
-                        $container_type_part,
-                        $allow_interface_equality,
-                        $allow_float_int_equality,
-                        $atomic_comparison_result,
-                    )) {
-                        return true;
-                    }
+            foreach ($input_type_part->extra_types as $extra_type) {
+                if (self::isContainedBy(
+                    $codebase,
+                    $extra_type,
+                    $container_type_part,
+                    $allow_interface_equality,
+                    $allow_float_int_equality,
+                    $atomic_comparison_result,
+                )) {
+                    return true;
                 }
             }
 

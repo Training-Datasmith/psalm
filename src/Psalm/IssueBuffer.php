@@ -653,7 +653,10 @@ final class IssueBuffer
             if ($is_full && !$codebase->diff_run) {
                 foreach ($codebase->config->getIssueHandlers() as $type => $handler) {
                     foreach ($handler->getFilters() as $filter) {
-                        if ($filter->suppressions > 0 || $filter->getErrorLevel() != Config::REPORT_SUPPRESS) {
+                        if ($filter->suppressions > 0) {
+                            continue;
+                        }
+                        if ($filter->getErrorLevel() != Config::REPORT_SUPPRESS) {
                             continue;
                         }
                         $issues_data['config'][] = new IssueData(
@@ -685,7 +688,6 @@ final class IssueBuffer
                         );
                     }
                 }
-            } else {
             }
         }
 
@@ -732,7 +734,7 @@ final class IssueBuffer
                 throw new UnexpectedValueException('Output path should not be null here');
             }
 
-            $folder = dirname($report_options->output_path);
+            $folder = dirname((string) $report_options->output_path);
             if (!is_dir($folder) && !mkdir($folder, 0777, true) && !is_dir($folder)) {
                 throw new RuntimeException(sprintf('Directory "%s" was not created', $folder));
             }

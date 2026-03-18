@@ -20,7 +20,7 @@ final class IsLooselyEqual extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsNotLooselyEqual
     {
         return new IsNotLooselyEqual($this->type);
     }
@@ -31,7 +31,7 @@ final class IsLooselyEqual extends Assertion
     }
 
     #[Override]
-    public function getAtomicType(): ?Atomic
+    public function getAtomicType(): \Psalm\Type\Atomic
     {
         return $this->type;
     }
@@ -42,9 +42,6 @@ final class IsLooselyEqual extends Assertion
         return true;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function setAtomicType(Atomic $type): self
     {

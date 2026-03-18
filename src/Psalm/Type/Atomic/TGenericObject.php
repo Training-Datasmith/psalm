@@ -94,7 +94,7 @@ final class TGenericObject extends TNamedObject
         array $aliased_classes,
         ?string $this_class,
         int $analysis_php_version_id,
-    ): ?string {
+    ): string {
         $result = $this->toNamespacedString($namespace, $aliased_classes, $this_class, true);
         $intersection = strrpos($result, '&');
         if ($intersection === false || $analysis_php_version_id >= 8_01_00) {
@@ -135,9 +135,6 @@ final class TGenericObject extends TNamedObject
         return [...parent::getChildNodeKeys(), 'type_params'];
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,
@@ -187,9 +184,6 @@ final class TGenericObject extends TNamedObject
         );
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(TemplateResult $template_result, ?Codebase $codebase): self
     {

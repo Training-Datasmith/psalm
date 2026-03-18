@@ -338,7 +338,6 @@ final class IncludeAnalyzer
                 && $stmt->dim instanceof PhpParser\Node\Scalar\String_
             ) {
                 if (isset($GLOBALS[$stmt->dim->value]) && is_string($GLOBALS[$stmt->dim->value])) {
-                    /** @var string */
                     return $GLOBALS[$stmt->dim->value];
                 }
             }
@@ -471,7 +470,7 @@ final class IncludeAnalyzer
         }
 
         if (DIRECTORY_SEPARATOR !== '/') {
-            $path_to_file = str_replace('/', DIRECTORY_SEPARATOR, $path_to_file);
+            return str_replace('/', DIRECTORY_SEPARATOR, $path_to_file);
         }
 
         return $path_to_file;

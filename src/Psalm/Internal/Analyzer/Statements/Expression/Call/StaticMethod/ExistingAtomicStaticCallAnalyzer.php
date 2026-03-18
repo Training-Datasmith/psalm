@@ -360,42 +360,42 @@ final class ExistingAtomicStaticCallAnalyzer
 
         if ($codebase->alter_code) {
             foreach ($codebase->call_transforms as $original_pattern => $transformation) {
-                if ($declaring_method_id
-                    && strtolower((string) $declaring_method_id) . '\((.*\))' === $original_pattern
-                ) {
-                    if (strpos($transformation, '($1)') === strlen($transformation) - 4
-                        && $stmt->class instanceof PhpParser\Node\Name
-                    ) {
-                        $new_method_id = substr($transformation, 0, -4);
-                        $old_declaring_fq_class_name = $declaring_method_id->fq_class_name;
-                        [$new_fq_class_name, $new_method_name] = explode('::', $new_method_id);
-
-                        if ($codebase->classlikes->handleClassLikeReferenceInMigration(
-                            $codebase,
-                            $statements_analyzer,
-                            $stmt->class,
-                            $new_fq_class_name,
-                            $context->calling_method_id,
-                            strtolower($old_declaring_fq_class_name) !== strtolower($new_fq_class_name),
-                            $stmt->class->getFirst() === 'self',
-                        )) {
-                            $moved_call = true;
-                        }
-
-                        $file_manipulations = [];
-
-                        $file_manipulations[] = new FileManipulation(
-                            (int) $stmt_name->getAttribute('startFilePos'),
-                            (int) $stmt_name->getAttribute('endFilePos') + 1,
-                            $new_method_name,
-                        );
-
-                        FileManipulationBuffer::add(
-                            $statements_analyzer->getFilePath(),
-                            $file_manipulations,
-                        );
-                    }
+                if (!$declaring_method_id) {
+                    continue;
                 }
+                if (!(strtolower((string) $declaring_method_id) . '\((.*\))' === $original_pattern)) {
+                    continue;
+                }
+                if (!(strpos($transformation, '($1)') === strlen($transformation) - 4)) {
+                    continue;
+                }
+                if (!$stmt->class instanceof PhpParser\Node\Name) {
+                    continue;
+                }
+                $new_method_id = substr($transformation, 0, -4);
+                $old_declaring_fq_class_name = $declaring_method_id->fq_class_name;
+                [$new_fq_class_name, $new_method_name] = explode('::', $new_method_id);
+                if ($codebase->classlikes->handleClassLikeReferenceInMigration(
+                    $codebase,
+                    $statements_analyzer,
+                    $stmt->class,
+                    $new_fq_class_name,
+                    $context->calling_method_id,
+                    strtolower($old_declaring_fq_class_name) !== strtolower($new_fq_class_name),
+                    $stmt->class->getFirst() === 'self',
+                )) {
+                    $moved_call = true;
+                }
+                $file_manipulations = [];
+                $file_manipulations[] = new FileManipulation(
+                    (int) $stmt_name->getAttribute('startFilePos'),
+                    (int) $stmt_name->getAttribute('endFilePos') + 1,
+                    $new_method_name,
+                );
+                FileManipulationBuffer::add(
+                    $statements_analyzer->getFilePath(),
+                    $file_manipulations,
+                );
             }
         }
 

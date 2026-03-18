@@ -248,12 +248,12 @@ final class StatementsAnalyzer extends SourceAnalyzer
                     foreach ($stmt->stmts as $function_stmt) {
                         if ($function_stmt instanceof PhpParser\Node\Stmt\Global_) {
                             foreach ($function_stmt->vars as $var) {
-                                if (!$var instanceof PhpParser\Node\Expr\Variable
-                                    || !is_string($var->name)
-                                ) {
+                                if (!$var instanceof PhpParser\Node\Expr\Variable) {
                                     continue;
                                 }
-
+                                if (!is_string($var->name)) {
+                                    continue;
+                                }
                                 $var_id = '$' . $var->name;
 
                                 if ($var_id !== '$argv' && $var_id !== '$argc') {
@@ -656,7 +656,7 @@ final class StatementsAnalyzer extends SourceAnalyzer
         }
 
         foreach ($checked_types as [$check_type_line, $is_exact]) {
-            [$checked_var, $check_type_string] = array_map('trim', explode('=', $check_type_line, 2)) + ['', ''];
+            [$checked_var, $check_type_string] = array_map(trim(...), explode('=', $check_type_line, 2)) + ['', ''];
 
             if ($check_type_string === '' || $checked_var === '') {
                 IssueBuffer::maybeAdd(

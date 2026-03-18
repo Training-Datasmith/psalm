@@ -156,8 +156,10 @@ final class CommentAnalyzer
                         $description = (string) preg_replace('/\\n \\*\\s+/um', ' ', $description);
                     }
                 }
-
-                if (!$var_type_tokens || !$original_type) {
+                if (!$var_type_tokens) {
+                    continue;
+                }
+                if (!$original_type) {
                     continue;
                 }
 

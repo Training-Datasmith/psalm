@@ -564,7 +564,7 @@ final class ArgumentsAnalyzer
         CodeLocation $code_location,
         Context $context,
     ): ?bool {
-        $in_call_map = $method_id ? InternalCallMapHandler::inCallMap((string) $method_id) : false;
+        $in_call_map = $method_id && InternalCallMapHandler::inCallMap((string) $method_id);
 
         $cased_method_id = (string) $method_id;
 
@@ -749,11 +749,12 @@ final class ArgumentsAnalyzer
                         $key_types = $array_type->type_params[0]->getAtomicTypes();
 
                         foreach ($key_types as $key_type) {
-                            if (!$key_type instanceof TLiteralString
-                                || ($function_storage && !$function_storage->allow_named_arg_calls)) {
+                            if (!$key_type instanceof TLiteralString) {
                                 continue;
                             }
-
+                            if ($function_storage && !$function_storage->allow_named_arg_calls) {
+                                continue;
+                            }
                             $param_found = false;
 
                             foreach ($function_params as $candidate_param) {
@@ -1067,7 +1068,6 @@ final class ArgumentsAnalyzer
                             }
                             return $function_param;
                         },
-                        null,
                     );
                     if ($function_param === null) {
                         return false;
@@ -1535,10 +1535,10 @@ final class ArgumentsAnalyzer
             } elseif ($last_param && $last_param->is_variadic) {
                 $function_param = $last_param;
             }
-
-            if (!$function_param
-                || !$function_param->type
-            ) {
+            if (!$function_param) {
+                continue;
+            }
+            if (!$function_param->type) {
                 continue;
             }
 

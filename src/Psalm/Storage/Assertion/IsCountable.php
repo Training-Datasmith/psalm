@@ -15,7 +15,7 @@ final class IsCountable extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsNotCountable
     {
         return new IsNotCountable(true);
     }

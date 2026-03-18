@@ -469,7 +469,7 @@ final class FunctionCallReturnTypeFetcher
                         'ignore_nullable_issues' => true,
                     ]);
 
-                    $call_map_return_type = new Union([
+                    return new Union([
                         Type::getNonEmptyListAtomic(
                             $string_type,
                         ),
@@ -479,8 +479,6 @@ final class FunctionCallReturnTypeFetcher
                         'ignore_nullable_issues' => $codebase->config->ignore_internal_nullable_issues,
                         'ignore_falsable_issues' => $codebase->config->ignore_internal_falsable_issues,
                     ]);
-
-                    return $call_map_return_type;
                 case 'mb_strtolower':
                     $string_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value);
                     if ($string_arg_type !== null && $string_arg_type->isNonEmptyString()) {
@@ -490,17 +488,15 @@ final class FunctionCallReturnTypeFetcher
                     }
                     if (count($call_args) < 2) {
                         return $returnType;
-                    } else {
-                        $second_arg_type = $statements_analyzer->node_data->getType($call_args[1]->value);
-                        if ($second_arg_type && $second_arg_type->isNull()) {
-                            return $returnType;
-                        }
+                    }
+                    $second_arg_type = $statements_analyzer->node_data->getType($call_args[1]->value);
+                    if ($second_arg_type && $second_arg_type->isNull()) {
+                        return $returnType;
                     }
                     if ($string_arg_type !== null && $string_arg_type->isNonEmptyString()) {
                         return Type::getNonEmptyString();
-                    } else {
-                        return Type::getString();
                     }
+                    return Type::getString();
             }
         }
 
@@ -801,17 +797,27 @@ final class FunctionCallReturnTypeFetcher
             }
 
             if ($next !== '-') {
-                if ($current === '_'
-                    || $current === '-'
-                    || $current === '|'
-                    || $current === ':'
-                    || $current === '#'
-                    || $current === '.'
-                    || $current === ' '
-                ) {
+                if ($current === '_') {
                     continue;
                 }
-
+                if ($current === '-') {
+                    continue;
+                }
+                if ($current === '|') {
+                    continue;
+                }
+                if ($current === ':') {
+                    continue;
+                }
+                if ($current === '#') {
+                    continue;
+                }
+                if ($current === '.') {
+                    continue;
+                }
+                if ($current === ' ') {
+                    continue;
+                }
                 return false;
             }
 

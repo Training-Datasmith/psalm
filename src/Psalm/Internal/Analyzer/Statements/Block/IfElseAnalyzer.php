@@ -416,27 +416,25 @@ final class IfElseAnalyzer
             );
         }
 
-        if ($if_scope->possibly_redefined_vars) {
-            foreach ($if_scope->possibly_redefined_vars as $var_id => $type) {
-                if (isset($context->vars_in_scope[$var_id])) {
-                    if (!$type->failed_reconciliation
-                        && !isset($if_scope->updated_vars[$var_id])
-                    ) {
-                        $combined_type = Type::combineUnionTypes(
-                            $context->vars_in_scope[$var_id],
-                            $type,
-                            $codebase,
-                        );
+        foreach ($if_scope->possibly_redefined_vars as $var_id => $type) {
+            if (isset($context->vars_in_scope[$var_id])) {
+                if (!$type->failed_reconciliation
+                    && !isset($if_scope->updated_vars[$var_id])
+                ) {
+                    $combined_type = Type::combineUnionTypes(
+                        $context->vars_in_scope[$var_id],
+                        $type,
+                        $codebase,
+                    );
 
-                        if (!$combined_type->equals($context->vars_in_scope[$var_id])) {
-                            $context->removeDescendents($var_id, $combined_type);
-                        }
-
-                        $context->vars_in_scope[$var_id] = $combined_type;
-                    } else {
-                        $context->vars_in_scope[$var_id] =
-                            $context->vars_in_scope[$var_id]->addParentNodes($type->parent_nodes);
+                    if (!$combined_type->equals($context->vars_in_scope[$var_id])) {
+                        $context->removeDescendents($var_id, $combined_type);
                     }
+
+                    $context->vars_in_scope[$var_id] = $combined_type;
+                } else {
+                    $context->vars_in_scope[$var_id] =
+                        $context->vars_in_scope[$var_id]->addParentNodes($type->parent_nodes);
                 }
             }
         }

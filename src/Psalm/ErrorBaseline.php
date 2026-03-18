@@ -240,12 +240,12 @@ final class ErrorBaseline
         if ($include_php_versions) {
             $extensions = [...get_loaded_extensions(), ...get_loaded_extensions(true)];
 
-            usort($extensions, 'strnatcasecmp');
+            usort($extensions, strnatcasecmp(...));
 
             $filesNode->setAttribute('php-version', implode(";\n\t", [
                 'php:' . PHP_VERSION,
                 ...array_map(
-                    static fn(string $extension): string => $extension . ':' . (string) phpversion($extension),
+                    static fn(string $extension): string => $extension . ':' . phpversion($extension),
                     $extensions,
                 ),
             ]));

@@ -131,7 +131,6 @@ final class CliUtils
         foreach ($autoload_files as $file) {
             /**
              * @psalm-suppress UnresolvableInclude
-             * @var mixed
              */
             $autoloader = ErrorHandler::runWithExceptionsSuppressed(static fn(): mixed => require_once $file);
 
@@ -335,7 +334,7 @@ final class CliUtils
         }
 
         if (!$paths_to_check) {
-            $paths_to_check = null;
+            return null;
         }
 
         return $paths_to_check;
@@ -449,7 +448,7 @@ final class CliUtils
         $path_to_config = isset($options['c']) && is_string($options['c']) ? realpath($options['c']) : null;
 
         if ($path_to_config === false) {
-            fwrite(STDERR, 'Could not resolve path to config ' . (string) ($options['c'] ?? '') . PHP_EOL);
+            fwrite(STDERR, 'Could not resolve path to config ' . ($options['c'] ?? '') . PHP_EOL);
             exit(1);
         }
         return $path_to_config;
@@ -562,7 +561,7 @@ final class CliUtils
 
         $missing_extensions = array_filter(
             $required_extensions,
-            static fn(string $ext) => !extension_loaded($ext),
+            static fn(string $ext): bool => !extension_loaded($ext),
         );
 
         if ($missing_extensions) {

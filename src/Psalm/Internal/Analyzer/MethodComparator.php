@@ -1217,15 +1217,13 @@ final class MethodComparator
                     $new_bases[] = $mapped_atomic_type->defining_class;
                 }
 
-                if ($new_bases) {
-                    foreach ($new_bases as $new_base_class_name) {
-                        self::transformTemplates(
-                            $template_extended_params,
-                            $new_base_class_name,
-                            $mapped_type,
-                            $codebase,
-                        );
-                    }
+                foreach ($new_bases as $new_base_class_name) {
+                    self::transformTemplates(
+                        $template_extended_params,
+                        $new_base_class_name,
+                        $mapped_type,
+                        $codebase,
+                    );
                 }
 
                 $template_types[$key][$base_class_name] = $mapped_type;

@@ -117,7 +117,7 @@ final class TextDocument
         }
 
         if ($this->project_analyzer->onchange_line_limit !== null) {
-            if (substr_count($new_content, "\n") > $this->project_analyzer->onchange_line_limit) {
+            if (substr_count((string) $new_content, "\n") > $this->project_analyzer->onchange_line_limit) {
                 return;
             }
         }

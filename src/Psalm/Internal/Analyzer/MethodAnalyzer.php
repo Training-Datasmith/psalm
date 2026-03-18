@@ -229,7 +229,6 @@ final class MethodAnalyzer extends FunctionLikeAnalyzer
                 $fq_classlike_name,
                 $method_name,
                 $context,
-                null,
             );
 
             if ($method_visible !== null) {

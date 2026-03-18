@@ -114,7 +114,8 @@ final class TypeCombination
         foreach ($this->objectlike_key_type->getAtomicTypes() as $t) {
             if ($t instanceof TArrayKey) {
                 return true;
-            } elseif ($t instanceof TLiteralInt || $t instanceof TLiteralString) {
+            }
+            if ($t instanceof TLiteralInt || $t instanceof TLiteralString) {
                 if ($t->value === $k) {
                     return true;
                 }
@@ -122,9 +123,11 @@ final class TypeCombination
                 if (is_int($k) && $t->contains($k)) {
                     return true;
                 }
-            } elseif ($t instanceof TString && is_string($k)) {
+            }
+            elseif ($t instanceof TString && is_string($k)) {
                 return true;
-            } elseif ($t instanceof TInt && is_int($k)) {
+            }
+            elseif ($t instanceof TInt && is_int($k)) {
                 return true;
             }
         }

@@ -15,7 +15,7 @@ final class IsNotIsset extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsIsset
     {
         return new IsIsset();
     }

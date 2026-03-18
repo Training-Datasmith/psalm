@@ -935,7 +935,7 @@ final class ClassConstAnalyzer
             $parent_const_storage = $interface_const_storage;
         }
 
-        foreach ($interface_overrides as $_ => $issue) {
+        foreach ($interface_overrides as $issue) {
             IssueBuffer::maybeAdd(
                 $issue,
                 $const_storage->suppressed_issues,

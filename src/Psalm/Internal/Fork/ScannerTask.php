@@ -16,7 +16,7 @@ use Psalm\Internal\Analyzer\ProjectAnalyzer;
  */
 final class ScannerTask implements Task
 {
-    public function __construct(private string $file)
+    public function __construct(private readonly string $file)
     {
     }
     #[Override]

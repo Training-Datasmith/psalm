@@ -81,7 +81,6 @@ final class VersionUtils
 
         /**
          * @psalm-suppress UnresolvableInclude
-         * @var _VersionData
          */
         return require($phar_filename . '/phar-versions.php');
     }

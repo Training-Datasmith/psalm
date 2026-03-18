@@ -187,10 +187,7 @@ final class Config
      */
     private array $universal_object_crates;
 
-    /**
-     * @var static|null
-     */
-    private static $instance;
+    private static self $instance;
 
     /**
      * Whether or not to use types as defined in docblocks
@@ -866,8 +863,8 @@ final class Config
         assert($line > 0);
 
         $offset = self::lineNumberToByteOffset($file_contents, $line);
-        $element_start = strpos($file_contents, $deprecated_element_xml->localName, $offset) ?: 0;
-        $element_end = $element_start + strlen($deprecated_element_xml->localName) - 1;
+        $element_start = strpos($file_contents, (string) $deprecated_element_xml->localName, $offset) ?: 0;
+        $element_end = $element_start + strlen((string) $deprecated_element_xml->localName) - 1;
 
         $config->config_issues[] = new ConfigIssue(
             'Element "' . $deprecated_element_xml->localName . '" is deprecated '
@@ -1430,7 +1427,6 @@ final class Config
                     foreach ($issue_handler_children as $key => $issue_handler) {
                         if ($key === 'PluginIssue') {
                             $custom_class_name = (string)$issue_handler['name'];
-                            /** @var string $key */
                             $config->issue_handlers[$custom_class_name] = IssueHandler::loadFromXMLElement(
                                 $issue_handler,
                                 $base_dir,
@@ -1450,7 +1446,7 @@ final class Config
         if (isset($config_xml->globals) && isset($config_xml->globals->var)) {
             /** @var SimpleXMLElement $var */
             foreach ($config_xml->globals->var as $var) {
-                $config->globals['$' . (string) $var['name']] = (string) $var['type'];
+                $config->globals['$' . $var['name']] = (string) $var['type'];
             }
         }
 
@@ -1528,7 +1524,7 @@ final class Config
             $this->file_extensions[] = $extension_name;
 
             if (isset($extension['scanner'])) {
-                $path = $this->base_dir . DIRECTORY_SEPARATOR . (string) $extension['scanner'];
+                $path = $this->base_dir . DIRECTORY_SEPARATOR . $extension['scanner'];
 
                 if (!file_exists($path)) {
                     throw new ConfigException('Error parsing config: cannot find file ' . $path);
@@ -1538,7 +1534,7 @@ final class Config
             }
 
             if (isset($extension['checker'])) {
-                $path = $this->base_dir . DIRECTORY_SEPARATOR . (string) $extension['checker'];
+                $path = $this->base_dir . DIRECTORY_SEPARATOR . $extension['checker'];
 
                 if (!file_exists($path)) {
                     throw new ConfigException('Error parsing config: cannot find file ' . $path);
@@ -1750,9 +1746,6 @@ final class Config
             );
         }
 
-        /**
-         * @var class-string<T>
-         */
         return $fq_class_name;
     }
 
@@ -1949,7 +1942,7 @@ final class Config
             $stripped_issue_type = (string) preg_replace('/^Possibly(False|Null)?/', '', $issue_type, 1);
 
             if (!str_contains($stripped_issue_type, 'Invalid') && !str_starts_with($stripped_issue_type, 'Un')) {
-                $stripped_issue_type = 'Invalid' . $stripped_issue_type;
+                return 'Invalid' . $stripped_issue_type;
             }
 
             return $stripped_issue_type;
@@ -2075,7 +2068,6 @@ final class Config
             return self::REPORT_ERROR;
         }
 
-        /** @var int */
         $issue_level = $issue_class::ERROR_LEVEL;
 
         if ($issue_level > 0 && $issue_level < $this->level) {
@@ -2603,7 +2595,7 @@ final class Config
                         && $this->isInProjectDirs($dir . DIRECTORY_SEPARATOR . 'testdummy.php')
                     ) {
                         $maxDepth = $depth;
-                        $candidate_path = (string) realpath($dir) . $pathEnd;
+                        $candidate_path = realpath($dir) . $pathEnd;
                     }
                 }
             }
@@ -2623,10 +2615,12 @@ final class Config
             }
 
             foreach ($objects as $object) {
-                if ($object === '.' || $object === '..') {
+                if ($object === '.') {
                     continue;
                 }
-
+                if ($object === '..') {
+                    continue;
+                }
                 $full_path = $dir . '/' . $object;
 
                 // if it was deleted in the meantime/race condition with other psalm process

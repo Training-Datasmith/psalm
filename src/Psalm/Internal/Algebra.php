@@ -120,17 +120,25 @@ final class Algebra
 
         // remove impossible types
         foreach ($cloned_clauses as $clause_a_hash => $clause_a) {
-            if (!$clause_a->reconcilable || $clause_a->wedge) {
+            if (!$clause_a->reconcilable) {
+                continue;
+            }
+            if ($clause_a->wedge) {
                 continue;
             }
             $clause_a_keys = array_keys($clause_a->possibilities);
 
             if (count($clause_a->possibilities) !== 1 || count(array_values($clause_a->possibilities)[0]) !== 1) {
                 foreach ($cloned_clauses as $clause_b) {
-                    if ($clause_a === $clause_b || !$clause_b->reconcilable || $clause_b->wedge) {
+                    if ($clause_a === $clause_b) {
                         continue;
                     }
-
+                    if (!$clause_b->reconcilable) {
+                        continue;
+                    }
+                    if ($clause_b->wedge) {
+                        continue;
+                    }
                     if ($clause_a_keys === array_keys($clause_b->possibilities)) {
                         $opposing_keys = [];
 
@@ -176,10 +184,15 @@ final class Algebra
             $negated_clause_type_string = (string)$negated_clause_type;
 
             foreach ($cloned_clauses as $clause_b_hash => $clause_b) {
-                if ($clause_a === $clause_b || !$clause_b->reconcilable || $clause_b->wedge) {
+                if ($clause_a === $clause_b) {
                     continue;
                 }
-
+                if (!$clause_b->reconcilable) {
+                    continue;
+                }
+                if ($clause_b->wedge) {
+                    continue;
+                }
                 if (isset($clause_b->possibilities[$clause_var])) {
                     $unmatched = [];
                     $matched = [];
@@ -222,14 +235,18 @@ final class Algebra
             $is_redundant = false;
 
             foreach ($cloned_clauses as $clause_b) {
-                if ($clause_a === $clause_b
-                    || !$clause_b->reconcilable
-                    || $clause_b->wedge
-                    || $clause_a->wedge
-                ) {
+                if ($clause_a === $clause_b) {
                     continue;
                 }
-
+                if (!$clause_b->reconcilable) {
+                    continue;
+                }
+                if ($clause_b->wedge) {
+                    continue;
+                }
+                if ($clause_a->wedge) {
+                    continue;
+                }
                 if ($clause_a->contains($clause_b)) {
                     $is_redundant = true;
                     break;
@@ -348,10 +365,12 @@ final class Algebra
         }
 
         foreach ($clauses as $clause) {
-            if (!$clause->reconcilable || count($clause->possibilities) !== 1) {
+            if (!$clause->reconcilable) {
                 continue;
             }
-
+            if (count($clause->possibilities) !== 1) {
+                continue;
+            }
             foreach ($clause->possibilities as $var => $possible_types) {
                 if ($var[0] === '*') {
                     continue;

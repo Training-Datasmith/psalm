@@ -279,7 +279,6 @@ final class ReturnAnalyzer
                         MethodIdentifier::wrap($cased_method_id),
                         $self_class,
                         $statements_analyzer,
-                        null,
                     );
 
                     [, $method_name] = explode('::', $cased_method_id);
@@ -618,16 +617,14 @@ final class ReturnAnalyzer
             ),
         );
 
-        if ($inferred_type->parent_nodes) {
-            foreach ($inferred_type->parent_nodes as $parent_node) {
-                $statements_analyzer->data_flow_graph->addPath(
-                    $parent_node,
-                    $method_node,
-                    'return',
-                    $storage->added_taints,
-                    $storage->removed_taints,
-                );
-            }
+        foreach ($inferred_type->parent_nodes as $parent_node) {
+            $statements_analyzer->data_flow_graph->addPath(
+                $parent_node,
+                $method_node,
+                'return',
+                $storage->added_taints,
+                $storage->removed_taints,
+            );
         }
     }
 

@@ -1082,8 +1082,10 @@ final class ClassAnalyzer extends ClassLikeAnalyzer
                 && strtolower($storage->declaring_method_ids['__construct']->fq_class_name) === $fq_class_name_lc) {
                 $property_is_initialized = false;
             }
-
-            if ($property->has_default || $property_is_initialized) {
+            if ($property->has_default) {
+                continue;
+            }
+            if ($property_is_initialized) {
                 continue;
             }
 
@@ -1993,7 +1995,7 @@ final class ClassAnalyzer extends ClassLikeAnalyzer
         }
 
         $overridden_method_ids = array_map(
-            static fn($method_id): string => $method_id->__toString(),
+            static fn(\Psalm\Internal\MethodIdentifier $method_id): string => $method_id->__toString(),
             $overridden_method_ids,
         );
 

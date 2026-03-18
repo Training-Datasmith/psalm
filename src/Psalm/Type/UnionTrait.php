@@ -207,7 +207,8 @@ trait UnionTrait
     {
         if ($exact && $this->exact_id) {
             return $this->exact_id;
-        } elseif (!$exact && $this->id) {
+        }
+        if (!$exact && $this->id) {
             return $this->id;
         }
 
@@ -220,7 +221,7 @@ trait UnionTrait
 
         if (count($types) > 1) {
             foreach ($types as $i => $type) {
-                if (strpos($type, ' as ') && !str_contains($type, '(')) {
+                if (strpos((string) $type, ' as ') && !str_contains((string) $type, '(')) {
                     $types[$i] = '(' . $type . ')';
                 }
             }
@@ -846,7 +847,10 @@ trait UnionTrait
     public function isMixed(bool $check_templates = false): bool
     {
         foreach ($this->types as $key => $t) {
-            if ($key === 'mixed' || $t instanceof TMixed) {
+            if ($key === 'mixed') {
+                continue;
+            }
+            if ($t instanceof TMixed) {
                 continue;
             }
             if ($check_templates

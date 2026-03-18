@@ -157,7 +157,7 @@ final class ExpressionAnalyzer
                 }
             }
 
-            if (count($both_types->getAtomicTypes()) > 0 && $has_truthy_or_falsy_exclusive_type) {
+            if ($has_truthy_or_falsy_exclusive_type) {
                 $both_types = $both_types->freeze();
                 IssueBuffer::maybeAdd(
                     new RiskyTruthyFalsyComparison(

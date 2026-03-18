@@ -298,10 +298,15 @@ final class NamedFunctionCallHandler
                     if ($array_type instanceof TKeyedArray) {
                         foreach ($array_type->properties as $key => $type) {
                             // variables must start with letters or underscore
-                            if ($key === '' || is_numeric($key) || preg_match('/^[A-Za-z_]/', $key) !== 1) {
+                            if ($key === '') {
                                 continue;
                             }
-
+                            if (is_numeric($key)) {
+                                continue;
+                            }
+                            if (preg_match('/^[A-Za-z_]/', (string) $key) !== 1) {
+                                continue;
+                            }
                             $var_id = '$' . $key;
                             $validated_var_ids[] = $var_id;
 
@@ -351,10 +356,15 @@ final class NamedFunctionCallHandler
             }
 
             foreach ($context->vars_in_scope as $var_id => $_) {
-                if ($var_id === '$this' || strpos($var_id, '[') || strpos($var_id, '>')) {
+                if ($var_id === '$this') {
                     continue;
                 }
-
+                if (strpos($var_id, '[')) {
+                    continue;
+                }
+                if (strpos($var_id, '>')) {
+                    continue;
+                }
                 if (in_array($var_id, $validated_var_ids, true)) {
                     continue;
                 }

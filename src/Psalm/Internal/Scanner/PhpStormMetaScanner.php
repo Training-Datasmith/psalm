@@ -81,8 +81,10 @@ final class PhpStormMetaScanner
                         $array_item->key->name->name,
                         ReflectionProperty::IS_PRIVATE,
                     );
-
-                    if (!$constant_type instanceof Union || !$constant_type->isSingleStringLiteral()) {
+                    if (!$constant_type instanceof Union) {
+                        continue;
+                    }
+                    if (!$constant_type->isSingleStringLiteral()) {
                         continue;
                     }
 

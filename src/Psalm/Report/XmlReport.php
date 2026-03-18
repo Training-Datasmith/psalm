@@ -18,7 +18,7 @@ final class XmlReport extends Report
     #[Override]
     public function create(): string
     {
-        $xml = ArrayToXml::convert(
+        return ArrayToXml::convert(
             [
                 'item' => array_map(
                     static function (IssueData $issue_data): array {
@@ -56,7 +56,5 @@ final class XmlReport extends Report
             '1.0',
             ['preserveWhiteSpace' => false, 'formatOutput' => true],
         );
-
-        return $xml;
     }
 }

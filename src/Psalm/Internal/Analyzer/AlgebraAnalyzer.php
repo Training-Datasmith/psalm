@@ -81,15 +81,22 @@ final class AlgebraAnalyzer
 
         // remove impossible types
         foreach ($negated_formula2 as $negated_clause_2) {
-            if (!$negated_clause_2->reconcilable || $negated_clause_2->wedge) {
+            if (!$negated_clause_2->reconcilable) {
                 continue;
             }
-
+            if ($negated_clause_2->wedge) {
+                continue;
+            }
             foreach ($formula_1 as $clause_1) {
-                if ($negated_clause_2 === $clause_1 || !$clause_1->reconcilable || $clause_1->wedge) {
+                if ($negated_clause_2 === $clause_1) {
                     continue;
                 }
-
+                if (!$clause_1->reconcilable) {
+                    continue;
+                }
+                if ($clause_1->wedge) {
+                    continue;
+                }
                 $negated_clause_2_contains_1_possibilities = true;
 
                 foreach ($clause_1->possibilities as $key => $keyed_possibilities) {

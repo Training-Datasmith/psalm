@@ -514,9 +514,13 @@ abstract class Atomic implements TypeNode, Stringable
 
     public function isCountable(Codebase $codebase): bool
     {
-        return $this->hasCountableInterface($codebase)
-            || $this instanceof TArray
-            || $this instanceof TKeyedArray;
+        if ($this->hasCountableInterface($codebase)) {
+            return true;
+        }
+        if ($this instanceof TArray) {
+            return true;
+        }
+        return $this instanceof TKeyedArray;
     }
 
     /**
@@ -570,11 +574,19 @@ abstract class Atomic implements TypeNode, Stringable
 
     public function isArrayAccessibleWithStringKey(Codebase $codebase): bool
     {
-        return $this instanceof TArray
-            || $this instanceof TKeyedArray
-            || $this instanceof TClassStringMap
-            || $this->hasArrayAccessInterface($codebase)
-            || ($this instanceof TNamedObject && $this->value === 'SimpleXMLElement');
+        if ($this instanceof TArray) {
+            return true;
+        }
+        if ($this instanceof TKeyedArray) {
+            return true;
+        }
+        if ($this instanceof TClassStringMap) {
+            return true;
+        }
+        if ($this->hasArrayAccessInterface($codebase)) {
+            return true;
+        }
+        return $this instanceof TNamedObject && $this->value === 'SimpleXMLElement';
     }
 
     public function isArrayAccessibleWithIntOrStringKey(Codebase $codebase): bool

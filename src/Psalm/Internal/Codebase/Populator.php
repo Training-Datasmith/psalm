@@ -1033,10 +1033,10 @@ final class Populator
                     $method = $implementing_class_storage->methods[$implementing_method_id->method_name]
                         ?? $implementing_class_storage->pseudo_methods[$implementing_method_id->method_name]
                         ?? $implementing_class_storage->pseudo_static_methods[$implementing_method_id->method_name];
-
-                    if (!$method->abstract
-                        || !empty($storage->methods[$implementing_method_id->method_name]->abstract)
-                    ) {
+                    if (!$method->abstract) {
+                        continue;
+                    }
+                    if (!empty($storage->methods[$implementing_method_id->method_name]->abstract)) {
                         continue;
                     }
                 }

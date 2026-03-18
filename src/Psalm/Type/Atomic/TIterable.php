@@ -134,9 +134,6 @@ final class TIterable extends Atomic
         return ['type_params', 'extra_types'];
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(TemplateResult $template_result, ?Codebase $codebase): self
     {
@@ -154,9 +151,6 @@ final class TIterable extends Atomic
         );
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,

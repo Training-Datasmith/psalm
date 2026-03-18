@@ -56,64 +56,62 @@ final class InterfaceAnalyzer extends ClassLikeAnalyzer
 
         $class_storage = $codebase->classlike_storage_provider->get($fq_interface_name);
 
-        if ($this->class->extends) {
-            foreach ($this->class->extends as $extended_interface) {
-                $extended_interface_name = self::getFQCLNFromNameObject(
-                    $extended_interface,
-                    $this->getAliases(),
-                );
+        foreach ($this->class->extends as $extended_interface) {
+            $extended_interface_name = self::getFQCLNFromNameObject(
+                $extended_interface,
+                $this->getAliases(),
+            );
 
-                $parent_reference_location = new CodeLocation($this, $extended_interface);
+            $parent_reference_location = new CodeLocation($this, $extended_interface);
 
-                if (!$codebase->classOrInterfaceExists(
-                    $extended_interface_name,
-                    $parent_reference_location,
-                )) {
-                    // we should not normally get here
-                    return;
-                }
+            if (!$codebase->classOrInterfaceExists(
+                $extended_interface_name,
+                $parent_reference_location,
+            )) {
+                // we should not normally get here
+                return;
+            }
 
-                try {
-                    $extended_interface_storage = $codebase->classlike_storage_provider->get($extended_interface_name);
-                } catch (InvalidArgumentException) {
-                    continue;
-                }
+            try {
+                $extended_interface_storage = $codebase->classlike_storage_provider->get($extended_interface_name);
+            } catch (InvalidArgumentException) {
+                continue;
+            }
 
-                $code_location = new CodeLocation(
-                    $this,
-                    $extended_interface,
-                );
+            $code_location = new CodeLocation(
+                $this,
+                $extended_interface,
+            );
 
-                if (!$extended_interface_storage->is_interface) {
-                    IssueBuffer::maybeAdd(
-                        new UndefinedInterface(
-                            $extended_interface_name . ' is not an interface',
-                            $code_location,
-                            $extended_interface_name,
-                        ),
-                        $this->getSuppressedIssues(),
-                    );
-                }
-
-                if ($codebase->store_node_types && $extended_interface_name) {
-                    $bounds = $parent_reference_location->getSelectionBounds();
-
-                    $codebase->analyzer->addOffsetReference(
-                        $this->getFilePath(),
-                        $bounds[0],
-                        $bounds[1],
+            if (!$extended_interface_storage->is_interface) {
+                IssueBuffer::maybeAdd(
+                    new UndefinedInterface(
+                        $extended_interface_name . ' is not an interface',
+                        $code_location,
                         $extended_interface_name,
-                    );
-                }
-
-                $this->checkTemplateParams(
-                    $codebase,
-                    $class_storage,
-                    $extended_interface_storage,
-                    $code_location,
-                    $class_storage->template_type_extends_count[$extended_interface_name] ?? 0,
+                    ),
+                    $this->getSuppressedIssues(),
                 );
             }
+
+            if ($codebase->store_node_types && $extended_interface_name) {
+                $bounds = $parent_reference_location->getSelectionBounds();
+
+                $codebase->analyzer->addOffsetReference(
+                    $this->getFilePath(),
+                    $bounds[0],
+                    $bounds[1],
+                    $extended_interface_name,
+                );
+            }
+
+            $this->checkTemplateParams(
+                $codebase,
+                $class_storage,
+                $extended_interface_storage,
+                $code_location,
+                $class_storage->template_type_extends_count[$extended_interface_name] ?? 0,
+            );
         }
 
         $class_union = new Union([new TNamedObject($fq_interface_name)]);

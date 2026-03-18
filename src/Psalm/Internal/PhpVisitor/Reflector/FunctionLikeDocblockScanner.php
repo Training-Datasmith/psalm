@@ -263,7 +263,6 @@ final class FunctionLikeDocblockScanner
                         null,
                         $type_aliases,
                     ),
-                    null,
                 );
             } catch (TypeParseTreeException $e) {
                 $storage->docblock_issues[] = new InvalidDocblock(
@@ -758,7 +757,6 @@ final class FunctionLikeDocblockScanner
                     null,
                     false,
                     CodeLocation::FUNCTION_PHPDOC_METHOD,
-                    null,
                 );
             }
 
@@ -774,8 +772,13 @@ final class FunctionLikeDocblockScanner
                 );
 
                 $unused_docblock_params[$param_name] = $param_location;
-
-                if (!$docblock_param_variadic || $storage->params || $file_scanner->will_analyze) {
+                if (!$docblock_param_variadic) {
+                    continue;
+                }
+                if ($storage->params) {
+                    continue;
+                }
+                if ($file_scanner->will_analyze) {
                     continue;
                 }
 
@@ -789,7 +792,6 @@ final class FunctionLikeDocblockScanner
                     false,
                     false,
                     true,
-                    null,
                 );
 
                 $storage->addParam($storage_param);
@@ -1083,70 +1085,68 @@ final class FunctionLikeDocblockScanner
         FunctionDocblockComment $docblock_info,
         FunctionLikeStorage $storage,
     ): void {
-        if ($docblock_info->flows) {
-            foreach ($docblock_info->flows as $flow) {
-                $path_type = 'arg';
+        foreach ($docblock_info->flows as $flow) {
+            $path_type = 'arg';
 
-                $fancy_path_regex = '/-\(([a-z\-]+)\)->/';
+            $fancy_path_regex = '/-\(([a-z\-]+)\)->/';
 
-                if (preg_match($fancy_path_regex, $flow, $matches)) {
-                    if (isset($matches[1])) {
-                        $path_type = $matches[1];
-                    }
-
-                    $flow = (string) preg_replace($fancy_path_regex, '->', $flow);
+            if (preg_match($fancy_path_regex, $flow, $matches)) {
+                if (isset($matches[1])) {
+                    $path_type = $matches[1];
                 }
 
-                $flow_parts = explode('->', $flow);
+                $flow = (string) preg_replace($fancy_path_regex, '->', $flow);
+            }
 
-                if (isset($flow_parts[1]) && trim($flow_parts[1]) === 'return') {
-                    $source_param_string = trim($flow_parts[0]);
+            $flow_parts = explode('->', $flow);
 
-                    if ($source_param_string[0] === '(' && str_ends_with($source_param_string, ')')) {
-                        $source_params = preg_split('/, ?/', substr($source_param_string, 1, -1));
-                        if ($source_params === false) {
-                            throw new AssertionError(preg_last_error_msg());
-                        }
+            if (isset($flow_parts[1]) && trim($flow_parts[1]) === 'return') {
+                $source_param_string = trim($flow_parts[0]);
 
-                        foreach ($source_params as $source_param) {
-                            $source_param = substr($source_param, 1);
+                if ($source_param_string[0] === '(' && str_ends_with($source_param_string, ')')) {
+                    $source_params = preg_split('/, ?/', substr($source_param_string, 1, -1));
+                    if ($source_params === false) {
+                        throw new AssertionError(preg_last_error_msg());
+                    }
 
-                            foreach ($storage->params as $i => $param_storage) {
-                                if ($param_storage->name === $source_param) {
-                                    $storage->return_source_params[$i] = $path_type;
-                                }
+                    foreach ($source_params as $source_param) {
+                        $source_param = substr($source_param, 1);
+
+                        foreach ($storage->params as $i => $param_storage) {
+                            if ($param_storage->name === $source_param) {
+                                $storage->return_source_params[$i] = $path_type;
                             }
                         }
                     }
                 }
+            }
 
-                if (isset($flow_parts[0]) && str_starts_with(trim($flow_parts[0]), 'proxy')) {
-                    $proxy_call = trim(substr($flow_parts[0], strlen('proxy')));
-                    [$fully_qualified_name, $source_param_string] = explode('(', $proxy_call, 2);
+            if (isset($flow_parts[0]) && str_starts_with(trim($flow_parts[0]), 'proxy')) {
+                $proxy_call = trim(substr($flow_parts[0], strlen('proxy')));
+                [$fully_qualified_name, $source_param_string] = explode('(', $proxy_call, 2);
 
-                    if (!empty($fully_qualified_name) && !empty($source_param_string)) {
-                        $source_params = preg_split('/, ?/', substr($source_param_string, 0, -1)) ?: [];
-                        $call_params = [];
-                        foreach ($source_params as $source_param) {
-                            $source_param = substr($source_param, 1);
+                if (!empty($fully_qualified_name) && !empty($source_param_string)) {
+                    $source_params = preg_split('/, ?/', substr($source_param_string, 0, -1)) ?: [];
+                    $call_params = [];
+                    foreach ($source_params as $source_param) {
+                        $source_param = substr($source_param, 1);
 
-                            foreach ($storage->params as $i => $param_storage) {
-                                if ($param_storage->name === $source_param) {
-                                    $call_params[] = $i;
-                                }
+                        foreach ($storage->params as $i => $param_storage) {
+                            if ($param_storage->name === $source_param) {
+                                $call_params[] = $i;
                             }
                         }
-
-                        if ($storage->proxy_calls === null) {
-                            $storage->proxy_calls = [];
-                        }
-
-                        $storage->proxy_calls[] = [
-                            'fqn' => $fully_qualified_name,
-                            'params' => $call_params,
-                            'return' => isset($flow_parts[1]) && trim($flow_parts[1]) === 'return',
-                        ];
                     }
+
+                    if ($storage->proxy_calls === null) {
+                        $storage->proxy_calls = [];
+                    }
+
+                    $storage->proxy_calls[] = [
+                        'fqn' => $fully_qualified_name,
+                        'params' => $call_params,
+                        'return' => isset($flow_parts[1]) && trim($flow_parts[1]) === 'return',
+                    ];
                 }
             }
         }

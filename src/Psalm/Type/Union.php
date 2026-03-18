@@ -237,7 +237,6 @@ final class Union implements TypeNode
 
     /**
      * @param TProperties $properties
-     * @return static
      */
     public function setProperties(array $properties): self
     {
@@ -254,9 +253,6 @@ final class Union implements TypeNode
         return $obj ?? $this;
     }
 
-    /**
-     * @return static
-     */
     public function setDifferent(bool $different): self
     {
         if ($different === $this->different) {
@@ -269,7 +265,6 @@ final class Union implements TypeNode
 
     /**
      * @param array<string, DataFlowNode> $parent_nodes
-     * @return static
      */
     public function setParentNodes(array $parent_nodes, bool $propagate_changes = false): self
     {
@@ -285,7 +280,6 @@ final class Union implements TypeNode
 
     /**
      * @param array<string, DataFlowNode> $parent_nodes
-     * @return static
      */
     public function addParentNodes(array $parent_nodes): self
     {
@@ -301,7 +295,6 @@ final class Union implements TypeNode
         return $cloned;
     }
 
-    /** @return static */
     public function setPossiblyUndefined(bool $possibly_undefined, ?bool $from_try = null): self
     {
         $from_try ??= $this->possibly_undefined_from_try;
@@ -316,7 +309,6 @@ final class Union implements TypeNode
         return $cloned;
     }
 
-    /** @return static */
     public function setByRef(bool $by_ref): static
     {
         if ($by_ref === $this->by_ref) {

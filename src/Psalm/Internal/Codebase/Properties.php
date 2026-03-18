@@ -171,7 +171,6 @@ final class Properties
                 $property_name,
                 $read_mode,
                 $source,
-                null,
             )) {
                 return $fq_class_name;
             }
@@ -202,7 +201,6 @@ final class Properties
                 $property_name,
                 $read_mode,
                 $source,
-                null,
             )) {
                 return $fq_class_name;
             }

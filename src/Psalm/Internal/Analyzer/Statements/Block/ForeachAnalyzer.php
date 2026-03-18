@@ -144,10 +144,12 @@ final class ForeachAnalyzer
         }
 
         foreach ($var_comments as $var_comment) {
-            if (!$var_comment->var_id || !$var_comment->type) {
+            if (!$var_comment->var_id) {
                 continue;
             }
-
+            if (!$var_comment->type) {
+                continue;
+            }
             if (isset($safe_var_ids[$var_comment->var_id])) {
                 continue;
             }
@@ -339,10 +341,12 @@ final class ForeachAnalyzer
         }
 
         foreach ($var_comments as $var_comment) {
-            if (!$var_comment->var_id || !$var_comment->type) {
+            if (!$var_comment->var_id) {
                 continue;
             }
-
+            if (!$var_comment->type) {
+                continue;
+            }
             $comment_type = TypeExpander::expandUnion(
                 $codebase,
                 $var_comment->type,

@@ -50,7 +50,7 @@ final class Workspace
         );
 
         $realFiles = array_filter(
-            array_map(function (FileEvent $change) {
+            array_map(function (FileEvent $change): ?string {
                 try {
                     return $this->server->uriToPath($change->uri);
                 } catch (InvalidArgumentException) {
@@ -100,7 +100,7 @@ final class Workspace
      *
      * @psalm-suppress PossiblyUnusedMethod, UnusedParam, MissingParamType
      */
-    public function didChangeConfiguration($settings): void
+    public function didChangeConfiguration(): void
     {
         // @codingStandardsIgnoreEnd
         $this->server->logDebug(

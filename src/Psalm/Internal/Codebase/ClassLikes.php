@@ -534,28 +534,26 @@ final class ClassLikes
     /**
      * Check whether a class/interface exists
      */
-    public function classOrInterfaceExists(
-        string $fq_class_name,
-        ?CodeLocation $code_location = null,
-        ?string $calling_fq_class_name = null,
-        ?string $calling_method_id = null,
-    ): bool {
-        return $this->classExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id)
-            || $this->interfaceExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id);
+    public function classOrInterfaceExists(string $fq_class_name, ?CodeLocation $code_location = null, ?string $calling_fq_class_name = null, ?string $calling_method_id = null): bool
+    {
+        if ($this->classExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id)) {
+            return true;
+        }
+        return $this->interfaceExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id);
     }
 
     /**
      * Check whether a class/interface exists
      */
-    public function classOrInterfaceOrEnumExists(
-        string $fq_class_name,
-        ?CodeLocation $code_location = null,
-        ?string $calling_fq_class_name = null,
-        ?string $calling_method_id = null,
-    ): bool {
-        return $this->classExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id)
-            || $this->interfaceExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id)
-            || $this->enumExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id);
+    public function classOrInterfaceOrEnumExists(string $fq_class_name, ?CodeLocation $code_location = null, ?string $calling_fq_class_name = null, ?string $calling_method_id = null): bool
+    {
+        if ($this->classExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id)) {
+            return true;
+        }
+        if ($this->interfaceExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id)) {
+            return true;
+        }
+        return $this->enumExists($fq_class_name, $code_location, $calling_fq_class_name, $calling_method_id);
     }
 
     /**
@@ -913,7 +911,7 @@ final class ClassLikes
                         if ($stmt instanceof PhpParser\Node\Stmt\Namespace_) {
                             foreach ($stmt->stmts as $namespace_stmt) {
                                 if ($namespace_stmt instanceof PhpParser\Node\Stmt\Class_
-                                    && strtolower((string) $stmt->name . '\\' . (string) $namespace_stmt->name)
+                                    && strtolower($stmt->name . '\\' . $namespace_stmt->name)
                                         === $fq_class_name_lc
                                 ) {
                                     self::makeImmutable(
@@ -1159,8 +1157,10 @@ final class ClassLikes
 
             $source_const_stmt_location = $constant_storage->stmt_location;
             $source_const_location = $constant_storage->location;
-
-            if (!$source_const_location || !$source_const_stmt_location) {
+            if (!$source_const_location) {
+                continue;
+            }
+            if (!$source_const_stmt_location) {
                 continue;
             }
 
@@ -2079,8 +2079,10 @@ final class ClassLikes
                             }
 
                             $param_name = $method_storage->params[$offset]->name;
-
-                            if ($possible_type->hasMixed() || $possible_type->isNull()) {
+                            if ($possible_type->hasMixed()) {
+                                continue;
+                            }
+                            if ($possible_type->isNull()) {
                                 continue;
                             }
 
@@ -2091,7 +2093,6 @@ final class ClassLikes
                                     $default_type_atomic = ConstantTypeResolver::resolve(
                                         $codebase->classlikes,
                                         $method_storage->params[$offset]->default_type,
-                                        null,
                                     );
 
                                     $default_type = new Union([$default_type_atomic]);
@@ -2433,7 +2434,7 @@ final class ClassLikes
 
         $filtered_constants_by_visibility = array_filter(
             $resolved_constants,
-            fn(ClassConstantStorage $resolved_constant) => $this->filterConstantNameByVisibility(
+            fn(ClassConstantStorage $resolved_constant): bool => $this->filterConstantNameByVisibility(
                 $resolved_constant,
                 $visibility,
             ),

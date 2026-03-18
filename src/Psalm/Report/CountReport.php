@@ -27,9 +27,8 @@ final class CountReport extends Report
             $cmp_result = $issue_type_counts[$a] <=> $issue_type_counts[$b];
             if ($cmp_result === 0) {
                 return $a <=> $b;
-            } else {
-                return $cmp_result;
             }
+            return $cmp_result;
         });
 
         $output = '';

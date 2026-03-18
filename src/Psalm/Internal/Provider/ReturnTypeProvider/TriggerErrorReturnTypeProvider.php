@@ -38,7 +38,7 @@ final class TriggerErrorReturnTypeProvider implements FunctionReturnTypeProvider
     }
 
     #[Override]
-    public static function getFunctionReturnType(FunctionReturnTypeProviderEvent $event): ?Union
+    public static function getFunctionReturnType(FunctionReturnTypeProviderEvent $event): \Psalm\Type\Union
     {
         $codebase = $event->getStatementsSource()->getCodebase();
         $config = $codebase->config;

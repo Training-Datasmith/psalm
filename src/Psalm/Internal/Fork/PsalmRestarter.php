@@ -155,7 +155,7 @@ final class PsalmRestarter extends XdebugHandler
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[Override]
-    protected function restart($command): void
+    protected function restart(array $command): void
     {
         if ($this->required && $this->tmpIni) {
             $regex = '/^\s*((?:zend_)?extension\s*=.*(' . implode('|', $this->disabled_extensions) . ').*)$/mi';

@@ -30,7 +30,7 @@ final class FirstArgStringReturnTypeProvider implements FunctionReturnTypeProvid
     }
 
     #[Override]
-    public static function getFunctionReturnType(FunctionReturnTypeProviderEvent $event): ?Union
+    public static function getFunctionReturnType(FunctionReturnTypeProviderEvent $event): \Psalm\Type\Union
     {
         $statements_source = $event->getStatementsSource();
         $call_args = $event->getCallArgs();

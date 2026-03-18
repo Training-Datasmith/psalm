@@ -38,9 +38,6 @@ final class TTemplateParam extends Atomic
         parent::__construct($from_docblock);
     }
 
-    /**
-     * @return static
-     */
     public function replaceAs(Union $as): self
     {
         if ($as === $this->as) {
@@ -87,7 +84,6 @@ final class TTemplateParam extends Atomic
 
     /**
      * @param  array<lowercase-string, string> $aliased_classes
-     * @return null
      */
     #[Override]
     public function toPhpString(
@@ -140,9 +136,6 @@ final class TTemplateParam extends Atomic
         return false;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(
         TemplateResult $template_result,

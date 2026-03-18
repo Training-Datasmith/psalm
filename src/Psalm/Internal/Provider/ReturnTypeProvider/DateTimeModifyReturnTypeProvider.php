@@ -60,7 +60,7 @@ final class DateTimeModifyReturnTypeProvider implements MethodReturnTypeProvider
         if ($has_false && !$has_date_time) {
             return Type::getFalse();
         }
-        if ($has_date_time && !$has_false) {
+        if (!$has_false) {
             return Type::parseString($event->getCalledFqClasslikeName() ?? $event->getFqClasslikeName());
         }
 

@@ -118,9 +118,9 @@ final class ArrayMapReturnTypeProvider implements FunctionReturnTypeProviderInte
             $array_arg_types = array_map(null, ...$array_arg_types);
             $array_arg_types = array_map(
                 /** @param non-empty-array<?Union> $sub */
-                static function (array $sub) use ($null) {
+                static function (array $sub) use ($null): \Psalm\Type\Union {
                     $sub = array_map(
-                        static fn(?Union $t) => $t ?? $null,
+                        static fn(?Union $t): \Psalm\Type\Union => $t ?? $null,
                         $sub,
                     );
                     return new Union([new TKeyedArray($sub, null, null, true)]);

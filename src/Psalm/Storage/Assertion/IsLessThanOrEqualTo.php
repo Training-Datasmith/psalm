@@ -19,7 +19,7 @@ final class IsLessThanOrEqualTo extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsGreaterThan
     {
         return new IsGreaterThan($this->value);
     }

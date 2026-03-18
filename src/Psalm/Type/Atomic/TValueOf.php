@@ -141,11 +141,19 @@ final class TValueOf extends Atomic
             ) {
                 $class_storage = $codebase->classlike_storage_provider->get($atomic_type->value);
                 $cases = $class_storage->enum_cases;
-                if (!$class_storage->is_enum
-                    || $class_storage->enum_type === null
-                    || $cases === []
-                    || ($atomic_type instanceof TEnumCase && !isset($cases[$atomic_type->case_name]))
-                ) {
+                if (!$class_storage->is_enum) {
+                    // Invalid value-of, skip
+                    continue;
+                }
+                if ($class_storage->enum_type === null) {
+                    // Invalid value-of, skip
+                    continue;
+                }
+                if ($cases === []) {
+                    // Invalid value-of, skip
+                    continue;
+                }
+                if ($atomic_type instanceof TEnumCase && !isset($cases[$atomic_type->case_name])) {
                     // Invalid value-of, skip
                     continue;
                 }

@@ -19,7 +19,7 @@ final class HasMethod extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\DoesNotHaveMethod
     {
         return new DoesNotHaveMethod($this->method);
     }

@@ -481,7 +481,7 @@ final class StaticPropertyFetchAnalyzer
 
                 $fake_stmt_type = $statements_analyzer->node_data->getType($fake_static_property) ?? Type::getMixed();
             } else {
-                $fake_var_name = '__fake_var_' . (string) $stmt->getAttribute('startFilePos');
+                $fake_var_name = '__fake_var_' . $stmt->getAttribute('startFilePos');
 
                 $fake_var = new VirtualVariable(
                     $fake_var_name,

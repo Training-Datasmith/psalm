@@ -145,11 +145,9 @@ final class ConstantTypeResolver
                 }
 
                 if ($left instanceof TKeyedArray && $right instanceof TKeyedArray) {
-                    $type = new TKeyedArray(
+                    return new TKeyedArray(
                         $left->properties + $right->properties,
-                        null,
                     );
-                    return $type;
                 }
 
                 return new TMixed;
@@ -266,12 +264,10 @@ final class ConstantTypeResolver
             }
 
             if (empty($properties)) {
-                $resolved_type = Type::getEmptyArrayAtomic();
-            } else {
-                $resolved_type = new TKeyedArray($properties, null, null, $is_list);
+                return Type::getEmptyArrayAtomic();
             }
 
-            return $resolved_type;
+            return new TKeyedArray($properties, null, null, $is_list);
         }
 
         if ($c instanceof ClassConstant) {
@@ -349,9 +345,8 @@ final class ConstantTypeResolver
                                     $statements_analyzer,
                                     $visited_constant_ids + [$c_id => true],
                                 );
-                            } else {
-                                return $value;
                             }
+                            return $value;
                         }
                     } elseif ($c instanceof EnumNameFetch) {
                         return Type::getString($c->case)->getSingleAtomic();
@@ -381,7 +376,7 @@ final class ConstantTypeResolver
             foreach ($value as $key => $val) {
                 $types[$key] = new Union([self::getLiteralTypeFromScalarValue($val)]);
             }
-            return new TKeyedArray($types, null);
+            return new TKeyedArray($types);
         }
 
         if (is_string($value)) {
@@ -403,11 +398,6 @@ final class ConstantTypeResolver
         if ($value === true) {
             return new TTrue();
         }
-
-        if ($value === null) {
-            return new TNull();
-        }
-
-        throw new InvalidArgumentException('$value must be a scalar.');
+        return new TNull();
     }
 }

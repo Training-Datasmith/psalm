@@ -207,7 +207,7 @@ final class AndAnalyzer
                 ...$if_body_context->reconciled_expression_clauses,
                 ...array_map(
                     /** @return string|int */
-                    static fn(Clause $c) => $c->hash,
+                    static fn(Clause $c): string => $c->hash,
                     $partitioned_clauses[1],
                 ),
             ];

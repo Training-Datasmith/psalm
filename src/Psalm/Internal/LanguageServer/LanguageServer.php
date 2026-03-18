@@ -616,7 +616,7 @@ final class LanguageServer extends Dispatcher
         /** @var array<string, string> $opened */
         $opened = array_reduce(
             $this->project_analyzer->getCodebase()->file_provider->getOpenFilesPath(),
-            function (array $opened, string $file_path) {
+            function (array $opened, string $file_path): array {
                 $opened[$file_path] = $this->pathToUri($file_path);
                 return $opened;
             },
@@ -660,8 +660,8 @@ final class LanguageServer extends Dispatcher
                 function () use ($files, $version): void {
                     $files = array_filter(
                         $files,
-                        fn(string $file_path) => $this->project_analyzer->getCodebase()->file_provider
-                        ->isOpen($file_path),
+                        $this->project_analyzer->getCodebase()->file_provider
+                        ->isOpen(...),
                         ARRAY_FILTER_USE_KEY,
                     );
                     $this->doVersionedAnalysis($files, $version);
@@ -767,7 +767,7 @@ final class LanguageServer extends Dispatcher
                     return $diagnostic;
                 },
                 array_filter(
-                    array_map(static function (IssueData $issue_data) use (&$issue_baseline) {
+                    array_map(static function (IssueData $issue_data) use (&$issue_baseline): \Psalm\Internal\Analyzer\IssueData {
                         if (empty($issue_baseline)) {
                             return $issue_data;
                         }
@@ -795,7 +795,7 @@ final class LanguageServer extends Dispatcher
                         }
                         return $issue_data;
                     }, $data[$file_path] ?? []),
-                    function (IssueData $issue_data) {
+                    function (IssueData $issue_data): bool {
                         //Hide Warnings
                         if ($issue_data->severity === IssueData::SEVERITY_INFO &&
                             $this->client->clientConfiguration->hideWarnings
@@ -868,7 +868,7 @@ final class LanguageServer extends Dispatcher
         }
 
         if (!empty($context)) {
-            $message .= "\n" . (string) json_encode($context, JSON_PRETTY_PRINT);
+            $message .= "\n" . json_encode($context, JSON_PRETTY_PRINT);
         }
         try {
             $this->client->logMessage(
@@ -962,7 +962,7 @@ final class LanguageServer extends Dispatcher
         if (!str_ends_with($first, ':')) {
             $first = rawurlencode($first);
         }
-        $parts = array_map('rawurlencode', $parts);
+        $parts = array_map(rawurlencode(...), $parts);
         array_unshift($parts, $first);
         $filepath = implode('/', $parts);
 
@@ -1016,7 +1016,6 @@ final class LanguageServer extends Dispatcher
         return $prop_name === '$';
     }
 
-    /** @return static */
     public function __get(string $_prop_name): self
     {
         return $this;

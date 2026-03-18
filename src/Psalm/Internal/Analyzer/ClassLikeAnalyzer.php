@@ -369,9 +369,6 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer
                     $suppressed_issues,
                 );
             }
-        }
-
-        if (!$options->inferred) {
             $event = new AfterClassLikeExistenceCheckEvent(
                 $fq_class_name,
                 $code_location,
@@ -379,9 +376,7 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer
                 $codebase,
                 [],
             );
-
             $codebase->config->eventDispatcher->dispatchAfterClassLikeExistenceCheck($event);
-
             $file_manipulations = $event->getFileReplacements();
             if ($file_manipulations) {
                 FileManipulationBuffer::add($code_location->file_path, $file_manipulations);
@@ -698,10 +693,6 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer
             $previous_extended = [];
 
             foreach ($parent_storage->template_types as $template_name => $type_map) {
-                // declares the variables
-                foreach ($type_map as $declaring_class => $template_type) {
-                }
-
                 if (isset($storage->template_extended_params[$parent_storage->name][$template_name])) {
                     $extended_type = $storage->template_extended_params[$parent_storage->name][$template_name];
 
@@ -774,8 +765,6 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer
                             $codebase,
                             null,
                             $extended_type,
-                            null,
-                            null,
                         );
 
                         if (!UnionTypeComparator::isContainedBy($codebase, $extended_type, $template_type_copy)) {

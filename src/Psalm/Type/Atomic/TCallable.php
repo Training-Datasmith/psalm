@@ -63,9 +63,6 @@ final class TCallable extends Atomic implements TCallableInterface
         return $this->params === null && $this->return_type === null;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(TemplateResult $template_result, ?Codebase $codebase): self
     {
@@ -80,9 +77,6 @@ final class TCallable extends Atomic implements TCallableInterface
             $this->is_pure,
         );
     }
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,

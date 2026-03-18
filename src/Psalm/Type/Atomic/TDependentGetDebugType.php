@@ -18,7 +18,7 @@ final class TDependentGetDebugType extends TString implements DependentType
      */
     public function __construct(public string $typeof)
     {
-        parent::__construct(false);
+        parent::__construct();
     }
 
     #[Override]

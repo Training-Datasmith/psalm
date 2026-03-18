@@ -36,8 +36,6 @@ final class CheckstyleReport extends Report
             $output .= '</file>' . "\n";
         }
 
-        $output .= '</checkstyle>' . "\n";
-
-        return $output;
+        return $output . ('</checkstyle>' . "\n");
     }
 }

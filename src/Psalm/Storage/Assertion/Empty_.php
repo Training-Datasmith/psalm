@@ -15,7 +15,7 @@ final class Empty_ extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\NonEmpty
     {
         return new NonEmpty();
     }

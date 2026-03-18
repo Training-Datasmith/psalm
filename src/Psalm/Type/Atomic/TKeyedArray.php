@@ -355,9 +355,6 @@ class TKeyedArray extends Atomic
         );
     }
 
-    /**
-     * @return TArray|TNonEmptyArray
-     */
     public function getGenericArrayType(?string $list_var_id = null): TArray
     {
         $key_types = [];
@@ -441,7 +438,6 @@ class TKeyedArray extends Atomic
         if ($this->is_list) {
             foreach ($this->properties as $k => $property) {
                 if ($property->possibly_undefined || $property->isNever()) {
-                    /** @var int<0, max> */
                     return $k;
                 }
             }

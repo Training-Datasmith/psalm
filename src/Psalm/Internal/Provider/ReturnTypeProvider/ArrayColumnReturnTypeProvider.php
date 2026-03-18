@@ -243,17 +243,22 @@ final class ArrayColumnReturnTypeProvider implements FunctionReturnTypeProviderI
         Context $context,
         CodeLocation $code_location,
     ): ?Atomic {
-        if ($row_type && $row_type->isSingle()) {
-            if ($row_type->hasArray()) {
-                return $row_type->getArray();
-            } elseif ($row_type->hasObjectType()) {
-                return GetObjectVarsReturnTypeProvider::getGetObjectVarsReturnType(
-                    $row_type,
-                    $statements_source,
-                    $context,
-                    $code_location,
-                );
-            }
+        if (!$row_type) {
+            return null;
+        }
+        if (!$row_type->isSingle()) {
+            return null;
+        }
+        if ($row_type->hasArray()) {
+            return $row_type->getArray();
+        }
+        if ($row_type->hasObjectType()) {
+            return GetObjectVarsReturnTypeProvider::getGetObjectVarsReturnType(
+                $row_type,
+                $statements_source,
+                $context,
+                $code_location,
+            );
         }
         return null;
     }

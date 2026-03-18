@@ -19,7 +19,7 @@ final class TDependentGetClass extends TString implements DependentType
      */
     public function __construct(public string $typeof, public Union $as_type)
     {
-        parent::__construct(false);
+        parent::__construct();
     }
 
     #[Override]

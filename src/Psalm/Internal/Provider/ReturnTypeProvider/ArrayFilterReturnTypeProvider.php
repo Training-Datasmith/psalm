@@ -93,7 +93,7 @@ final class ArrayFilterReturnTypeProvider implements FunctionReturnTypeProviderI
 
                 $new_properties = array_filter(
                     array_map(
-                        static function ($keyed_type) use ($statements_source, $context) {
+                        static function ($keyed_type) use ($statements_source, $context): \Psalm\Type\Union {
                             $prev_keyed_type = $keyed_type;
 
                             $keyed_type = AssertionReconciler::reconcile(
@@ -111,7 +111,7 @@ final class ArrayFilterReturnTypeProvider implements FunctionReturnTypeProviderI
                         },
                         $first_arg_array->properties,
                     ),
-                    static fn($keyed_type) => !$keyed_type->isNever(),
+                    static fn($keyed_type): bool => !$keyed_type->isNever(),
                 );
 
                 if (!$new_properties) {

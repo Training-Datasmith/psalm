@@ -523,10 +523,8 @@ final class InstancePropertyAssignmentAnalyzer
                     $removed_taints,
                 );
 
-                if ($assignment_value_type->parent_nodes) {
-                    foreach ($assignment_value_type->parent_nodes as $parent_node) {
-                        $data_flow_graph->addPath($parent_node, $property_node, '=', $added_taints, $removed_taints);
-                    }
+                foreach ($assignment_value_type->parent_nodes as $parent_node) {
+                    $data_flow_graph->addPath($parent_node, $property_node, '=', $added_taints, $removed_taints);
                 }
 
                 if (isset($context->vars_in_scope[$var_id])) {
@@ -599,7 +597,6 @@ final class InstancePropertyAssignmentAnalyzer
             $property_id,
             $property_id,
             null,
-            null,
         );
 
         $data_flow_graph->addNode($property_node);
@@ -624,16 +621,14 @@ final class InstancePropertyAssignmentAnalyzer
             $removed_taints,
         );
 
-        if ($assignment_value_type->parent_nodes) {
-            foreach ($assignment_value_type->parent_nodes as $parent_node) {
-                $data_flow_graph->addPath(
-                    $parent_node,
-                    $localized_property_node,
-                    '=',
-                    $added_taints,
-                    $removed_taints,
-                );
-            }
+        foreach ($assignment_value_type->parent_nodes as $parent_node) {
+            $data_flow_graph->addPath(
+                $parent_node,
+                $localized_property_node,
+                '=',
+                $added_taints,
+                $removed_taints,
+            );
         }
 
         $declaring_property_class = $codebase->properties->getDeclaringClassForProperty(
@@ -652,7 +647,6 @@ final class InstancePropertyAssignmentAnalyzer
             $declaring_property_node = new DataFlowNode(
                 $declaring_property_class . '::$' . $stmt->name,
                 $declaring_property_class . '::$' . $stmt->name,
-                null,
                 null,
             );
 
@@ -1535,11 +1529,10 @@ final class InstancePropertyAssignmentAnalyzer
         );
 
         if ($class_template_params) {
-            $fleshed_out_type = TemplateStandinTypeReplacer::replace(
+            return TemplateStandinTypeReplacer::replace(
                 $fleshed_out_type,
                 $template_result,
                 $codebase,
-                null,
                 null,
                 null,
             );

@@ -20,7 +20,7 @@ final class IsIdentical extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsNotIdentical
     {
         return new IsNotIdentical($this->type);
     }
@@ -37,14 +37,11 @@ final class IsIdentical extends Assertion
     }
 
     #[Override]
-    public function getAtomicType(): ?Atomic
+    public function getAtomicType(): \Psalm\Type\Atomic
     {
         return $this->type;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function setAtomicType(Atomic $type): self
     {

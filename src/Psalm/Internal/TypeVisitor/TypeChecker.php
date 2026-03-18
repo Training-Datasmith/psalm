@@ -313,7 +313,6 @@ final class TypeChecker extends TypeVisitor
                 $fq_classlike_name,
                 $atomic->const_name,
                 ReflectionProperty::IS_PRIVATE,
-                null,
             );
 
             $is_defined = null !== $class_constant_type;

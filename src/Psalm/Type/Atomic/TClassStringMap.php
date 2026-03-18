@@ -110,7 +110,6 @@ final class TClassStringMap extends Atomic
 
     /**
      * @psalm-suppress InaccessibleProperty We're only acting on cloned instances
-     * @return static
      */
     #[Override]
     public function replaceTemplateTypesWithStandins(
@@ -172,9 +171,6 @@ final class TClassStringMap extends Atomic
         return $cloned ?? $this;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(
         TemplateResult $template_result,

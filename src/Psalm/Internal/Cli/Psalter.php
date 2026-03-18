@@ -603,7 +603,7 @@ final class Psalter
         /** @psalm-suppress MixedAssignment */
         foreach ($desired_codeowners as $desired_codeowner) {
             if (!is_string($desired_codeowner)) {
-                fwrite(STDERR, 'Invalid --codeowner ' . (string) $desired_codeowner . PHP_EOL);
+                fwrite(STDERR, 'Invalid --codeowner ' . $desired_codeowner . PHP_EOL);
                 exit(1);
             }
 

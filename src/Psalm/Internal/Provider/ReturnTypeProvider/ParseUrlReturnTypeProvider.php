@@ -153,7 +153,6 @@ final class ParseUrlReturnTypeProvider implements FunctionReturnTypeProviderInte
             self::$return_type = new Union([
                 new TKeyedArray(
                     $component_types,
-                    null,
                 ),
                 new TFalse(),
             ], [

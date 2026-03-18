@@ -390,8 +390,10 @@ final class ConcatAnalyzer
 
                 return;
             }
-
-            if ($operand_type_part instanceof TNull || $operand_type_part instanceof TFalse) {
+            if ($operand_type_part instanceof TNull) {
+                continue;
+            }
+            if ($operand_type_part instanceof TFalse) {
                 continue;
             }
 

@@ -15,7 +15,7 @@ final class Any extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\Any
     {
         return $this;
     }

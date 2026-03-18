@@ -21,7 +21,7 @@ final class NotInArray extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\InArray
     {
         return new InArray($this->type);
     }

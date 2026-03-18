@@ -367,11 +367,9 @@ final class LoopAnalyzer
                 IssueBuffer::stopRecording();
             }
 
-            if ($recorded_issues) {
-                foreach ($recorded_issues as $recorded_issue) {
-                    // if we're not in any loops then this will just result in the issue being emitted
-                    IssueBuffer::bubbleUp($recorded_issue);
-                }
+            foreach ($recorded_issues as $recorded_issue) {
+                // if we're not in any loops then this will just result in the issue being emitted
+                IssueBuffer::bubbleUp($recorded_issue);
             }
         }
 

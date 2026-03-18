@@ -145,10 +145,10 @@ final class InternalCallMapHandler
                 if (!$param_type) {
                     continue;
                 }
-
-                if (!$nodes
-                    || !($arg_type = $nodes->getType($arg->value))
-                ) {
+                if (!$nodes) {
+                    continue;
+                }
+                if (!($arg_type = $nodes->getType($arg->value))) {
                     continue;
                 }
 

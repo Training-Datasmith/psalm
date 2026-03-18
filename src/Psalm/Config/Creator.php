@@ -128,9 +128,11 @@ final class Creator
             if ($issue_level < 1) {
                 continue;
             }
-
             // exclude some directories that are probably ignorable
-            if (strpos($issue->file_path, 'vendor') || strpos($issue->file_path, 'stub')) {
+            if (strpos($issue->file_path, 'vendor')) {
+                continue;
+            }
+            if (strpos($issue->file_path, 'stub')) {
                 continue;
             }
 
@@ -303,8 +305,10 @@ final class Creator
             if (!$parts[0]) {
                 array_shift($parts);
             }
-
-            if ($parts[0] === 'vendor' || $parts[0] === 'tests') {
+            if ($parts[0] === 'vendor') {
+                continue;
+            }
+            if ($parts[0] === 'tests') {
                 continue;
             }
 

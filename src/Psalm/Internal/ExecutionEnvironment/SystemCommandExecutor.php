@@ -32,7 +32,6 @@ final class SystemCommandExecutor
         exec($command, $result, $returnValue);
 
         if ($returnValue === 0) {
-            /** @var string[] */
             return $result;
         }
 

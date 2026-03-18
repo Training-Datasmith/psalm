@@ -998,7 +998,7 @@ final class ArgumentAnalyzer
 
             $param_types_without_callable = array_filter(
                 $param_type->getAtomicTypes(),
-                static fn(Atomic $atomic) => !$atomic instanceof Atomic\TCallableInterface,
+                static fn(Atomic $atomic): bool => !$atomic instanceof Atomic\TCallableInterface,
             );
             $param_type_without_callable = [] !== $param_types_without_callable
                 ? new Union($param_types_without_callable)
@@ -1828,7 +1828,6 @@ final class ArgumentAnalyzer
                         $dependent_classlike_storage->name . '::' . $cased_method_name,
                         $argument_offset,
                         $arg_location,
-                        null,
                     );
 
                     $statements_analyzer->data_flow_graph->addNode($new_sink);
@@ -1852,7 +1851,6 @@ final class ArgumentAnalyzer
                     $codebase->methods->getCasedMethodId($declaring_method_id),
                     $argument_offset,
                     $arg_location,
-                    null,
                 );
 
                 $statements_analyzer->data_flow_graph->addNode($new_sink);

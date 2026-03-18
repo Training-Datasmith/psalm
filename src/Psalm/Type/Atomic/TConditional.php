@@ -83,7 +83,6 @@ final class TConditional extends Atomic
 
     /**
      * @param  array<lowercase-string, string> $aliased_classes
-     * @return null
      */
     #[Override]
     public function toPhpString(
@@ -120,9 +119,6 @@ final class TConditional extends Atomic
         return false;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(
         TemplateResult $template_result,

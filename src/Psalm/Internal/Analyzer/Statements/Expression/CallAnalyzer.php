@@ -499,7 +499,7 @@ abstract class CallAnalyzer
                 && $callable_arg->right instanceof PhpParser\Node\Scalar\String_
                 && preg_match('/^::[A-Za-z0-9]+$/', $callable_arg->right->value)
             ) {
-                $r = (string) $callable_arg->left->class->getAttribute('resolvedName') . $callable_arg->right->value;
+                $r = $callable_arg->left->class->getAttribute('resolvedName') . $callable_arg->right->value;
                 assert($r !== '');
                 return [$r];
             }
@@ -664,16 +664,16 @@ abstract class CallAnalyzer
                 }
             } elseif ($var_possibilities->var_id === '$this' && $thisName !== null) {
                 $assertion_var_id = $thisName;
-            } elseif (str_starts_with($var_possibilities->var_id, '$this->') && $thisName !== null) {
+            } elseif (str_starts_with((string) $var_possibilities->var_id, '$this->') && $thisName !== null) {
                 $assertion_var_id = $thisName . str_replace('$this->', '->', $var_possibilities->var_id);
-            } elseif (str_starts_with($var_possibilities->var_id, 'self::') && $context->self) {
+            } elseif (str_starts_with((string) $var_possibilities->var_id, 'self::') && $context->self) {
                 $assertion_var_id = $context->self . str_replace('self::', '::', $var_possibilities->var_id);
-            } elseif (str_contains($var_possibilities->var_id, '::$')) {
+            } elseif (str_contains((string) $var_possibilities->var_id, '::$')) {
                 // allow assertions to bring external static props into scope
                 $assertion_var_id = $var_possibilities->var_id;
             } elseif (isset($context->vars_in_scope[$var_possibilities->var_id])) {
                 $assertion_var_id = $var_possibilities->var_id;
-            } elseif (str_contains($var_possibilities->var_id, '->')) {
+            } elseif (str_contains((string) $var_possibilities->var_id, '->')) {
                 $exploded = explode('->', $var_possibilities->var_id);
 
                 if (count($exploded) < 2) {
@@ -1062,7 +1062,7 @@ abstract class CallAnalyzer
 
                     $equality_types = array_unique(
                         array_map(
-                            static fn($bound_with_equality) => $bound_with_equality->type->getId(),
+                            static fn($bound_with_equality): string => $bound_with_equality->type->getId(),
                             $bounds_with_equality,
                         ),
                     );

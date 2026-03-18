@@ -29,14 +29,14 @@ final class StorageByPatternResolver
         string $pattern,
     ): array {
         $constants = $class_like_storage->constants;
-
         if (!str_contains($pattern, '*')) {
             if (isset($constants[$pattern])) {
                 return [$pattern => $constants[$pattern]];
             }
-
             return [];
-        } elseif ($pattern === '*') {
+        }
+
+        if ($pattern === '*') {
             return $constants;
         }
 
@@ -66,9 +66,9 @@ final class StorageByPatternResolver
             if (isset($enum_cases[$pattern])) {
                 return [$pattern => $enum_cases[$pattern]];
             }
-
             return [];
-        } elseif ($pattern === '*') {
+        }
+        if ($pattern === '*') {
             return $enum_cases;
         }
 

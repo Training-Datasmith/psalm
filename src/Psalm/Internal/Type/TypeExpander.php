@@ -611,7 +611,7 @@ final class TypeExpander
                     $return_type->value,
                     array_values(
                         array_map(
-                            static fn($type_map) => reset($type_map),
+                            reset(...),
                             $container_class_storage->template_types,
                         ),
                     ),
@@ -968,7 +968,10 @@ final class TypeExpander
                 ) {
                     continue;
                 }
-                if ($property->is_static || !$property->type) {
+                if ($property->is_static) {
+                    continue;
+                }
+                if (!$property->type) {
                     continue;
                 }
                 $type = $return_type->classlike_type instanceof TGenericObject
@@ -1069,9 +1072,8 @@ final class TypeExpander
             ) {
                 if ($throw_on_unresolvable_constant) {
                     throw new UnresolvableConstantException($type_param->fq_classlike_name, $type_param->const_name);
-                } else {
-                    return [$return_type];
                 }
+                return [$return_type];
             }
 
             $type_atomics = array_merge(

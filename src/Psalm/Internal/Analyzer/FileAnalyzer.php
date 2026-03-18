@@ -214,45 +214,43 @@ class FileAnalyzer extends SourceAnalyzer
         }
 
         // validate type imports
-        if ($file_storage->type_aliases) {
-            foreach ($file_storage->type_aliases as $alias) {
-                if ($alias instanceof LinkableTypeAlias) {
-                    $location = new DocblockTypeLocation(
-                        $this->getSource(),
-                        $alias->start_offset,
-                        $alias->end_offset,
-                        $alias->line_number,
-                    );
-                    $fq_source_classlike = $alias->declaring_fq_classlike_name;
-                    if (ClassLikeAnalyzer::checkFullyQualifiedClassLikeName(
-                        $this->getSource(),
-                        $fq_source_classlike,
-                        $location,
-                        null,
-                        null,
-                        $this->suppressed_issues,
-                        new ClassLikeNameOptions(
-                            true,
-                            true,
-                            true,
-                            true,
-                            true,
-                        ),
-                    ) === false) {
-                        continue;
-                    }
+        foreach ($file_storage->type_aliases as $alias) {
+            if ($alias instanceof LinkableTypeAlias) {
+                $location = new DocblockTypeLocation(
+                    $this->getSource(),
+                    $alias->start_offset,
+                    $alias->end_offset,
+                    $alias->line_number,
+                );
+                $fq_source_classlike = $alias->declaring_fq_classlike_name;
+                if (ClassLikeAnalyzer::checkFullyQualifiedClassLikeName(
+                    $this->getSource(),
+                    $fq_source_classlike,
+                    $location,
+                    null,
+                    null,
+                    $this->suppressed_issues,
+                    new ClassLikeNameOptions(
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                    ),
+                ) === false) {
+                    continue;
+                }
 
-                    $referenced_class_storage = $codebase->classlike_storage_provider->get($fq_source_classlike);
-                    if (!isset($referenced_class_storage->type_aliases[$alias->alias_name])) {
-                        IssueBuffer::maybeAdd(
-                            new InvalidTypeImport(
-                                'Type alias ' . $alias->alias_name
-                                . ' imported from ' . $fq_source_classlike
-                                . ' is not defined on the source class',
-                                $location,
-                            ),
-                        );
-                    }
+                $referenced_class_storage = $codebase->classlike_storage_provider->get($fq_source_classlike);
+                if (!isset($referenced_class_storage->type_aliases[$alias->alias_name])) {
+                    IssueBuffer::maybeAdd(
+                        new InvalidTypeImport(
+                            'Type alias ' . $alias->alias_name
+                            . ' imported from ' . $fq_source_classlike
+                            . ' is not defined on the source class',
+                            $location,
+                        ),
+                    );
                 }
             }
         }

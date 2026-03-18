@@ -54,9 +54,6 @@ final class TClosure extends TNamedObject
         return $this->params === null && $this->return_type === null && $this->is_pure === null;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(
         TemplateResult $template_result,
@@ -77,9 +74,6 @@ final class TClosure extends TNamedObject
         );
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,

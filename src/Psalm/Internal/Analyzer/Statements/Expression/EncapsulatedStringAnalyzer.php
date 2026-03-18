@@ -116,16 +116,14 @@ final class EncapsulatedStringAnalyzer
                         $statements_analyzer->data_flow_graph->addSource($taint_source);
                     }
 
-                    if ($casted_part_type->parent_nodes) {
-                        foreach ($casted_part_type->parent_nodes as $parent_node) {
-                            $statements_analyzer->data_flow_graph->addPath(
-                                $parent_node,
-                                $new_parent_node,
-                                'concat',
-                                $added_taints,
-                                $removed_taints,
-                            );
-                        }
+                    foreach ($casted_part_type->parent_nodes as $parent_node) {
+                        $statements_analyzer->data_flow_graph->addPath(
+                            $parent_node,
+                            $new_parent_node,
+                            'concat',
+                            $added_taints,
+                            $removed_taints,
+                        );
                     }
                 }
             } else {

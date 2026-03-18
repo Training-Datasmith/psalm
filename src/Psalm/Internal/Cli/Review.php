@@ -82,17 +82,17 @@ final class Review
 
         /** @psalm-suppress RiskyTruthyFalsyComparison */
         $mode = match ($mode) {
-            'code-server' => static fn(string $file, int $line, int $column) => 'code-server -r ' .
+            'code-server' => static fn(string $file, int $line, int $column): string => 'code-server -r ' .
                     escapeshellarg($file) . ':' .
                     escapeshellarg((string)$line) . ':' .
                     escapeshellarg((string)$column),
 
-            'phpstorm' => static fn(string $file, int $line, int $column) => (PHP_OS_FAMILY === 'Darwin'
+            'phpstorm' => static fn(string $file, int $line, int $column): string => (PHP_OS_FAMILY === 'Darwin'
                 ? 'open -na \'/Applications/PhpStorm.app\' --args'
                 : escapeshellarg(getenv('PHPSTORM') ?: 'phpstorm')
                 ). ' --line ' . escapeshellarg((string) $line) . " --column {$column} " . escapeshellarg($file),
 
-            'code' => static fn(string $file, int $line, int $column)
+            'code' => static fn(string $file, int $line, int $column): string
                  => 'code --goto ' . escapeshellarg($file) . ':' .
                  escapeshellarg((string) $line) . ':' .
                  escapeshellarg((string) $column),
@@ -115,11 +115,11 @@ final class Review
         foreach ($args as $issue) {
             if ($issue[0] === '~' || $issue[0] === '-') {
                 $issue = substr($issue, 1);
-                $issues = array_filter($issues, static fn(array $i) => $i['type'] !== $issue);
+                $issues = array_filter($issues, static fn(array $i): bool => $i['type'] !== $issue);
             } elseif ($issue === 'inv' || $issue === 'rev') {
                 $issues = array_reverse($issues);
             } else {
-                $issues = array_filter($issues, static fn(array $i) => $i['type'] === $issue);
+                $issues = array_filter($issues, static fn(array $i): bool => $i['type'] === $issue);
             }
         }
         

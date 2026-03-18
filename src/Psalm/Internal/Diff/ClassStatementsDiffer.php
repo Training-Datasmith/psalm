@@ -235,7 +235,10 @@ final class ClassStatementsDiffer extends AstDiffer
                     $add_or_delete[] = $name_lc . '::' . $method_name;
                     if ($method_name === '__construct') {
                         foreach ($affected_elem->getParams() as $param) {
-                            if (!$param->flags || !$param->var instanceof PhpParser\Node\Expr\Variable) {
+                            if (!$param->flags) {
+                                continue;
+                            }
+                            if (!$param->var instanceof PhpParser\Node\Expr\Variable) {
                                 continue;
                             }
                             if ($param->var instanceof PhpParser\Node\Expr\Error || !is_string($param->var->name)) {

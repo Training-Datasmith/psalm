@@ -21,7 +21,7 @@ final class IsAClass extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsNotAClass
     {
         return new IsNotAClass($this->type, $this->allow_string);
     }

@@ -390,7 +390,10 @@ final class MethodCallAnalyzer extends CallAnalyzer
         }
 
         if (!$result->existent_method_ids) {
-            return $stmt->isFirstClassCallable() || self::checkMethodArgs(
+            if ($stmt->isFirstClassCallable()) {
+                return true;
+            }
+            return self::checkMethodArgs(
                 null,
                 $stmt->getArgs(),
                 new TemplateResult([], []),

@@ -330,9 +330,8 @@ final class ExpressionResolver
             }
             if ($stmt->name->name === 'value') {
                 return new EnumValueFetch($enum_fq_class_name, $stmt->var->name->name);
-            } else /*if ($stmt->name->name === 'name')*/ {
-                return new EnumNameFetch($enum_fq_class_name, $stmt->var->name->name);
             }
+            return new EnumNameFetch($enum_fq_class_name, $stmt->var->name->name);
         }
 
         return null;
@@ -382,7 +381,7 @@ final class ExpressionResolver
                 )
             ) {
                 $php_version_id = $codebase->analysis_php_version_id;
-                $evaluator = new ConstExprEvaluator(static function (Expr $expr) use ($php_version_id) {
+                $evaluator = new ConstExprEvaluator(static function (Expr $expr) use ($php_version_id): int {
                     if ($expr instanceof ConstFetch && $expr->name->getParts() === ['PHP_VERSION_ID']) {
                         return $php_version_id;
                     }

@@ -273,7 +273,6 @@ final class FunctionLikeNodeScanner
                             $function_stmt->cond,
                             $this->classlike_storage->name ?? null,
                             $this->file_scanner,
-                            null,
                         );
 
                         try {
@@ -538,10 +537,12 @@ final class FunctionLikeNodeScanner
 
         if ($classlike_storage && $method_name_lc === '__construct') {
             foreach ($stmt->getParams() as $param) {
-                if (!$param->flags || !$param->var instanceof PhpParser\Node\Expr\Variable) {
+                if (!$param->flags) {
                     continue;
                 }
-
+                if (!$param->var instanceof PhpParser\Node\Expr\Variable) {
+                    continue;
+                }
                 $param_storage = null;
 
                 foreach ($storage->params as $param_storage) {
@@ -736,15 +737,17 @@ final class FunctionLikeNodeScanner
                 && ($param_name = $function_stmt->expr->expr->name)
                 && isset($storage->param_lookup[$param_name])
             ) {
-                if ($classlike_storage->properties[$property_name]->type
-                    || !$storage->param_lookup[$param_name]
-                ) {
+                if ($classlike_storage->properties[$property_name]->type) {
                     continue;
                 }
-
+                if (!$storage->param_lookup[$param_name]) {
+                    continue;
+                }
                 $param_index = array_search($param_name, array_keys($storage->param_lookup), true);
-
-                if ($param_index === false || !isset($storage->params[$param_index]->type)) {
+                if ($param_index === false) {
+                    continue;
+                }
+                if (!isset($storage->params[$param_index]->type)) {
                     continue;
                 }
 
@@ -890,7 +893,7 @@ final class FunctionLikeNodeScanner
     private function createStorageForFunctionLike(
         PhpParser\Node\FunctionLike $stmt,
         bool $fake_method
-    ) {
+    ): array|false {
         //phpcs:enable -- Remove this once the phpstan phpdoc parser MR is merged
         $classlike_storage = null;
         $fq_classlike_name = null;

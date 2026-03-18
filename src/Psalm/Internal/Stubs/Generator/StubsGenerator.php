@@ -215,7 +215,7 @@ final class StubsGenerator
         FunctionLikeStorage $function_storage,
         string $function_name,
         string $namespace_name
-    ) : PhpParser\Node\Stmt\Function_ {
+    ) : \Psalm\Node\Stmt\VirtualFunction {
         $docblock = new ParsedDocblock('', []);
 
         foreach ($function_storage->template_types ?: [] as $template_name => $map) {

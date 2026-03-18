@@ -165,7 +165,7 @@ final class TypeParser
         );
 
         if (!($parsed_type instanceof Union)) {
-            $parsed_type = new Union([$parsed_type], ['from_docblock' => $from_docblock]);
+            return new Union([$parsed_type], ['from_docblock' => $from_docblock]);
         }
 
         return $parsed_type;
@@ -325,14 +325,13 @@ final class TypeParser
         }
 
         if ($parse_tree instanceof TemplateAsTree) {
-            $result = new TTemplateParam(
+            return new TTemplateParam(
                 $parse_tree->param_name,
                 new Union([new TNamedObject($parse_tree->as)]),
                 'class-string-map',
                 [],
                 $from_docblock,
             );
-            return $result;
         }
 
         if ($parse_tree instanceof ConditionalTree) {
@@ -676,24 +675,52 @@ final class TypeParser
                     $generic_params[0] = $builder->addType(new TLiteralInt($string_to_int, $from_docblock))->freeze();
                     continue;
                 }
-
-                if ($atomic_type instanceof TInt
-                    || $atomic_type instanceof TString
-                    || $atomic_type instanceof TArrayKey
-                    || $atomic_type instanceof TClassConstant // @todo resolve and check types
-                    || $atomic_type instanceof TMixed
-                    || $atomic_type instanceof TNever
-                    || $atomic_type instanceof TTemplateParam
-                    || $atomic_type instanceof TTemplateIndexedAccess
-                    || $atomic_type instanceof TTemplateValueOf
-                    || $atomic_type instanceof TTemplateKeyOf
-                    || $atomic_type instanceof TTemplateParamClass
-                    || $atomic_type instanceof TTypeAlias
-                    || $atomic_type instanceof TValueOf
-                    || $atomic_type instanceof TConditional
-                    || $atomic_type instanceof TKeyOf
-                    || !$from_docblock
-                ) {
+                if ($atomic_type instanceof TInt) {
+                    continue;
+                }
+                if ($atomic_type instanceof TString) {
+                    continue;
+                }
+                if ($atomic_type instanceof TArrayKey) {
+                    continue;
+                }
+                if ($atomic_type instanceof TClassConstant) {
+                    continue;
+                }
+                if ($atomic_type instanceof TMixed) {
+                    continue;
+                }
+                if ($atomic_type instanceof TNever) {
+                    continue;
+                }
+                if ($atomic_type instanceof TTemplateParam) {
+                    continue;
+                }
+                if ($atomic_type instanceof TTemplateIndexedAccess) {
+                    continue;
+                }
+                if ($atomic_type instanceof TTemplateValueOf) {
+                    continue;
+                }
+                if ($atomic_type instanceof TTemplateKeyOf) {
+                    continue;
+                }
+                if ($atomic_type instanceof TTemplateParamClass) {
+                    continue;
+                }
+                if ($atomic_type instanceof TTypeAlias) {
+                    continue;
+                }
+                if ($atomic_type instanceof TValueOf) {
+                    continue;
+                }
+                if ($atomic_type instanceof TConditional) {
+                    continue;
+                }
+                if ($atomic_type instanceof TKeyOf) {
+                    continue;
+                }
+                if (!$from_docblock) {
                     continue;
                 }
 
@@ -943,7 +970,6 @@ final class TypeParser
 
                 if ($atomic_type instanceof TNamedObject) {
                     if (defined($atomic_type->value)) {
-                        /** @var mixed */
                         $constant_value = constant($atomic_type->value);
 
                         if (!is_int($constant_value)) {
@@ -993,17 +1019,16 @@ final class TypeParser
             }
 
             $param_type = $param_union_types[0];
-
             if (!$param_type instanceof TClassConstant
                 && !$param_type instanceof TValueOf
-                && !$param_type instanceof TKeyOf
-            ) {
+                && !$param_type instanceof TKeyOf) {
                 throw new TypeParseTreeException(
                     'Invalid reference passed to int-mask-of',
                 );
-            } elseif ($param_type instanceof TClassConstant
-                && !str_contains($param_type->const_name, '*')
-            ) {
+            }
+
+            if ($param_type instanceof TClassConstant
+                && !str_contains($param_type->const_name, '*')) {
                 throw new TypeParseTreeException(
                     'Class constant passed to int-mask-of must be a wildcard type',
                 );
@@ -1732,7 +1757,7 @@ final class TypeParser
         Atomic $first_type,
         Atomic $last_type,
         bool $from_docblock,
-    ): Atomic {
+    ): \Psalm\Type\Atomic\TKeyedArray {
         /** @var non-empty-array<string|int, Union> */
         $properties = [];
 

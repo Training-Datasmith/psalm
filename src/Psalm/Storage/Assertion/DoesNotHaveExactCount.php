@@ -26,7 +26,7 @@ final class DoesNotHaveExactCount extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\HasExactCount
     {
         return new HasExactCount($this->count);
     }

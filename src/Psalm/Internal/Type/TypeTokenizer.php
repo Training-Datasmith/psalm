@@ -360,15 +360,17 @@ final class TypeTokenizer
             }
 
             if ($string_type_token[0][0] === '\\'
-                && strlen($string_type_token[0]) === 1
+                && strlen((string) $string_type_token[0]) === 1
             ) {
                 throw new TypeParseTreeException("Backslash \"\\\" has to be part of class name.");
             }
-
-            if ($string_type_token[0][0] === '"'
-                || $string_type_token[0][0] === '\''
-                || preg_match('/[0-9]/', $string_type_token[0][0])
-            ) {
+            if ($string_type_token[0][0] === '"') {
+                continue;
+            }
+            if ($string_type_token[0][0] === '\'') {
+                continue;
+            }
+            if (preg_match('/[0-9]/', $string_type_token[0][0])) {
                 continue;
             }
 
@@ -388,8 +390,8 @@ final class TypeTokenizer
                 continue;
             }
 
-            if (strpos($string_type_token[0], '$')) {
-                $string_type_token[0] = (string) preg_replace('/(.+)\$.*/', '$1', $string_type_token[0]);
+            if (strpos((string) $string_type_token[0], '$')) {
+                $string_type_token[0] = (string) preg_replace('/(.+)\$.*/', '$1', (string) $string_type_token[0]);
             }
 
             $fixed_token = !isset($type_tokens[$i + 1]) || $type_tokens[$i + 1][0] !== '('
@@ -439,8 +441,10 @@ final class TypeTokenizer
                     continue;
                 }
             }
-
-            if ($string_type_token[0][0] === '$' || $string_type_token[0][0] === ' ') {
+            if ($string_type_token[0][0] === '$') {
+                continue;
+            }
+            if ($string_type_token[0][0] === ' ') {
                 continue;
             }
 
@@ -452,11 +456,13 @@ final class TypeTokenizer
                 $type_tokens[$i][0] = 'false-y';
                 continue;
             }
-
-            if ($string_type_token[0] === 'func_num_args()'
-                || $string_type_token[0] === 'PHP_MAJOR_VERSION'
-                || $string_type_token[0] === 'PHP_VERSION_ID'
-            ) {
+            if ($string_type_token[0] === 'func_num_args()') {
+                continue;
+            }
+            if ($string_type_token[0] === 'PHP_MAJOR_VERSION') {
+                continue;
+            }
+            if ($string_type_token[0] === 'PHP_VERSION_ID') {
                 continue;
             }
 
@@ -486,7 +492,6 @@ final class TypeTokenizer
             }
         }
 
-        /** @var list<array{0: string, 1: int, 2?: string}> */
         return $type_tokens;
     }
 

@@ -210,9 +210,6 @@ final class TObjectWithProperties extends TObject
         return true;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,
@@ -271,9 +268,6 @@ final class TObjectWithProperties extends TObject
         return new static($properties, $this->methods, $intersection ?? $this->extra_types);
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(
         TemplateResult $template_result,

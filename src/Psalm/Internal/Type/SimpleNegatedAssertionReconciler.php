@@ -1047,26 +1047,26 @@ final class SimpleNegatedAssertionReconciler extends Reconciler
         }
 
         foreach ($existing_var_type->getAtomicTypes() as $type_key => $existing_var_atomic_type) {
-            if ($existing_var_atomic_type instanceof TTemplateParam) {
-                if (!$existing_var_atomic_type->as->isMixed()) {
-                    $template_did_fail = 0;
-
-                    $existing_var_atomic_type = $existing_var_atomic_type->replaceAs(self::reconcileFalsyOrEmpty(
-                        $assertion,
-                        $existing_var_atomic_type->as,
-                        $key,
-                        $negated,
-                        $code_location,
-                        $suppressed_issues,
-                        $template_did_fail,
-                        $recursive_check,
-                    ));
-
-                    if (!$template_did_fail) {
-                        $existing_var_type->removeType($type_key);
-                        $existing_var_type->addType($existing_var_atomic_type);
-                    }
-                }
+            if (!$existing_var_atomic_type instanceof TTemplateParam) {
+                continue;
+            }
+            if ($existing_var_atomic_type->as->isMixed()) {
+                continue;
+            }
+            $template_did_fail = 0;
+            $existing_var_atomic_type = $existing_var_atomic_type->replaceAs(self::reconcileFalsyOrEmpty(
+                $assertion,
+                $existing_var_atomic_type->as,
+                $key,
+                $negated,
+                $code_location,
+                $suppressed_issues,
+                $template_did_fail,
+                $recursive_check,
+            ));
+            if (!$template_did_fail) {
+                $existing_var_type->removeType($type_key);
+                $existing_var_type->addType($existing_var_atomic_type);
             }
         }
 

@@ -235,7 +235,6 @@ final class ArrayFetchAnalyzer
                 false,
                 $extended_var_id,
                 $context,
-                null,
             );
 
             if ($stmt->dim && $stmt_var_type->hasArray()) {
@@ -837,7 +836,7 @@ final class ArrayFetchAnalyzer
 
                 if ($key_values) {
                     $used_offset = "using offset value of '" .
-                        implode('|', array_map(static fn(Atomic $atomic_type)
+                        implode('|', array_map(static fn(Atomic $atomic_type): int|string
                             => $atomic_type->value, $key_values)) . "'";
                 }
 
@@ -984,11 +983,12 @@ final class ArrayFetchAnalyzer
             $found_match = false;
 
             foreach ($offset_type->getAtomicTypes() as $offset_type_part) {
-                if ($extended_var_id === null
-                    || !($offset_type_part instanceof TLiteralString)) {
+                if ($extended_var_id === null) {
                     continue;
                 }
-
+                if (!($offset_type_part instanceof TLiteralString)) {
+                    continue;
+                }
                 $string_to_int = ArrayAnalyzer::getLiteralArrayKeyInt(
                     $offset_type_part->value,
                 );

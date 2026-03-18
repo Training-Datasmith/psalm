@@ -1111,8 +1111,6 @@ final class Methods
             if ($this->existence_provider->doesMethodExist(
                 $fq_class_name,
                 $method_name,
-                null,
-                null,
             )) {
                 return $this->classlike_storage_provider->get($fq_class_name);
             }

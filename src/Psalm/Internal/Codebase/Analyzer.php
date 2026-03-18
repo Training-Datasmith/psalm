@@ -1336,11 +1336,16 @@ final class Analyzer
         $applicable_issues = [];
 
         foreach ($this->existing_issues[$file_path] as $issue_data) {
-            if ($issue_data->from >= $start && $issue_data->from <= $end) {
-                if ($issue_type === null || $issue_type === $issue_data->type) {
-                    $applicable_issues[] = $issue_data;
-                }
+            if (!($issue_data->from >= $start)) {
+                continue;
             }
+            if (!($issue_data->from <= $end)) {
+                continue;
+            }
+            if (!($issue_type === null || $issue_type === $issue_data->type)) {
+                continue;
+            }
+            $applicable_issues[] = $issue_data;
         }
 
         return $applicable_issues;
@@ -1350,11 +1355,16 @@ final class Analyzer
     {
         if (isset($this->existing_issues[$file_path])) {
             foreach ($this->existing_issues[$file_path] as $i => $issue_data) {
-                if ($issue_data->from >= $start && $issue_data->from <= $end) {
-                    if ($issue_type === null || $issue_type === $issue_data->type) {
-                        unset($this->existing_issues[$file_path][$i]);
-                    }
+                if (!($issue_data->from >= $start)) {
+                    continue;
                 }
+                if (!($issue_data->from <= $end)) {
+                    continue;
+                }
+                if (!($issue_type === null || $issue_type === $issue_data->type)) {
+                    continue;
+                }
+                unset($this->existing_issues[$file_path][$i]);
             }
         }
 

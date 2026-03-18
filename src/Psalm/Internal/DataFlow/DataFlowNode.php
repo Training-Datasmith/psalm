@@ -20,7 +20,6 @@ class DataFlowNode implements Stringable
 
     public ?string $specialization_key = null;
 
-    /** @var ?self */
     public ?DataFlowNode $previous = null;
 
     /** @var list<string> */

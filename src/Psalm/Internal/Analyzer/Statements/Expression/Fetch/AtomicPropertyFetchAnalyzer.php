@@ -959,7 +959,6 @@ final class AtomicPropertyFetchAnalyzer
             $property_id,
             $property_id,
             null,
-            null,
         );
 
         $data_flow_graph->addNode($property_node);
@@ -1042,7 +1041,7 @@ final class AtomicPropertyFetchAnalyzer
             // If we have a known subset of enum cases, include only those
             $enum_cases = array_filter(
                 $enum_cases,
-                static fn(string $key) => in_array($key, $relevant_enum_case_names, true),
+                static fn(string $key): bool => in_array($key, $relevant_enum_case_names, true),
                 ARRAY_FILTER_USE_KEY,
             );
         }

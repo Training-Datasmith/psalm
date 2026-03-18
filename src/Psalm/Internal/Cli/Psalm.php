@@ -435,7 +435,8 @@ final class Psalm
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
             // No support desired for Windows at the moment
             return 1;
-        } elseif (!extension_loaded('pcntl')) {
+        }
+        if (!extension_loaded('pcntl')) {
             // Psalm requires pcntl for multi-threads support
             return 1;
         }
@@ -490,9 +491,7 @@ final class Psalm
 
     private static function initShowInfo(array $options): bool
     {
-        return isset($options['show-info'])
-            ? $options['show-info'] === 'true' || $options['show-info'] === '1'
-            : false;
+        return isset($options['show-info']) && ($options['show-info'] === 'true' || $options['show-info'] === '1');
     }
 
     /*private static function initIsDiff(array $options): bool
@@ -646,9 +645,7 @@ final class Psalm
     {
         $debug = array_key_exists('debug', $options) || array_key_exists('debug-by-line', $options);
 
-        $show_info = isset($options['show-info'])
-            ? $options['show-info'] === 'true' || $options['show-info'] === '1'
-            : false;
+        $show_info = isset($options['show-info']) && ($options['show-info'] === 'true' || $options['show-info'] === '1');
 
         if ($debug) {
             $progress = new DebugProgress();
@@ -672,28 +669,25 @@ final class Psalm
     private static function initProviders(array $options, Config $config, string $current_dir): Providers
     {
         if ($config->cache_directory === null || isset($options['i'])) {
-            $providers = new Providers(
+            return new Providers(
                 new FileProvider,
                 new ParserCacheProvider($config, Composer::getLockFile($current_dir), false),
                 new FileStorageCacheProvider($config, Composer::getLockFile($current_dir), false),
                 new ClassLikeStorageCacheProvider($config, Composer::getLockFile($current_dir), false),
                 new FileReferenceCacheProvider($config, Composer::getLockFile($current_dir), false),
             );
-        } else {
-            $no_reflection_cache = isset($options['no-reflection-cache']);
-            $no_file_cache = isset($options['no-file-cache']);
-            $no_reference_cache = isset($options['no-reference-cache']);
-
-            $providers = new Providers(
-                new FileProvider,
-                new ParserCacheProvider($config, Composer::getLockFile($current_dir), !$no_file_cache),
-                new FileStorageCacheProvider($config, Composer::getLockFile($current_dir), !$no_reflection_cache),
-                new ClassLikeStorageCacheProvider($config, Composer::getLockFile($current_dir), !$no_reflection_cache),
-                new FileReferenceCacheProvider($config, Composer::getLockFile($current_dir), !$no_reference_cache),
-                new ProjectCacheProvider(),
-            );
         }
-        return $providers;
+        $no_reflection_cache = isset($options['no-reflection-cache']);
+        $no_file_cache = isset($options['no-file-cache']);
+        $no_reference_cache = isset($options['no-reference-cache']);
+        return new Providers(
+            new FileProvider,
+            new ParserCacheProvider($config, Composer::getLockFile($current_dir), !$no_file_cache),
+            new FileStorageCacheProvider($config, Composer::getLockFile($current_dir), !$no_reflection_cache),
+            new ClassLikeStorageCacheProvider($config, Composer::getLockFile($current_dir), !$no_reflection_cache),
+            new FileReferenceCacheProvider($config, Composer::getLockFile($current_dir), !$no_reference_cache),
+            new ProjectCacheProvider(),
+        );
     }
 
     /**
@@ -1232,7 +1226,7 @@ final class Psalm
         if ($flow_graph !== null && $dump_taint_graph !== null) {
             file_put_contents($dump_taint_graph, "digraph Taints {\n\t".
                 implode("\n\t", array_map(
-                    static fn(array $edges) => '"'.implode('" -> "', $edges).'"',
+                    static fn(array $edges): string => '"'.implode('" -> "', $edges).'"',
                     $flow_graph->summarizeEdges(),
                 )) .
                 "\n}\n");

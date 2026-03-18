@@ -59,7 +59,7 @@ final class PluginListFactory
             ];
         }
 
-        $composer_lock_filenames = array_filter($composer_lock_filenames, 'is_readable');
+        $composer_lock_filenames = array_filter($composer_lock_filenames, is_readable(...));
 
         if (empty($composer_lock_filenames)) {
             $stub_composer_lock = (object)[

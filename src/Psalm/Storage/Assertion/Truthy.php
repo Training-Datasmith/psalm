@@ -15,7 +15,7 @@ final class Truthy extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\Falsy
     {
         return new Falsy();
     }

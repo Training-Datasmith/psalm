@@ -379,9 +379,7 @@ final class ProjectAnalyzer
             $message .= ' (unsupported extensions: ' . implode(', ', $unsupported_php_extensions) . ')';
         }
 
-        $message .= '.'.PHP_EOL.PHP_EOL;
-
-        return $message;
+        return $message . ('.' . PHP_EOL . PHP_EOL);
     }
 
     public function check(string $base_dir, bool $is_diff = false): void
@@ -728,52 +726,48 @@ final class ProjectAnalyzer
             $this->codebase->file_provider,
         );
 
-        if ($migration_manipulations) {
-            foreach ($migration_manipulations as $file_path => $file_manipulations) {
-                usort(
-                    $file_manipulations,
-                    static function (FileManipulation $a, FileManipulation $b): int {
-                        if ($a->start === $b->start) {
-                            if ($b->end === $a->end) {
-                                return $b->insertion_text > $a->insertion_text ? 1 : -1;
-                            }
-
-                            return $b->end > $a->end ? 1 : -1;
+        foreach ($migration_manipulations as $file_path => $file_manipulations) {
+            usort(
+                $file_manipulations,
+                static function (FileManipulation $a, FileManipulation $b): int {
+                    if ($a->start === $b->start) {
+                        if ($b->end === $a->end) {
+                            return $b->insertion_text > $a->insertion_text ? 1 : -1;
                         }
 
-                        return $b->start > $a->start ? 1 : -1;
-                    },
-                );
-
-                $existing_contents = $this->codebase->file_provider->getContents($file_path);
-
-                foreach ($file_manipulations as $manipulation) {
-                    $existing_contents = $manipulation->transform($existing_contents);
-                }
-
-                $this->codebase->file_provider->setContents($file_path, $existing_contents);
-            }
-        }
-
-        if ($this->codebase->classes_to_move) {
-            foreach ($this->codebase->classes_to_move as $source => $destination) {
-                $source_class_storage = $this->codebase->classlike_storage_provider->get($source);
-
-                if (!$source_class_storage->location) {
-                    continue;
-                }
-
-                $potential_file_path = $this->config->getPotentialComposerFilePathForClassLike($destination);
-
-                if ($potential_file_path && !file_exists($potential_file_path)) {
-                    $containing_dir = dirname($potential_file_path);
-
-                    if (!file_exists($containing_dir)) {
-                        mkdir($containing_dir, 0777, true);
+                        return $b->end > $a->end ? 1 : -1;
                     }
 
-                    rename($source_class_storage->location->file_path, $potential_file_path);
+                    return $b->start > $a->start ? 1 : -1;
+                },
+            );
+
+            $existing_contents = $this->codebase->file_provider->getContents($file_path);
+
+            foreach ($file_manipulations as $manipulation) {
+                $existing_contents = $manipulation->transform($existing_contents);
+            }
+
+            $this->codebase->file_provider->setContents($file_path, $existing_contents);
+        }
+
+        foreach ($this->codebase->classes_to_move as $source => $destination) {
+            $source_class_storage = $this->codebase->classlike_storage_provider->get($source);
+
+            if (!$source_class_storage->location) {
+                continue;
+            }
+
+            $potential_file_path = $this->config->getPotentialComposerFilePathForClassLike($destination);
+
+            if ($potential_file_path && !file_exists($potential_file_path)) {
+                $containing_dir = dirname($potential_file_path);
+
+                if (!file_exists($containing_dir)) {
+                    mkdir($containing_dir, 0777, true);
                 }
+
+                rename($source_class_storage->location->file_path, $potential_file_path);
             }
         }
     }

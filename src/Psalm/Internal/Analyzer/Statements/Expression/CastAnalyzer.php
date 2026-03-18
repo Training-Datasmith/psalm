@@ -67,7 +67,7 @@ final class CastAnalyzer
         'SimpleXMLElement',
         'DOMNode',
         'GMP',
-        'Decimal\Decimal',
+        \Decimal\Decimal::class,
     ];
 
     public static function analyze(
@@ -489,7 +489,7 @@ final class CastAnalyzer
         }
 
         if ($statements_analyzer->data_flow_graph) {
-            $int_type = $int_type->setParentNodes($parent_nodes);
+            return $int_type->setParentNodes($parent_nodes);
         }
 
         return $int_type;
@@ -686,7 +686,7 @@ final class CastAnalyzer
         }
 
         if ($statements_analyzer->data_flow_graph) {
-            $float_type = $float_type->setParentNodes($parent_nodes);
+            return $float_type->setParentNodes($parent_nodes);
         }
 
         return $float_type;
@@ -884,7 +884,7 @@ final class CastAnalyzer
         }
 
         if ($statements_analyzer->data_flow_graph) {
-            $str_type = $str_type->setParentNodes($parent_nodes);
+            return $str_type->setParentNodes($parent_nodes);
         }
 
         return $str_type;

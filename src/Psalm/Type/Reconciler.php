@@ -698,7 +698,6 @@ class Reconciler
                     $fq_class_name,
                     $const_name,
                     ReflectionProperty::IS_PRIVATE,
-                    null,
                 );
 
                 if ($class_constant) {
@@ -883,8 +882,6 @@ class Reconciler
                                     $method_return_type = $codebase->methods->getMethodReturnType(
                                         $method_id,
                                         $declaring_class,
-                                        null,
-                                        null,
                                     );
 
                                     if ($method_return_type) {
@@ -973,8 +970,6 @@ class Reconciler
         $class_property_type = $codebase->properties->getPropertyType(
             $property_id,
             false,
-            null,
-            null,
         );
 
         $declaring_class_storage = $codebase->classlike_storage_provider->get(

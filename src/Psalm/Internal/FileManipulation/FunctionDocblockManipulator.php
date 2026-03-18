@@ -96,15 +96,8 @@ final class FunctionDocblockManipulator
         string $file_path,
         FunctionLike $stmt,
     ): FunctionDocblockManipulator {
-        if (isset(self::$manipulators[$file_path][$stmt->getLine()])) {
-            return self::$manipulators[$file_path][$stmt->getLine()];
-        }
-
-        $manipulator
-            = self::$manipulators[$file_path][$stmt->getLine()]
-            = new self($file_path, $stmt, $project_analyzer);
-
-        return $manipulator;
+        return self::$manipulators[$file_path][$stmt->getLine()] ?? self::$manipulators[$file_path][$stmt->getLine()]
+        = new self($file_path, $stmt, $project_analyzer);
     }
 
     private function __construct(
@@ -174,19 +167,23 @@ final class FunctionDocblockManipulator
                     continue 2;
 
                 case ':':
-                    if ($in_multi_line_comment || $in_single_line_comment) {
+                    if ($in_multi_line_comment) {
                         continue 2;
                     }
-
+                    if ($in_single_line_comment) {
+                        continue 2;
+                    }
                     $this->return_typehint_colon_start = $i + $end_bracket_position + 1;
 
                     continue 2;
 
                 case '/':
-                    if ($in_multi_line_comment || $in_single_line_comment) {
+                    if ($in_multi_line_comment) {
                         continue 2;
                     }
-
+                    if ($in_single_line_comment) {
+                        continue 2;
+                    }
                     if ($chars[$i + 1] === '*') {
                         $in_multi_line_comment = true;
                         ++$i;
@@ -212,28 +209,30 @@ final class FunctionDocblockManipulator
                     continue 2;
 
                 case '{':
-                    if ($in_multi_line_comment || $in_single_line_comment) {
-                        continue 2;
-                    }
-
-                    break 2;
 
                 case '=':
-                    if ($in_multi_line_comment || $in_single_line_comment) {
+                    if ($in_multi_line_comment) {
+                        continue 2;
+                    }
+                    if ($in_single_line_comment) {
                         continue 2;
                     }
                     break 2;
 
                 case '?':
-                    if ($in_multi_line_comment || $in_single_line_comment) {
+                    if ($in_multi_line_comment) {
                         continue 2;
                     }
-
+                    if ($in_single_line_comment) {
+                        continue 2;
+                    }
                     $this->return_typehint_start = $i + $end_bracket_position + 1;
                     break;
             }
-
-            if ($in_multi_line_comment || $in_single_line_comment) {
+            if ($in_multi_line_comment) {
+                continue;
+            }
+            if ($in_single_line_comment) {
                 continue;
             }
 
@@ -412,7 +411,7 @@ final class FunctionDocblockManipulator
             $modified_docblock = true;
             $inferredThrowsClause = array_reduce(
                 $this->throwsExceptions,
-                static fn(string $throwsClause, string $exception) => $throwsClause === ''
+                static fn(string $throwsClause, string $exception): string => $throwsClause === ''
                     ? $exception
                     : $throwsClause.'|'.$exception,
                 '',
@@ -456,7 +455,7 @@ final class FunctionDocblockManipulator
         }
 
         if (!$modified_docblock) {
-            return (string)$docblock . "\n" . $this->indentation;
+            return $docblock . "\n" . $this->indentation;
         }
 
         return $parsed_docblock->render($this->indentation);

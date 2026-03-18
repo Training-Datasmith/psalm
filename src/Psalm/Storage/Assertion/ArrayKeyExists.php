@@ -15,7 +15,7 @@ final class ArrayKeyExists extends Assertion
 {
     use UnserializeMemoryUsageSuppressionTrait;
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\ArrayKeyDoesNotExist
     {
         return new ArrayKeyDoesNotExist();
     }

@@ -683,7 +683,7 @@ final class SimpleAssertionReconciler extends Reconciler
                         $existing_var_type->removeType('array');
                         $existing_var_type->addType($array_atomic_type->setProperties(
                             array_map(
-                                static fn(Union $union) => $union->setPossiblyUndefined(false),
+                                static fn(Union $union): \Psalm\Type\Union => $union->setPossiblyUndefined(false),
                                 $array_atomic_type->properties,
                             ),
                         ));
@@ -803,7 +803,7 @@ final class SimpleAssertionReconciler extends Reconciler
                         $existing_var_type->removeType('array');
                         $existing_var_type->addType($array_atomic_type->setProperties(
                             array_map(
-                                static fn(Union $union) => $union->setPossiblyUndefined(false),
+                                static fn(Union $union): \Psalm\Type\Union => $union->setPossiblyUndefined(false),
                                 $array_atomic_type->properties,
                             ),
                         ));
@@ -2829,42 +2829,40 @@ final class SimpleAssertionReconciler extends Reconciler
         if ($existing_var_type->hasInt()) {
             $existing_range_types = $existing_var_type->getRangeInts();
 
-            if ($existing_range_types) {
-                foreach ($existing_range_types as $int_key => $literal_type) {
-                    if ($literal_type->contains(0)) {
-                        unset($types[$int_key]);
-                        if ($literal_type->min_bound === null || $literal_type->min_bound <= -1) {
-                            $types []= new TIntRange($literal_type->min_bound, -1);
-                        }
-                        if ($literal_type->max_bound === null || $literal_type->max_bound >= 1) {
-                            $types []= new TIntRange(1, $literal_type->max_bound);
-                        }
+            foreach ($existing_range_types as $int_key => $literal_type) {
+                if ($literal_type->contains(0)) {
+                    unset($types[$int_key]);
+                    if ($literal_type->min_bound === null || $literal_type->min_bound <= -1) {
+                        $types []= new TIntRange($literal_type->min_bound, -1);
+                    }
+                    if ($literal_type->max_bound === null || $literal_type->max_bound >= 1) {
+                        $types []= new TIntRange(1, $literal_type->max_bound);
                     }
                 }
             }
         }
 
         foreach ($types as $type_key => $existing_var_atomic_type) {
-            if ($existing_var_atomic_type instanceof TTemplateParam) {
-                if (!$existing_var_atomic_type->as->isMixed()) {
-                    $template_did_fail = 0;
-
-                    $existing_var_atomic_type = $existing_var_atomic_type->replaceAs(self::reconcileTruthyOrNonEmpty(
-                        $assertion,
-                        $existing_var_atomic_type->as,
-                        $key,
-                        $negated,
-                        $code_location,
-                        $suppressed_issues,
-                        $template_did_fail,
-                        true,
-                    ));
-
-                    if (!$template_did_fail) {
-                        unset($types[$type_key]);
-                        $types []= $existing_var_atomic_type;
-                    }
-                }
+            if (!$existing_var_atomic_type instanceof TTemplateParam) {
+                continue;
+            }
+            if ($existing_var_atomic_type->as->isMixed()) {
+                continue;
+            }
+            $template_did_fail = 0;
+            $existing_var_atomic_type = $existing_var_atomic_type->replaceAs(self::reconcileTruthyOrNonEmpty(
+                $assertion,
+                $existing_var_atomic_type->as,
+                $key,
+                $negated,
+                $code_location,
+                $suppressed_issues,
+                $template_did_fail,
+                true,
+            ));
+            if (!$template_did_fail) {
+                unset($types[$type_key]);
+                $types []= $existing_var_atomic_type;
             }
         }
 

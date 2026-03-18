@@ -60,15 +60,8 @@ final class PropertyDocblockManipulator
         string $file_path,
         Property $stmt,
     ): self {
-        if (isset(self::$manipulators[$file_path][$stmt->getLine()])) {
-            return self::$manipulators[$file_path][$stmt->getLine()];
-        }
-
-        $manipulator
-            = self::$manipulators[$file_path][$stmt->getLine()]
-            = new self($project_analyzer, $stmt, $file_path);
-
-        return $manipulator;
+        return self::$manipulators[$file_path][$stmt->getLine()] ?? self::$manipulators[$file_path][$stmt->getLine()]
+        = new self($project_analyzer, $stmt, $file_path);
     }
 
     private function __construct(
@@ -198,7 +191,7 @@ final class PropertyDocblockManipulator
         }
 
         if (!$modified_docblock) {
-            return (string)$docblock . "\n" . $this->indentation;
+            return $docblock . "\n" . $this->indentation;
         }
 
         return $parsed_docblock->render($this->indentation);

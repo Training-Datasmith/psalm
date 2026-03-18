@@ -380,7 +380,6 @@ final class AtomicStaticCallAnalyzer
                 $fq_class_name,
                 $method_id->method_name,
                 $statements_analyzer,
-                null,
             ) ?? false;
         }
 

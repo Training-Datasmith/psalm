@@ -24,7 +24,7 @@ final class NestedAssertions extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\NotNestedAssertions
     {
         return new NotNestedAssertions($this->assertions);
     }

@@ -384,7 +384,6 @@ final class MethodCallReturnTypeFetcher
                         $cased_method_id,
                         $is_declaring ? ($method_storage->signature_return_type_location
                             ?: $method_storage->location) : null,
-                        null,
                     );
 
                     $method_call_node = new DataFlowNode(
@@ -498,7 +497,6 @@ final class MethodCallReturnTypeFetcher
                         ? ($method_storage->signature_return_type_location ?: $method_storage->location)
                         : ($method_storage->return_type_location ?: $method_storage->location))
                     : null,
-                null,
             );
 
             if (!$is_declaring) {
@@ -508,7 +506,6 @@ final class MethodCallReturnTypeFetcher
                     (string) $declaring_method_id,
                     $cased_declaring_method_id,
                     $method_storage->signature_return_type_location ?: $method_storage->location,
-                    null,
                 );
 
                 $statements_analyzer->data_flow_graph->addNode($declaring_method_call_node);

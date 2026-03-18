@@ -59,9 +59,7 @@ final class ParsedDocblock
             }
         }
 
-        $doc_comment_text .= $left_padding . ' */' . "\n" . $left_padding;
-
-        return $doc_comment_text;
+        return $doc_comment_text . ($left_padding . ' */' . "\n" . $left_padding);
     }
 
     private static function shouldAddNewLineBetweenAnnotations(): bool

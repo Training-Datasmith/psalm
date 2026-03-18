@@ -166,15 +166,15 @@ final class FilterUtils
 
         if ($options_arg_type->isArray()) {
             $return_null = false;
-            $defaults = array(
+            $defaults = [
                 'flags_int_used' => FILTER_FLAG_NONE,
                 'options' => null,
-            );
+            ];
 
             $atomic_type = $options_arg_type->getArray();
             if ($atomic_type instanceof TKeyedArray) {
-                $redundant_keys = array_diff(array_keys($atomic_type->properties), array('flags', 'options'));
-                if ($redundant_keys !== array()) {
+                $redundant_keys = array_diff(array_keys($atomic_type->properties), ['flags', 'options']);
+                if ($redundant_keys !== []) {
                     // reported as it's usually an oversight/misunderstanding of how the function works
                     // it's silently ignored by the function though
                     IssueBuffer::maybeAdd(
@@ -289,10 +289,10 @@ final class FilterUtils
         }
 
         if ($options_arg_type->isSingleIntLiteral()) {
-            return array(
+            return [
                 'flags_int_used' => $options_arg_type->getSingleIntLiteral()->value,
                 'options' => null,
-            );
+            ];
         }
 
         if ($options_arg_type->isInt()) {
@@ -373,11 +373,11 @@ final class FilterUtils
         }
 
         $fails_or_not_set_type = new Union([new TNull(), new TFalse()]);
-        return array(
+        return [
             $fails_type,
             $not_set_type,
             $fails_or_not_set_type,
-        );
+        ];
     }
 
     public static function hasFlag(int $flags, int $flag): bool
@@ -699,7 +699,7 @@ final class FilterUtils
                     }
 
                     // false positive error in psalm when we loop over a non-empty array
-                    if ($new === array()) {
+                    if ($new === []) {
                         throw new UnexpectedValueException('This is impossible');
                     }
 
@@ -782,7 +782,7 @@ final class FilterUtils
         }
 
         $can_fail = false;
-        $filter_types = array();
+        $filter_types = [];
         switch ($filter_int_used) {
             case FILTER_VALIDATE_FLOAT:
                 if (!self::isRangeValid(
@@ -914,8 +914,8 @@ final class FilterUtils
                     // only these specific classes, not any class that extends either
                     // to avoid matching already better handled cases from above, e.g. float is numeric and scalar
                     if ($atomic_type instanceof TMixed
-                        || get_class($atomic_type) === TNumeric::class
-                        || get_class($atomic_type) === TScalar::class) {
+                        || $atomic_type::class === TNumeric::class
+                        || $atomic_type::class === TScalar::class) {
                         $filter_types[] = new TFloat();
                     }
 
@@ -1108,8 +1108,8 @@ final class FilterUtils
                     }
 
                     if ($atomic_type instanceof TMixed
-                        || get_class($atomic_type) === TNumeric::class
-                        || get_class($atomic_type) === TScalar::class) {
+                        || $atomic_type::class === TNumeric::class
+                        || $atomic_type::class === TScalar::class) {
                         $filter_types[] = $int_type;
                     }
 
@@ -1410,11 +1410,11 @@ final class FilterUtils
 
         // if an array is required, ignore all types we created from non-array on first level
         if (!$in_array_recursion && self::hasFlag($flags_int_used, FILTER_REQUIRE_ARRAY)) {
-            $filter_types = array();
+            $filter_types = [];
         }
 
         $return_type = $fails_type;
-        if ($filter_types !== array()
+        if ($filter_types !== []
             && ($can_fail === true ||
                 (!$in_array_recursion && !$not_set_type && $input_type->possibly_undefined)
             )) {
@@ -1423,7 +1423,7 @@ final class FilterUtils
                 TypeCombiner::combine($filter_types, $codebase),
                 $codebase,
             );
-        } elseif ($filter_types !== array()) {
+        } elseif ($filter_types !== []) {
             $return_type = TypeCombiner::combine($filter_types, $codebase);
         }
 
@@ -1438,7 +1438,7 @@ final class FilterUtils
             )]);
         }
 
-        if ($from_array !== array()) {
+        if ($from_array !== []) {
             $from_array_union = TypeCombiner::combine($from_array, $codebase);
 
             $return_type = Type::combineUnionTypes(
@@ -1463,7 +1463,7 @@ final class FilterUtils
         }
 
         if (!$in_array_recursion) {
-            $return_type = self::addReturnTaint(
+            return self::addReturnTaint(
                 $statements_analyzer,
                 $code_location,
                 $return_type,
@@ -1517,86 +1517,86 @@ final class FilterUtils
     /** @return array<int, array{flags: list<int>, options: array<string, Union>}> */
     public static function getFilters(Codebase $codebase): array
     {
-        $general_filter_flags = array(
+        $general_filter_flags = [
             FILTER_REQUIRE_SCALAR,
             FILTER_REQUIRE_ARRAY,
             FILTER_FORCE_ARRAY,
             FILTER_FLAG_NONE, // does nothing, default
-        );
+        ];
 
         // https://www.php.net/manual/en/filter.filters.sanitize.php
-        $sanitize_filters = array(
-            FILTER_SANITIZE_EMAIL => array(
-                'flags' => array(),
-                'options' => array(),
-            ),
-            FILTER_SANITIZE_ENCODED => array(
-                'flags' => array(
+        $sanitize_filters = [
+            FILTER_SANITIZE_EMAIL => [
+                'flags' => [],
+                'options' => [],
+            ],
+            FILTER_SANITIZE_ENCODED => [
+                'flags' => [
                     FILTER_FLAG_STRIP_LOW,
                     FILTER_FLAG_STRIP_HIGH,
                     FILTER_FLAG_STRIP_BACKTICK,
                     FILTER_FLAG_ENCODE_LOW,
                     FILTER_FLAG_ENCODE_HIGH,
-                ),
-                'options' => array(),
-            ),
-            FILTER_SANITIZE_NUMBER_FLOAT => array(
-                'flags' => array(
+                ],
+                'options' => [],
+            ],
+            FILTER_SANITIZE_NUMBER_FLOAT => [
+                'flags' => [
                     FILTER_FLAG_ALLOW_FRACTION,
                     FILTER_FLAG_ALLOW_THOUSAND,
                     FILTER_FLAG_ALLOW_SCIENTIFIC,
-                ),
-                'options' => array(),
-            ),
-            FILTER_SANITIZE_NUMBER_INT => array(
-                'flags' => array(),
-                'options' => array(),
-            ),
-            FILTER_SANITIZE_SPECIAL_CHARS => array(
-                'flags' => array(
+                ],
+                'options' => [],
+            ],
+            FILTER_SANITIZE_NUMBER_INT => [
+                'flags' => [],
+                'options' => [],
+            ],
+            FILTER_SANITIZE_SPECIAL_CHARS => [
+                'flags' => [
                     FILTER_FLAG_STRIP_LOW,
                     FILTER_FLAG_STRIP_HIGH,
                     FILTER_FLAG_STRIP_BACKTICK,
                     FILTER_FLAG_ENCODE_HIGH,
-                ),
-                'options' => array(),
-            ),
-            FILTER_SANITIZE_FULL_SPECIAL_CHARS => array(
-                'flags' => array(
+                ],
+                'options' => [],
+            ],
+            FILTER_SANITIZE_FULL_SPECIAL_CHARS => [
+                'flags' => [
                     FILTER_FLAG_NO_ENCODE_QUOTES,
-                ),
-                'options' => array(),
-            ),
-            FILTER_SANITIZE_URL => array(
-                'flags' => array(),
-                'options' => array(),
-            ),
-            FILTER_UNSAFE_RAW => array(
-                'flags' => array(
+                ],
+                'options' => [],
+            ],
+            FILTER_SANITIZE_URL => [
+                'flags' => [],
+                'options' => [],
+            ],
+            FILTER_UNSAFE_RAW => [
+                'flags' => [
                     FILTER_FLAG_STRIP_LOW,
                     FILTER_FLAG_STRIP_HIGH,
                     FILTER_FLAG_STRIP_BACKTICK,
                     FILTER_FLAG_ENCODE_LOW,
                     FILTER_FLAG_ENCODE_HIGH,
                     FILTER_FLAG_ENCODE_AMP,
-                ),
-                'options' => array(),
-            ),
+                ],
+                'options' => [],
+            ],
 
-        );
+        ];
 
         if ($codebase->analysis_php_version_id <= 7_03_00) {
             // FILTER_SANITIZE_MAGIC_QUOTES
-            $sanitize_filters[521] = array(
-                'flags' => array(),
-                'options' => array(),
-            );
+            $sanitize_filters[521] = [
+                'flags' => [],
+                'options' => [],
+            ];
         }
 
         if ($codebase->analysis_php_version_id <= 8_01_00) {
             // FILTER_SANITIZE_STRING
-            $sanitize_filters[513] = array(
-                'flags' => array(
+            $sanitize_filters[513] = [
+                'flags' => [
                     FILTER_FLAG_NO_ENCODE_QUOTES,
                     FILTER_FLAG_STRIP_LOW,
                     FILTER_FLAG_STRIP_HIGH,
@@ -1604,17 +1604,17 @@ final class FilterUtils
                     FILTER_FLAG_ENCODE_LOW,
                     FILTER_FLAG_ENCODE_HIGH,
                     FILTER_FLAG_ENCODE_AMP,
-                ),
-                'options' => array(),
-            );
+                ],
+                'options' => [],
+            ];
         }
 
         if ($codebase->analysis_php_version_id >= 7_03_00) {
             // was added as a replacement for FILTER_SANITIZE_MAGIC_QUOTES
-            $sanitize_filters[FILTER_SANITIZE_ADD_SLASHES] = array(
-                'flags' => array(),
-                'options' => array(),
-            );
+            $sanitize_filters[FILTER_SANITIZE_ADD_SLASHES] = [
+                'flags' => [],
+                'options' => [],
+            ];
         }
 
         foreach ($sanitize_filters as $filter_int => $filter_data) {
@@ -1624,69 +1624,69 @@ final class FilterUtils
         // https://www.php.net/manual/en/filter.filters.validate.php
         // validation filters all match bitmask 0x100
         // all support FILTER_NULL_ON_FAILURE flag https://www.php.net/manual/en/filter.filters.flags.php
-        $general_filter_flags_validate = array_merge($general_filter_flags, array(FILTER_NULL_ON_FAILURE));
+        $general_filter_flags_validate = array_merge($general_filter_flags, [FILTER_NULL_ON_FAILURE]);
 
-        $validate_filters = array(
-            FILTER_VALIDATE_BOOLEAN => array(
-                'flags' => array(),
-                'options' => array(),
-            ),
-            FILTER_VALIDATE_EMAIL => array(
-                'flags' => array(
+        $validate_filters = [
+            FILTER_VALIDATE_BOOLEAN => [
+                'flags' => [],
+                'options' => [],
+            ],
+            FILTER_VALIDATE_EMAIL => [
+                'flags' => [
                     FILTER_FLAG_EMAIL_UNICODE,
-                ),
-                'options' => array(),
-            ),
-            FILTER_VALIDATE_FLOAT => array(
-                'flags' => array(
+                ],
+                'options' => [],
+            ],
+            FILTER_VALIDATE_FLOAT => [
+                'flags' => [
                     FILTER_FLAG_ALLOW_THOUSAND,
-                ),
-                'options' => array(
+                ],
+                'options' => [
                     'decimal' => new Union([
                         Type::getAtomicStringFromLiteral('.'),
                         Type::getAtomicStringFromLiteral(','),
                     ]),
-                ),
-            ),
-            FILTER_VALIDATE_INT => array(
-                'flags' => array(
+                ],
+            ],
+            FILTER_VALIDATE_INT => [
+                'flags' => [
                     FILTER_FLAG_ALLOW_OCTAL,
                     FILTER_FLAG_ALLOW_HEX,
-                ),
-                'options' => array(
+                ],
+                'options' => [
                     'min_range' => Type::getNumeric(),
                     'max_range' => Type::getNumeric(),
-                ),
-            ),
-            FILTER_VALIDATE_IP => array(
-                'flags' => array(
+                ],
+            ],
+            FILTER_VALIDATE_IP => [
+                'flags' => [
                     FILTER_FLAG_IPV4,
                     FILTER_FLAG_IPV6,
                     FILTER_FLAG_NO_PRIV_RANGE,
                     FILTER_FLAG_NO_RES_RANGE,
 
-                ),
-                'options' => array(),
-            ),
-            FILTER_VALIDATE_MAC => array(
-                'flags' => array(),
-                'options' => array(),
-            ),
-            FILTER_VALIDATE_REGEXP => array(
-                'flags' => array(),
-                'options' => array(
+                ],
+                'options' => [],
+            ],
+            FILTER_VALIDATE_MAC => [
+                'flags' => [],
+                'options' => [],
+            ],
+            FILTER_VALIDATE_REGEXP => [
+                'flags' => [],
+                'options' => [
                     'regexp' => Type::getNonFalsyString(),
-                ),
-            ),
-            FILTER_VALIDATE_URL => array(
-                'flags' => array(
+                ],
+            ],
+            FILTER_VALIDATE_URL => [
+                'flags' => [
                     FILTER_FLAG_PATH_REQUIRED,
                     FILTER_FLAG_QUERY_REQUIRED,
-                ),
-                'options' => array(),
-            ),
+                ],
+                'options' => [],
+            ],
 
-        );
+        ];
 
         if ($codebase->analysis_php_version_id >= 7_04_00) {
             $validate_filters[FILTER_VALIDATE_FLOAT]['options']['min_range'] = Type::getNumeric();
@@ -1706,12 +1706,12 @@ final class FilterUtils
         }
 
         if ($codebase->analysis_php_version_id >= 7_00_00) {
-            $validate_filters[FILTER_VALIDATE_DOMAIN] = array(
-                'flags' => array(
+            $validate_filters[FILTER_VALIDATE_DOMAIN] = [
+                'flags' => [
                     FILTER_FLAG_HOSTNAME,
-                ),
-                'options' => array(),
-            );
+                ],
+                'options' => [],
+            ];
         }
 
         foreach ($validate_filters as $filter_int => $filter_data) {
@@ -1720,24 +1720,24 @@ final class FilterUtils
                 $general_filter_flags_validate,
             );
 
-            $default_options = array(
+            $default_options = [
                 'default' => Type::getMixed(),
-            );
+            ];
             $validate_filters[$filter_int]['options'] = array_merge($filter_data['options'], $default_options);
         }
 
         // https://www.php.net/manual/en/filter.filters.misc.php
-        $other_filters = array(
-            FILTER_CALLBACK => array(
+        $other_filters = [
+            FILTER_CALLBACK => [
                 // the docs say that all flags are ignored
                 // however this seems to be incorrect https://github.com/php/doc-en/issues/2708
                 // however they can only be used in the options array, not as a param directly
                 'flags' => $general_filter_flags_validate,
                 // the options array is required for this filter
                 // and must be a valid callback instead of an array like in other cases
-                'options' => array(),
-            ),
-        );
+                'options' => [],
+            ],
+        ];
 
         return $sanitize_filters + $validate_filters + $other_filters;
     }

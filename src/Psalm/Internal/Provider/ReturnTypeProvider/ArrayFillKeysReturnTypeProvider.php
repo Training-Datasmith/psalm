@@ -51,10 +51,12 @@ final class ArrayFillKeysReturnTypeProvider implements FunctionReturnTypeProvide
             $array = $first_arg_type->getArray();
             if ($array instanceof TArray && $array->isEmptyArray()) {
                 return $first_arg_type;
-            } elseif ($array instanceof TKeyedArray && !$array->fallback_params) {
+            }
+            if ($array instanceof TKeyedArray && !$array->fallback_params) {
                 $is_list = $array->is_list;
                 $array = $array->properties;
-            } else {
+            }
+            else {
                 return null;
             }
             $result = [];

@@ -270,16 +270,17 @@ final class SimpleTypeInferer
                 $existing_class_constants,
                 $fq_classlike_name,
             );
-
             if ($stmt_expr_type === null) {
                 return null;
-            } elseif ($stmt_expr_type->isAlwaysFalsy()) {
-                return Type::getTrue();
-            } elseif ($stmt_expr_type->isAlwaysTruthy()) {
-                return Type::getFalse();
-            } else {
-                return Type::getBool();
             }
+            if ($stmt_expr_type->isAlwaysFalsy()) {
+                return Type::getTrue();
+            }
+
+            if ($stmt_expr_type->isAlwaysTruthy()) {
+                return Type::getFalse();
+            }
+            return Type::getBool();
         }
 
         if ($stmt instanceof PhpParser\Node\Expr\ConstFetch) {

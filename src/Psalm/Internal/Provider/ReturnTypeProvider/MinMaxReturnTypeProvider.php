@@ -66,14 +66,13 @@ final class MinMaxReturnTypeProvider implements FunctionReturnTypeProviderInterf
                 if ($arg->unpack) {
                     if (!$arg_type->isSingle() || !$arg_type->isArray()) {
                         return Type::getMixed();
+                    }
+                    $array_arg_type = $arg_type->getArray();
+                    if ($array_arg_type instanceof TKeyedArray) {
+                        $possibly_unpacked_arg_types = $array_arg_type->properties;
                     } else {
-                        $array_arg_type = $arg_type->getArray();
-                        if ($array_arg_type instanceof TKeyedArray) {
-                            $possibly_unpacked_arg_types = $array_arg_type->properties;
-                        } else {
-                            assert($array_arg_type instanceof TArray);
-                            $possibly_unpacked_arg_types = [$array_arg_type->type_params[1]];
-                        }
+                        assert($array_arg_type instanceof TArray);
+                        $possibly_unpacked_arg_types = [$array_arg_type->type_params[1]];
                     }
                 } else {
                     $possibly_unpacked_arg_types = [$arg_type];
@@ -108,14 +107,14 @@ final class MinMaxReturnTypeProvider implements FunctionReturnTypeProviderInterf
             if ($event->getFunctionId() === 'min') {
                 assert(count($min_bounds) !== 0);
                 //null values in $max_bounds doesn't make sense for min() so we remove them
-                $max_bounds = array_filter($max_bounds, static fn($v): bool => $v !== null) ?: [null];
+                $max_bounds = array_filter($max_bounds, static fn(?int $v): bool => $v !== null) ?: [null];
 
                 $min_potential_int = in_array(null, $min_bounds, true) ? null : min($min_bounds);
                 $max_potential_int = in_array(null, $max_bounds, true) ? null : min($max_bounds);
             } else {
                 assert(count($max_bounds) !== 0);
                 //null values in $min_bounds doesn't make sense for max() so we remove them
-                $min_bounds = array_filter($min_bounds, static fn($v): bool => $v !== null) ?: [null];
+                $min_bounds = array_filter($min_bounds, static fn(?int $v): bool => $v !== null) ?: [null];
 
                 $min_potential_int = in_array(null, $min_bounds, true) ? null : max($min_bounds);
                 $max_potential_int = in_array(null, $max_bounds, true) ? null : max($max_bounds);

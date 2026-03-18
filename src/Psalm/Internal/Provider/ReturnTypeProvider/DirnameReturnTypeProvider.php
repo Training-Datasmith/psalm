@@ -58,9 +58,10 @@ final class DirnameReturnTypeProvider implements FunctionReturnTypeProviderInter
                     // 0 will be non-falsy too (.)
                     continue;
                 }
-
-                if ($atomic instanceof Type\Atomic\TNonEmptyString
-                    || $atomic instanceof Type\Atomic\TEmptyNumeric) {
+                if ($atomic instanceof Type\Atomic\TNonEmptyString) {
+                    continue;
+                }
+                if ($atomic instanceof Type\Atomic\TEmptyNumeric) {
                     continue;
                 }
 

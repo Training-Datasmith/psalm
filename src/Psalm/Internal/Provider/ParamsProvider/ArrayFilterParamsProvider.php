@@ -75,11 +75,10 @@ final class ArrayFilterParamsProvider implements FunctionParamsProviderInterface
                         $statements_source->getSuppressedIssues(),
                     );
                 }
-
                 return null;
-            } elseif ($call_args[1]->value instanceof ConstFetch
-                && strtolower($call_args[1]->value->name->toString()) === 'null'
-            ) {
+            }
+            if ($call_args[1]->value instanceof ConstFetch
+                && strtolower($call_args[1]->value->name->toString()) === 'null') {
                 if ($code_location) {
                     // using e.g. ARRAY_FILTER_USE_KEY as 3rd arg won't have any effect if the 2nd arg is null
                     // as it will still filter on the values
@@ -92,7 +91,6 @@ final class ArrayFilterParamsProvider implements FunctionParamsProviderInterface
                         $statements_source->getSuppressedIssues(),
                     );
                 }
-
                 return null;
             }
         }

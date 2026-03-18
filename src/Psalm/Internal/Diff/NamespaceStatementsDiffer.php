@@ -114,7 +114,7 @@ final class NamespaceStatementsDiffer extends AstDiffer
                 ) {
                     foreach ($diff_elem->old->uses as $use) {
                         if ($use->alias) {
-                            $add_or_delete[] = 'use:' . (string) $use->alias;
+                            $add_or_delete[] = 'use:' . $use->alias;
                         } else {
                             $name_parts = $use->name->getParts();
                             assert(!empty($name_parts));
@@ -129,7 +129,7 @@ final class NamespaceStatementsDiffer extends AstDiffer
                 ) {
                     foreach ($diff_elem->new->uses as $use) {
                         if ($use->alias) {
-                            $add_or_delete[] = 'use:' . (string) $use->alias;
+                            $add_or_delete[] = 'use:' . $use->alias;
                         } else {
                             $name_parts = $use->name->getParts();
                             assert(!empty($name_parts));

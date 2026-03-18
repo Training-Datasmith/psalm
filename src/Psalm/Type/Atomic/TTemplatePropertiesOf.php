@@ -68,9 +68,6 @@ final class TTemplatePropertiesOf extends Atomic
         return false;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function replaceTemplateTypesWithArgTypes(
         TemplateResult $template_result,

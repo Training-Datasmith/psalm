@@ -29,8 +29,7 @@ final class InternalClass extends ClassIssue
 
         $last_word = array_pop($words);
         $phrase = implode(", ", $words);
-        $phrase = "$phrase, and $last_word";
 
-        return $phrase;
+        return "$phrase, and $last_word";
     }
 }

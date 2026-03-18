@@ -26,7 +26,7 @@ final class IsNotType extends Assertion
     }
 
     #[Override]
-    public function getNegation(): Assertion
+    public function getNegation(): \Psalm\Storage\Assertion\IsType
     {
         return new IsType($this->type);
     }
@@ -37,14 +37,11 @@ final class IsNotType extends Assertion
     }
 
     #[Override]
-    public function getAtomicType(): ?Atomic
+    public function getAtomicType(): \Psalm\Type\Atomic
     {
         return $this->type;
     }
 
-    /**
-     * @return static
-     */
     #[Override]
     public function setAtomicType(Atomic $type): self
     {

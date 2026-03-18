@@ -36,7 +36,7 @@ final class TEnumCase extends TNamedObject
         array $aliased_classes,
         ?string $this_class,
         int $analysis_php_version_id,
-    ): ?string {
+    ): string {
         return $this->value;
     }
 

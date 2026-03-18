@@ -115,7 +115,7 @@ final class TypeHintResolver
             }
 
             if ($type === null) {
-                $type = Type::getNever();
+                return Type::getNever();
             }
 
             return $type;
@@ -171,7 +171,7 @@ final class TypeHintResolver
         }
 
         if ($is_nullable) {
-            $type = $type->getBuilder()->addType(new TNull)->freeze();
+            return $type->getBuilder()->addType(new TNull)->freeze();
         }
 
         return $type;

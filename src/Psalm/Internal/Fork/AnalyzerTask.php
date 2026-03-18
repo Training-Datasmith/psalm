@@ -18,7 +18,7 @@ use Psalm\Internal\Codebase\Analyzer;
 final class AnalyzerTask implements Task
 {
     /** @psalm-suppress PossiblyUnusedMethod */
-    public function __construct(private string $file)
+    public function __construct(private readonly string $file)
     {
     }
     #[Override]

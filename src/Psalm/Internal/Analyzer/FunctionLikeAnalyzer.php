@@ -438,8 +438,8 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
                 $overridden_storage = $codebase->methods->getStorage($overridden_method_id);
                 if ($overridden_storage->allow_named_arg_calls) {
                     IssueBuffer::maybeAdd(new MethodSignatureMismatch(
-                        'Method ' . (string) $method_id . ' should accept named arguments '
-                            . ' as ' . (string) $overridden_method_id . ' does',
+                        'Method ' . $method_id . ' should accept named arguments '
+                            . ' as ' . $overridden_method_id . ' does',
                         $storage->location,
                     ));
                 }
@@ -1092,7 +1092,6 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
                             $cased_method_id,
                             $offset,
                             $function_param->location,
-                            null,
                         );
 
                         $statements_analyzer->data_flow_graph->addPath($type_source, $param_assignment, 'param');

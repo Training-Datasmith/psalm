@@ -56,7 +56,7 @@ final class Cache
     /** @var array<string, list{string, T}> */
     private array $cache = [];
     /** @var resource */
-    private mixed $lock;
+    private readonly mixed $lock;
 
     private readonly bool $arrayCache;
 
@@ -108,7 +108,6 @@ final class Cache
         $this->lock = $lock;
 
         if (file_exists($this->dir.'consolidated') && $this->arrayCache) {
-            /** @var array<string, list{string, T}> */
             $this->cache = $this->serializer->unserialize(Providers::safeFileGetContents($this->dir.'consolidated'));
         }
     }

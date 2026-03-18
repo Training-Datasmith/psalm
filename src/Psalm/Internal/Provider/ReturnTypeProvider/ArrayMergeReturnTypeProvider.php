@@ -107,14 +107,14 @@ final class ArrayMergeReturnTypeProvider implements FunctionReturnTypeProviderIn
                 }
 
                 foreach ($unpacked_type_parts as $unpacked_type_part) {
-                    if (($unpacked_type_part instanceof TFalse
-                            && $call_arg_type->ignore_falsable_issues)
-                        || ($unpacked_type_part instanceof TNull
-                            && $call_arg_type->ignore_nullable_issues)
-                    ) {
+                    if ($unpacked_type_part instanceof TFalse
+                            && $call_arg_type->ignore_falsable_issues) {
                         continue;
                     }
-
+                    if ($unpacked_type_part instanceof TNull
+                        && $call_arg_type->ignore_nullable_issues) {
+                        continue;
+                    }
                     if ($unpacked_type_part instanceof TKeyedArray) {
                         $all_empty = false;
 

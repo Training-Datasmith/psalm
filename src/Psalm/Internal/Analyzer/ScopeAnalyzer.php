@@ -153,23 +153,21 @@ final class ScopeAnalyzer
 
                 $all_elseif_actions = [];
 
-                if ($stmt->elseifs) {
-                    foreach ($stmt->elseifs as $elseif) {
-                        $elseif_control_actions = self::getControlActions(
-                            $elseif->stmts,
-                            $nodes,
-                            $break_types,
-                            $return_is_exit,
+                foreach ($stmt->elseifs as $elseif) {
+                    $elseif_control_actions = self::getControlActions(
+                        $elseif->stmts,
+                        $nodes,
+                        $break_types,
+                        $return_is_exit,
+                    );
+
+                    $all_leave = $all_leave
+                        && !array_any(
+                            $elseif_control_actions,
+                            static fn(string $action): bool => $action === self::ACTION_NONE,
                         );
 
-                        $all_leave = $all_leave
-                            && !array_any(
-                                $elseif_control_actions,
-                                static fn(string $action): bool => $action === self::ACTION_NONE,
-                            );
-
-                        $all_elseif_actions = [...$elseif_control_actions, ...$all_elseif_actions];
-                    }
+                    $all_elseif_actions = [...$elseif_control_actions, ...$all_elseif_actions];
                 }
 
                 if ($all_leave) {
@@ -292,12 +290,10 @@ final class ScopeAnalyzer
                     && !in_array(self::ACTION_LEAVE_LOOP, $control_actions, true)
                 ) {
                     $is_infinite_loop = true;
-                    if ($stmt->cond) {
-                        foreach ($stmt->cond as $cond) {
-                            $stmt_expr_type = $nodes->getType($cond);
-                            if (!$stmt_expr_type || !$stmt_expr_type->isAlwaysTruthy()) {
-                                $is_infinite_loop = false;
-                            }
+                    foreach ($stmt->cond as $cond) {
+                        $stmt_expr_type = $nodes->getType($cond);
+                        if (!$stmt_expr_type || !$stmt_expr_type->isAlwaysTruthy()) {
+                            $is_infinite_loop = false;
                         }
                     }
 

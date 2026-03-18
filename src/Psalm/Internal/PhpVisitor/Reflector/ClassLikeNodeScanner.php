@@ -562,43 +562,41 @@ final class ClassLikeNodeScanner
             }
 
 
-            if ($docblock_info->properties) {
-                foreach ($docblock_info->properties as $property) {
-                    $pseudo_property_type_tokens = TypeTokenizer::getFullyQualifiedTokens(
-                        $property['type'],
-                        $this->aliases,
+            foreach ($docblock_info->properties as $property) {
+                $pseudo_property_type_tokens = TypeTokenizer::getFullyQualifiedTokens(
+                    $property['type'],
+                    $this->aliases,
+                    $this->class_template_types,
+                    $this->type_aliases,
+                );
+
+                try {
+                    $pseudo_property_type = TypeParser::parseTokens(
+                        $pseudo_property_type_tokens,
+                        null,
                         $this->class_template_types,
                         $this->type_aliases,
+                        true,
+                    );
+                    /** @psalm-suppress UnusedMethodCall */
+                    $pseudo_property_type->queueClassLikesForScanning(
+                        $this->codebase,
+                        $this->file_storage,
+                        $storage->template_types ?: [],
                     );
 
-                    try {
-                        $pseudo_property_type = TypeParser::parseTokens(
-                            $pseudo_property_type_tokens,
-                            null,
-                            $this->class_template_types,
-                            $this->type_aliases,
-                            true,
-                        );
-                        /** @psalm-suppress UnusedMethodCall */
-                        $pseudo_property_type->queueClassLikesForScanning(
-                            $this->codebase,
-                            $this->file_storage,
-                            $storage->template_types ?: [],
-                        );
-
-                        if ($property['tag'] !== 'property-read' && $property['tag'] !== 'psalm-property-read') {
-                            $storage->pseudo_property_set_types[$property['name']] = $pseudo_property_type;
-                        }
-
-                        if ($property['tag'] !== 'property-write' && $property['tag'] !== 'psalm-property-write') {
-                            $storage->pseudo_property_get_types[$property['name']] = $pseudo_property_type;
-                        }
-                    } catch (TypeParseTreeException $e) {
-                        $storage->docblock_issues[] = new InvalidDocblock(
-                            $e->getMessage() . ' in docblock for ' . $fq_classlike_name,
-                            $name_location ?? $class_location,
-                        );
+                    if ($property['tag'] !== 'property-read' && $property['tag'] !== 'psalm-property-read') {
+                        $storage->pseudo_property_set_types[$property['name']] = $pseudo_property_type;
                     }
+
+                    if ($property['tag'] !== 'property-write' && $property['tag'] !== 'psalm-property-write') {
+                        $storage->pseudo_property_get_types[$property['name']] = $pseudo_property_type;
+                    }
+                } catch (TypeParseTreeException $e) {
+                    $storage->docblock_issues[] = new InvalidDocblock(
+                        $e->getMessage() . ' in docblock for ' . $fq_classlike_name,
+                        $name_location ?? $class_location,
+                    );
                 }
             }
 
@@ -1667,7 +1665,7 @@ final class ClassLikeNodeScanner
             $property_storage->location = new CodeLocation($this->file_scanner, $property->name);
             $property_storage->stmt_location = new CodeLocation($this->file_scanner, $stmt);
             $property_storage->has_default = (bool)$property->default;
-            $property_storage->deprecated = $var_comment ? $var_comment->deprecated : false;
+            $property_storage->deprecated = $var_comment && $var_comment->deprecated;
             $property_storage->suppressed_issues = $var_comment ? $var_comment->suppressed_issues : [];
             $property_storage->internal = $var_comment ? $var_comment->psalm_internal : [];
             if (count($property_storage->internal) === 0 && $var_comment && $var_comment->internal) {
@@ -1676,7 +1674,7 @@ final class ClassLikeNodeScanner
             $property_storage->readonly = $storage->readonly
                 || $stmt->isReadonly()
                 || ($var_comment && $var_comment->readonly);
-            $property_storage->allow_private_mutation = $var_comment ? $var_comment->allow_private_mutation : false;
+            $property_storage->allow_private_mutation = $var_comment && $var_comment->allow_private_mutation;
             $property_storage->description = $var_comment ? $var_comment->description : null;
 
             if (!$signature_type && $storage->readonly) {

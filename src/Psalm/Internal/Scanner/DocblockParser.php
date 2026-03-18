@@ -288,7 +288,7 @@ final class DocblockParser
     public static function handlePsalmInternal(ParsedDocblock $parsed_docblock): array
     {
         if (isset($parsed_docblock->tags['psalm-internal'])) {
-            $psalm_internal = array_map("trim", $parsed_docblock->tags['psalm-internal']);
+            $psalm_internal = array_map(trim(...), $parsed_docblock->tags['psalm-internal']);
 
             if (count($psalm_internal) !== count(array_filter($psalm_internal))) {
                 throw new DocblockParseException('psalm-internal annotation used without specifying namespace');

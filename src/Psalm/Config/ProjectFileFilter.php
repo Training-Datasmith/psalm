@@ -38,23 +38,29 @@ final class ProjectFileFilter extends FileFilter
     #[Override]
     public function allows(string $file_name, bool $case_sensitive = false): bool
     {
-        if ($this->inclusive && $this->file_filter) {
-            if (!$this->file_filter->allows($file_name, $case_sensitive)) {
-                return false;
-            }
+        if (!$this->inclusive) {
+            return parent::allows($file_name, $case_sensitive);
         }
-
+        if (!$this->file_filter) {
+            return parent::allows($file_name, $case_sensitive);
+        }
+        if (!$this->file_filter->allows($file_name, $case_sensitive)) {
+            return false;
+        }
         return parent::allows($file_name, $case_sensitive);
     }
 
     public function forbids(string $file_name, bool $case_sensitive = false): bool
     {
-        if ($this->inclusive && $this->file_filter) {
-            if (!$this->file_filter->allows($file_name, $case_sensitive)) {
-                return true;
-            }
+        if (!$this->inclusive) {
+            return false;
         }
-
+        if (!$this->file_filter) {
+            return false;
+        }
+        if (!$this->file_filter->allows($file_name, $case_sensitive)) {
+            return true;
+        }
         return false;
     }
 
