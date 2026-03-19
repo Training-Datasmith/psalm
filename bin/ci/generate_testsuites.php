@@ -16,7 +16,7 @@ $files = iterator_to_array(
         new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
                 $root . 'tests',
-                FilesystemIterator::CURRENT_AS_PATHNAME|FilesystemIterator::SKIP_DOTS,
+                FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS,
             ),
             RecursiveIteratorIterator::LEAVES_ONLY,
         ),
@@ -25,9 +25,9 @@ $files = iterator_to_array(
 );
 
 mt_srand(4); // chosen by fair dice roll.
-             // guaranteed to be random.
-             // -- xkcd:221
-$order = array_map(fn(): int => mt_rand(), $files,);
+// guaranteed to be random.
+// -- xkcd:221
+$order = array_map(fn (): int => mt_rand(), $files, );
 array_multisort($order, $files);
 
 $chunks = array_chunk($files, (int) ceil(count($files) / $number_of_chunks));
@@ -45,7 +45,7 @@ foreach ($chunks as $chunk_id => $chunk) {
     $suite = $phpunit_config->createElement('testsuite');
     $suite->setAttribute('name', 'chunk_' . ($chunk_id + 1));
     foreach ($chunk as $file) {
-         $suite->appendChild($phpunit_config->createElement('file', $file));
+        $suite->appendChild($phpunit_config->createElement('file', $file));
     }
     $suites_container->appendChild($suite);
 }

@@ -27,14 +27,14 @@ foreach ([__DIR__ . '/../../../../autoload.php', __DIR__ . '/../../vendor/autolo
 }
 require __DIR__ . '/gen_callmap_utils.php';
 
-$parser = (new ParserFactory)->createForNewestSupportedVersion();
+$parser = (new ParserFactory())->createForNewestSupportedVersion();
 $traverser = new NodeTraverser();
-$traverser->addVisitor(new NameResolver);
+$traverser->addVisitor(new NameResolver());
 
 $stubbedClasses = [];
 foreach (new RecursiveDirectoryIterator(
     __DIR__ . '/../../stubs',
-    FilesystemIterator::CURRENT_AS_PATHNAME|FilesystemIterator::SKIP_DOTS,
+    FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS,
 ) as $file) {
     if (is_dir($file)) {
         continue;
@@ -59,7 +59,7 @@ $files = new RegexIterator(
     new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator(
             $docDir,
-            FilesystemIterator::CURRENT_AS_PATHNAME|FilesystemIterator::SKIP_DOTS,
+            FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS,
         ),
         RecursiveIteratorIterator::LEAVES_ONLY,
     ),
@@ -67,7 +67,6 @@ $files = new RegexIterator(
 );
 
 $classes = require_once dirname(__DIR__, 2) . '/dictionaries/ManualPropertyMap.php';
-
 
 libxml_use_internal_errors(true);
 foreach ($files as $file) {
@@ -87,7 +86,7 @@ foreach ($files as $file) {
             $file,
             get_class($exception),
             $exception->getMessage(),
-            implode("\n", array_map(fn(LibXMLError $error): string => $error->message, libxml_get_errors())),
+            implode("\n", array_map(fn (LibXMLError $error): string => $error->message, libxml_get_errors())),
         );
         libxml_clear_errors();
         continue;
@@ -131,8 +130,8 @@ foreach ($files as $file) {
                 case '':
                     // Some properties are not properly defined - we ignore them then.
                     continue 2;
-                // case 'integer':
-                //     $type = 'int';
+                    // case 'integer':
+                    //     $type = 'int';
                 default:
             }
             $modifier = (string) $item->modifier;

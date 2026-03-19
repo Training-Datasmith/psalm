@@ -35,11 +35,11 @@ foreach (EXCLUDE as $f) {
 }
 
 $classes = array_fill_keys(
-    ClassFinder::getClassesInNamespace('PhpParser', ClassFinder::ALLOW_ALL|ClassFinder::RECURSIVE_MODE),
+    ClassFinder::getClassesInNamespace('PhpParser', ClassFinder::ALLOW_ALL | ClassFinder::RECURSIVE_MODE),
     true,
 );
 $classes += array_fill_keys(
-    ClassFinder::getClassesInNamespace('Amp', ClassFinder::ALLOW_ALL|ClassFinder::RECURSIVE_MODE),
+    ClassFinder::getClassesInNamespace('Amp', ClassFinder::ALLOW_ALL | ClassFinder::RECURSIVE_MODE),
     true,
 );
 
@@ -50,7 +50,7 @@ foreach ($excludes as $f => $content) {
 foreach (new RecursiveIteratorIterator(
     new RecursiveDirectoryIterator(
         'src',
-        FilesystemIterator::CURRENT_AS_PATHNAME|FilesystemIterator::SKIP_DOTS,
+        FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS,
     ),
     RecursiveIteratorIterator::LEAVES_ONLY,
 ) as $f
@@ -95,9 +95,9 @@ foreach ($classes as $f) {
     $ff .= '        \\'.$f."::class,\n";
 }
 
-$ff .= "
+$ff .= '
     ];
 }
-";
+';
 
 file_put_contents('src/Psalm/Internal/PreloaderList.php', $ff);

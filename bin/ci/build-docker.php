@@ -1,5 +1,6 @@
-<?php // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols, Generic.Files.LineLength.TooLong
+<?php
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols, Generic.Files.LineLength.TooLong
 
 declare(strict_types=1);
 
@@ -33,7 +34,7 @@ $dev = $is_tag ? '' : '~dev';
 if ($is_tag) {
     $cur = 0;
     while (true) {
-        $json = json_decode(file_get_contents("https://repo.packagist.org/p2/vimeo/psalm$dev.json?v=$cur"), true)["packages"]["vimeo/psalm"];
+        $json = json_decode(file_get_contents("https://repo.packagist.org/p2/vimeo/psalm$dev.json?v=$cur"), true)['packages']['vimeo/psalm'];
         foreach ($json as $v) {
             if ($v['version'] === $composer_branch) {
                 if ($v['source']['reference'] === $commit) {

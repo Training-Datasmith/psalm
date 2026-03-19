@@ -45,7 +45,7 @@ function normalizeParameters(string $func, array $parameters): array
      * @var array<string, array{byRef: bool, refMode: 'rw'|'w'|'r', variadic: bool, optional: bool, type: string}>
      */
     $normalizedEntries = [];
-    
+
     foreach ($parameters as $key => $entry) {
         if ($key === 0) {
             continue;
@@ -90,20 +90,20 @@ function normalizeParameters(string $func, array $parameters): array
                 $normalizedEntry['refMode'] = 'rw';
             }
         }
-    
+
         // Strip prefixes.
-        if (substr($normalizedKey, -1, 1) === "=") {
+        if (substr($normalizedKey, -1, 1) === '=') {
             $normalizedEntry['optional'] = true;
             $normalizedKey = substr($normalizedKey, 0, -1);
         }
-    
+
         $normalizedEntry['name'] = $normalizedKey;
         $normalizedEntries[$normalizedKey] = $normalizedEntry;
     }
-    
+
     return $normalizedEntries;
 }
-    
+
 /**
  * @param array<string|int, string> $baseParameters
  * @param array<string|int, string> $customParameters
@@ -155,7 +155,7 @@ function assertEntryParameters(string $func, array $baseParameters, array $custo
 
     return $denormalized;
 }
-    
+
 /**
  * @param array{
  *      byRef: bool,
@@ -181,7 +181,7 @@ function assertParameter(string $func, string $paramName, array $custom, array $
     }
     $custom['variadic'] = $base['variadic'];
     $custom['byRef'] = $base['byRef'];
-    
+
     $custom['type'] = assertTypeValidity($base['type'], $custom['type'], "Param $func '{$paramName}'");
 
     return $custom;
@@ -191,7 +191,7 @@ function assertTypeValidity(string $base, string $custom, string $msgPrefix): st
 {
     $expectedType = Type::parseString($base);
     $callMapType = Type::parseString($custom === '' ? $base : $custom);
-    
+
     $codebase = ProjectAnalyzer::getInstance()->getCodebase();
     try {
         if (!UnionTypeComparator::isContainedBy(
@@ -209,7 +209,7 @@ function assertTypeValidity(string $base, string $custom, string $msgPrefix): st
         }
     } catch (Throwable) {
     }
-    
+
     if ($expectedType->hasMixed()) {
         return $custom;
     }
@@ -268,7 +268,7 @@ function extractClassesFromStatements(array $statements): array
 
 function serializeArray(array $array, string $prefix): string
 {
-    uksort($array, fn(string $first, string $second): int => strtolower($first) <=> strtolower($second));
+    uksort($array, fn (string $first, string $second): int => strtolower($first) <=> strtolower($second));
     $result = "[\n";
     $localPrefix = $prefix . '    ';
     foreach ($array as $key => $value) {

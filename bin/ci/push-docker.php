@@ -1,5 +1,6 @@
-<?php // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols, Generic.Files.LineLength.TooLong
+<?php
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols, Generic.Files.LineLength.TooLong
 
 declare(strict_types=1);
 

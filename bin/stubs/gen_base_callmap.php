@@ -1,5 +1,6 @@
-<?php // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
+<?php
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 
 declare(strict_types=1);
 
@@ -108,7 +109,7 @@ foreach (get_declared_classes() as $class) {
 
     foreach ($refl->getMethods() as $method) {
         $args = paramsToEntries($method, $method->getName() === '__construct' ? 'void' : 'mixed');
-    
+
         $callmap[strtolower($class.'::'.$method->getName())] = $args;
     }
 }
