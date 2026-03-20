@@ -2011,16 +2011,16 @@
   </file>
   <file src="src/Psalm/Internal/PreloaderList.php">
     <DeprecatedClass>
-      <code><![CDATA[\PhpParser\Node\Expr\ArrayItem::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Expr\ClosureUse::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Scalar\DNumber::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Scalar\Encapsed::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Scalar\EncapsedStringPart::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Scalar\LNumber::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Stmt\DeclareDeclare::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Stmt\PropertyProperty::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Stmt\StaticVar::class]]></code>
-      <code><![CDATA[\PhpParser\Node\Stmt\UseUse::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Expr\Array_Item::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Expr\Closure_Use::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Scalar\D_Number::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Scalar\Encapsed::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Scalar\Encapsed_String_Part::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Scalar\L_Number::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Stmt\Declare_Declare::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Stmt\Property_Property::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Stmt\Static_Var::class]]></code>
+      <code><![CDATA[\Php_Parser\Node\Stmt\Use_Use::class]]></code>
     </DeprecatedClass>
   </file>
   <file src="src/Psalm/Internal/Provider/ClassLikeStorageCacheProvider.php">
