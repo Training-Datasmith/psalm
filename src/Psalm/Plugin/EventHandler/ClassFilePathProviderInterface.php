@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler;
 
-namespace Psalm\Plugin\EventHandler;
-
-interface ClassFilePathProviderInterface
+interface Class_File_Path_Provider_Interface
 {
     /**
      * @param class-string $class
      */
-    public static function getClassFilePath(string $class): ?string;
+    public static function get_class_file_path(string $class): ?string;
 }

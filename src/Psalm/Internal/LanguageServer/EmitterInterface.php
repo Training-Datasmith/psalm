@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\LanguageServer;
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server;
 
 /**
  * Event Emitter Interface
@@ -14,13 +13,12 @@ namespace Psalm\Internal\LanguageServer;
  * @author Evert Pot (http://evertpot.com/)
  * @license http://sabre.io/license/ Modified BSD License
  */
-interface EmitterInterface
+interface Emitter_Interface
 {
     /**
      * Subscribe to an event.
      */
-    public function on(string $eventName, callable $callBack, int $priority = 100): void;
-
+    public function on(string $event_name, callable $call_back, int $priority = 100): void;
     /**
      * Emits an event.
      *
@@ -44,12 +42,7 @@ interface EmitterInterface
      *
      * @param list<mixed> $arguments
      */
-    public function emit(
-        string $eventName,
-        array $arguments = [],
-        ?callable $continueCallBack = null,
-    ): void;
-
+    public function emit(string $event_name, array $arguments = [], ?callable $continue_call_back = null): void;
     /**
      * Returns the list of listeners for an event.
      *
@@ -58,8 +51,7 @@ interface EmitterInterface
      *
      * @return callable[]
      */
-    public function listeners(string $eventName): array;
-
+    public function listeners(string $event_name): array;
     /**
      * Removes a specific listener from an event.
      *
@@ -68,5 +60,5 @@ interface EmitterInterface
      *
      * @psalm-suppress PossiblyUnusedReturnValue
      */
-    public function removeListener(string $eventName, callable $listener): bool;
+    public function remove_listener(string $event_name, callable $listener): bool;
 }

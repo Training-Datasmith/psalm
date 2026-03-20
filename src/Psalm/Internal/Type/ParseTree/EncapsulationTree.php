@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Type\Parse_Tree;
 
-namespace Psalm\Internal\Type\ParseTree;
-
-use Psalm\Internal\Type\ParseTree;
-
+use Psalm\Internal\Type\Parse_Tree;
 /**
  * @internal
  */
-final class EncapsulationTree extends ParseTree
+final class Encapsulation_Tree extends Parse_Tree
 {
     public bool $terminated = false;
 }

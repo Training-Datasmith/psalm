@@ -1,17 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server;
 
-namespace Psalm\Internal\LanguageServer;
-
-use AdvancedJsonRpc\Message as MessageBody;
+use Advanced_Json_Rpc\Message as MessageBody;
 use Override;
 use Stringable;
-
 use function array_pop;
 use function explode;
 use function strlen;
-
 /**
  * @internal
  */
@@ -21,15 +18,14 @@ final class Message implements Stringable
      * @var string[]
      */
     public array $headers;
-
     /**
      * Parses a message
      */
     public static function parse(string $msg): Message
     {
-        $obj = new self;
+        $obj = new self();
         $parts = explode("\r\n", $msg);
-        $obj->body = MessageBody::parse(array_pop($parts));
+        $obj->body = Message_Body::parse(array_pop($parts));
         foreach ($parts as $line) {
             if ($line) {
                 $pair = explode(': ', $line);
@@ -38,33 +34,28 @@ final class Message implements Stringable
                 }
             }
         }
-
         return $obj;
     }
-
     /**
      * @param string[] $headers
      */
-    public function __construct(public ?MessageBody $body = null, array $headers = [])
+    public function __construct(public ?Message_Body $body = null, array $headers = [])
     {
         if (!isset($headers['Content-Type'])) {
             $headers['Content-Type'] = 'application/vscode-jsonrpc; charset=utf8';
         }
         $this->headers = $headers;
     }
-
     #[Override]
     public function __toString(): string
     {
-
-        $body = (string)$this->body;
-        $contentLength = strlen($body);
-        $this->headers['Content-Length'] = (string) $contentLength;
+        $body = (string) $this->body;
+        $content_length = strlen($body);
+        $this->headers['Content-Length'] = (string) $content_length;
         $headers = '';
         foreach ($this->headers as $name => $value) {
-            $headers .= "$name: $value\r\n";
+            $headers .= "{$name}: {$value}\r\n";
         }
-
         return $headers . "\r\n" . $body;
     }
 }

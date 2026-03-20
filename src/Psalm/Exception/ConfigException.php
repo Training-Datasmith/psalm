@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Exception;
 
 use Exception;
-
-class ConfigException extends Exception
+class Config_Exception extends Exception
 {
 }

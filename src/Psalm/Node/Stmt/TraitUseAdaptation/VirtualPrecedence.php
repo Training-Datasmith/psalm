@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Stmt\Trait_Use_Adaptation;
 
-namespace Psalm\Node\Stmt\TraitUseAdaptation;
-
-use PhpParser\Node\Stmt\TraitUseAdaptation\Precedence;
-use Psalm\Node\VirtualNode;
-
-final class VirtualPrecedence extends Precedence implements VirtualNode
+use Php_Parser\Node\Stmt\Trait_Use_Adaptation\Precedence;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Precedence extends Precedence implements Virtual_Node
 {
-
 }

@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Scalar;
 
-use PhpParser\Node\InterpolatedStringPart;
-use Psalm\Node\VirtualNode;
-
-final class VirtualInterpolatedStringPart extends InterpolatedStringPart implements VirtualNode
+use Php_Parser\Node\Interpolated_String_Part;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Interpolated_String_Part extends Interpolated_String_Part implements Virtual_Node
 {
-
 }

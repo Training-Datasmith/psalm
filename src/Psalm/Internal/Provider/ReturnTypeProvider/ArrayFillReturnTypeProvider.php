@@ -1,64 +1,55 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\Provider\ReturnTypeProvider;
+declare (strict_types=1);
+namespace Psalm\Internal\Provider\Return_Type_Provider;
 
 use Override;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
-use Psalm\Plugin\EventHandler\Event\FunctionReturnTypeProviderEvent;
-use Psalm\Plugin\EventHandler\FunctionReturnTypeProviderInterface;
+use Psalm\Internal\Analyzer\Statements_Analyzer;
+use Psalm\Plugin\Event_Handler\Event\Function_Return_Type_Provider_Event;
+use Psalm\Plugin\Event_Handler\Function_Return_Type_Provider_Interface;
 use Psalm\Type;
-use Psalm\Type\Atomic\TArray;
-use Psalm\Type\Atomic\TKeyedArray;
-use Psalm\Type\Atomic\TNonEmptyArray;
+use Psalm\Type\Atomic\T_Array;
+use Psalm\Type\Atomic\T_Keyed_Array;
+use Psalm\Type\Atomic\T_Non_Empty_Array;
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class ArrayFillReturnTypeProvider implements FunctionReturnTypeProviderInterface
+final class Array_Fill_Return_Type_Provider implements Function_Return_Type_Provider_Interface
 {
     /**
      * @return array<lowercase-string>
      */
     #[Override]
-    public static function getFunctionIds(): array
+    public static function get_function_ids(): array
     {
         return ['array_fill'];
     }
-
     #[Override]
-    public static function getFunctionReturnType(FunctionReturnTypeProviderEvent $event): Union
+    public static function get_function_return_type(Function_Return_Type_Provider_Event $event): Union
     {
-        $statements_source = $event->getStatementsSource();
-        $call_args = $event->getCallArgs();
-        if (!$statements_source instanceof StatementsAnalyzer) {
-            return Type::getMixed();
+        $statements_source = $event->get_statements_source();
+        $call_args = $event->get_call_args();
+        if (!$statements_source instanceof Statements_Analyzer) {
+            return Type::get_mixed();
         }
-        $codebase = $statements_source->getCodebase();
-
-        $first_arg_type = isset($call_args[0]) ? $statements_source->node_data->getType($call_args[0]->value) : null;
-        $second_arg_type = isset($call_args[1]) ? $statements_source->node_data->getType($call_args[1]->value) : null;
-        $third_arg_type = isset($call_args[2]) ? $statements_source->node_data->getType($call_args[2]->value) : null;
-
-        $value_type_from_third_arg = $third_arg_type ?: Type::getMixed();
-
-        if ($first_arg_type && $second_arg_type && $third_arg_type
-            && $first_arg_type->isSingleIntLiteral()
-            && $second_arg_type->isSingleIntLiteral()
-        ) {
-            $first_arg_type = $first_arg_type->getSingleIntLiteral()->value;
-            $second_arg_type = $second_arg_type->getSingleIntLiteral()->value;
+        $codebase = $statements_source->get_codebase();
+        $first_arg_type = isset($call_args[0]) ? $statements_source->node_data->get_type($call_args[0]->value) : null;
+        $second_arg_type = isset($call_args[1]) ? $statements_source->node_data->get_type($call_args[1]->value) : null;
+        $third_arg_type = isset($call_args[2]) ? $statements_source->node_data->get_type($call_args[2]->value) : null;
+        $value_type_from_third_arg = $third_arg_type ?: Type::get_mixed();
+        if ($first_arg_type && $second_arg_type && $third_arg_type && $first_arg_type->is_single_int_literal() && $second_arg_type->is_single_int_literal()) {
+            $first_arg_type = $first_arg_type->get_single_int_literal()->value;
+            $second_arg_type = $second_arg_type->get_single_int_literal()->value;
             $is_list = $first_arg_type === 0;
             if ($second_arg_type < 0) {
-                if ($codebase->analysis_php_version_id < 8_00_00) {
-                    return Type::getFalse();
+                if ($codebase->analysis_php_version_id < 80000) {
+                    return Type::get_false();
                 }
-                return Type::getNever();
+                return Type::get_never();
             }
             $result = [];
-            if ($first_arg_type < 0 && $codebase->analysis_php_version_id < 8_00_00) {
+            if ($first_arg_type < 0 && $codebase->analysis_php_version_id < 80000) {
                 $result[$first_arg_type] = $third_arg_type;
                 $first_arg_type = 0;
                 $second_arg_type--;
@@ -68,76 +59,33 @@ final class ArrayFillReturnTypeProvider implements FunctionReturnTypeProviderInt
                 $second_arg_type--;
             }
             if (!$result) {
-                return Type::getEmptyArray();
+                return Type::get_empty_array();
             }
-            return new Union([new TKeyedArray(
-                $result,
-                null,
-                null,
-                $is_list,
-            )]);
+            return new Union([new T_Keyed_Array($result, null, null, $is_list)]);
         }
-        if ($first_arg_type
-            && $first_arg_type->isSingleIntLiteral()
-            && $first_arg_type->getSingleIntLiteral()->value === 0
-        ) {
-            if ($second_arg_type
-                && self::isPositiveNumericType($second_arg_type)
-            ) {
-                return Type::getNonEmptyList(
-                    $value_type_from_third_arg,
-                );
+        if ($first_arg_type && $first_arg_type->is_single_int_literal() && $first_arg_type->get_single_int_literal()->value === 0) {
+            if ($second_arg_type && self::is_positive_numeric_type($second_arg_type)) {
+                return Type::get_non_empty_list($value_type_from_third_arg);
             }
-
-            return Type::getList(
-                $value_type_from_third_arg,
-            );
+            return Type::get_list($value_type_from_third_arg);
         }
-
-        if ($second_arg_type
-            && self::isPositiveNumericType($second_arg_type)
-        ) {
-            if ($first_arg_type
-                && $first_arg_type->isSingleIntLiteral()
-                && $second_arg_type->isSingleIntLiteral()
-            ) {
-                return new Union([
-                    new TNonEmptyArray([
-                        Type::getIntRange(
-                            $first_arg_type->getSingleIntLiteral()->value,
-                            $second_arg_type->getSingleIntLiteral()->value,
-                        ),
-                        $value_type_from_third_arg,
-                    ]),
-                ]);
+        if ($second_arg_type && self::is_positive_numeric_type($second_arg_type)) {
+            if ($first_arg_type && $first_arg_type->is_single_int_literal() && $second_arg_type->is_single_int_literal()) {
+                return new Union([new T_Non_Empty_Array([Type::get_int_range($first_arg_type->get_single_int_literal()->value, $second_arg_type->get_single_int_literal()->value), $value_type_from_third_arg])]);
             }
-
-            return new Union([
-                new TNonEmptyArray([
-                    Type::getInt(),
-                    $value_type_from_third_arg,
-                ]),
-            ]);
+            return new Union([new T_Non_Empty_Array([Type::get_int(), $value_type_from_third_arg])]);
         }
-
-        return new Union([
-            new TArray([
-                Type::getInt(),
-                $value_type_from_third_arg,
-            ]),
-        ]);
+        return new Union([new T_Array([Type::get_int(), $value_type_from_third_arg])]);
     }
-
-    private static function isPositiveNumericType(Union $arg): bool
+    private static function is_positive_numeric_type(Union $arg): bool
     {
-        if ($arg->isSingle()) {
-            foreach ($arg->getRangeInts() as $range_int) {
-                if ($range_int->isPositive()) {
+        if ($arg->is_single()) {
+            foreach ($arg->get_range_ints() as $range_int) {
+                if ($range_int->is_positive()) {
                     return true;
                 }
             }
         }
-
-        return $arg->isSingleIntLiteral() && $arg->getSingleIntLiteral()->value > 0;
+        return $arg->is_single_int_literal() && $arg->get_single_int_literal()->value > 0;
     }
 }

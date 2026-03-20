@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\Isset_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualIsset extends Isset_ implements VirtualNode
+use Php_Parser\Node\Expr\Isset_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Isset extends Isset_ implements Virtual_Node
 {
-
 }

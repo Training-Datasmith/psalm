@@ -1,31 +1,26 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server;
 
-namespace Psalm\Internal\LanguageServer;
-
-use AdvancedJsonRpc\Message as MessageBody;
-use Amp\ByteStream\ReadableResourceStream;
+use Advanced_Json_Rpc\Message as MessageBody;
+use Amp\Byte_Stream\Readable_Resource_Stream;
 use Exception;
-use Revolt\EventLoop;
-
+use Revolt\Event_Loop;
 use function explode;
 use function str_ends_with;
 use function strlen;
 use function trim;
-
 /**
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ProtocolStreamReader.php
  *
  * @internal
  */
-final class ProtocolStreamReader implements ProtocolReader
+final class Protocol_Stream_Reader implements Protocol_Reader
 {
-    use EmitterTrait;
-
+    use Emitter_Trait;
     private const PARSE_HEADERS = 1;
     private const PARSE_BODY = 2;
-
     /**
      * This is checked by ProtocolStreamReader so that it will stop reading from streams in the forked process.
      * There could be buffered bytes in stdin/over TCP, those would be processed by TCP if it were not for this check.
@@ -37,42 +32,31 @@ final class ProtocolStreamReader implements ProtocolReader
     private array $headers = [];
     private ?int $content_length = null;
     private bool $did_emit_close = false;
-
     /**
      * @param resource $input
      */
     public function __construct($input)
     {
-        $input = new ReadableResourceStream($input);
+        $input = new Readable_Resource_Stream($input);
         $input->reference();
-        EventLoop::queue(
-            function () use ($input): void {
-                while ($this->is_accepting_new_requests) {
-                    $chunk = $input->read();
-
-                    if ($chunk === null) {
-                        break;
-                    }
-
-                    if ($this->readMessages($chunk) > 0) {
-                        $this->emit('readMessageGroup');
-                    }
+        Event_Loop::queue(function () use ($input): void {
+            while ($this->is_accepting_new_requests) {
+                $chunk = $input->read();
+                if ($chunk === null) {
+                    break;
                 }
-
-                $this->emitClose();
-            },
-        );
-
-        $this->on(
-            'close',
-            static function () use ($input): void {
-                $input->unreference();
-                $input->close();
-            },
-        );
+                if ($this->read_messages($chunk) > 0) {
+                    $this->emit('readMessageGroup');
+                }
+            }
+            $this->emit_close();
+        });
+        $this->on('close', static function () use ($input): void {
+            $input->unreference();
+            $input->close();
+        });
     }
-
-    private function readMessages(string $buffer): int
+    private function read_messages(string $buffer): int
     {
         $emitted_messages = 0;
         $i = 0;
@@ -96,13 +80,12 @@ final class ProtocolStreamReader implements ProtocolReader
                     if (strlen($this->buffer) === $this->content_length) {
                         if (!$this->is_accepting_new_requests) {
                             // If we fork, don't read any bytes in the input buffer from the worker process.
-                            $this->emitClose();
-
+                            $this->emit_close();
                             return $emitted_messages;
                         }
                         // MessageBody::parse can throw an Error, maybe log an error?
                         try {
-                            $msg = new Message(MessageBody::parse($this->buffer), $this->headers);
+                            $msg = new Message(Message_Body::parse($this->buffer), $this->headers);
                         } catch (Exception) {
                             $msg = null;
                         }
@@ -114,8 +97,7 @@ final class ProtocolStreamReader implements ProtocolReader
                              */
                             if (!$this->is_accepting_new_requests) {
                                 // If we fork, don't read any bytes in the input buffer from the worker process.
-                                $this->emitClose();
-
+                                $this->emit_close();
                                 return $emitted_messages;
                             }
                         }
@@ -126,11 +108,9 @@ final class ProtocolStreamReader implements ProtocolReader
                     break;
             }
         }
-
         return $emitted_messages;
     }
-
-    private function emitClose(): void
+    private function emit_close(): void
     {
         if ($this->did_emit_close) {
             return;

@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\PropertyFetch;
-use Psalm\Node\VirtualNode;
-
-final class VirtualPropertyFetch extends PropertyFetch implements VirtualNode
+use Php_Parser\Node\Expr\Property_Fetch;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Property_Fetch extends Property_Fetch implements Virtual_Node
 {
-
 }

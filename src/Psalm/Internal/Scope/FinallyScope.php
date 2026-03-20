@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Scope;
 
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class FinallyScope
+final class Finally_Scope
 {
     /**
      * @param array<string, Union> $vars_in_scope

@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server;
 
-namespace Psalm\Internal\LanguageServer;
-
-interface ProtocolWriter
+interface Protocol_Writer
 {
     /**
      * Sends a Message to the client.

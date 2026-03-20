@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\ShiftRight;
-use Psalm\Node\VirtualNode;
-
-final class VirtualShiftRight extends ShiftRight implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Shift_Right;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Shift_Right extends Shift_Right implements Virtual_Node
 {
-
 }

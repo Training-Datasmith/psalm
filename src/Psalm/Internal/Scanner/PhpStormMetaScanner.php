@@ -1,417 +1,228 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Scanner;
 
-use PhpParser;
+use Php_Parser;
 use Psalm\Codebase;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
-use Psalm\Plugin\EventHandler\Event\FunctionReturnTypeProviderEvent;
-use Psalm\Plugin\EventHandler\Event\MethodReturnTypeProviderEvent;
+use Psalm\Internal\Analyzer\Statements_Analyzer;
+use Psalm\Plugin\Event_Handler\Event\Function_Return_Type_Provider_Event;
+use Psalm\Plugin\Event_Handler\Event\Method_Return_Type_Provider_Event;
 use Psalm\Type;
-use Psalm\Type\Atomic\TArray;
-use Psalm\Type\Atomic\TKeyedArray;
-use Psalm\Type\Atomic\TNamedObject;
+use Psalm\Type\Atomic\T_Array;
+use Psalm\Type\Atomic\T_Keyed_Array;
+use Psalm\Type\Atomic\T_Named_Object;
 use Psalm\Type\Union;
 use ReflectionProperty;
-
 use function count;
 use function is_string;
 use function str_contains;
 use function str_replace;
 use function strtolower;
-
 /**
  * @internal
  */
-final class PhpStormMetaScanner
+final class Php_Storm_Meta_Scanner
 {
     /**
      * @param  list<PhpParser\Node\Arg> $args
      */
-    public static function handleOverride(array $args, Codebase $codebase): void
+    public static function handle_override(array $args, Codebase $codebase): void
     {
         if (count($args) < 2) {
             return;
         }
-
         $identifier = $args[0]->value;
-
-        if (!$args[1]->value instanceof PhpParser\Node\Expr\FuncCall
-            || !$args[1]->value->name instanceof PhpParser\Node\Name
-        ) {
+        if (!$args[1]->value instanceof Php_Parser\Node\Expr\Func_Call || !$args[1]->value->name instanceof Php_Parser\Node\Name) {
             return;
         }
-
         $map = [];
-
-        if ($args[1]->value->name->getParts() === ['map']
-            && $args[1]->value->getArgs()
-            && $args[1]->value->getArgs()[0]->value instanceof PhpParser\Node\Expr\Array_
-        ) {
-            foreach ($args[1]->value->getArgs()[0]->value->items as $array_item) {
-                if ($array_item
-                    && $array_item->key instanceof PhpParser\Node\Scalar\String_
-                ) {
-                    if ($array_item->value instanceof PhpParser\Node\Expr\ClassConstFetch
-                        && $array_item->value->class instanceof PhpParser\Node\Name\FullyQualified
-                        && $array_item->value->name instanceof PhpParser\Node\Identifier
-                        && strtolower($array_item->value->name->name)
-                    ) {
-                        $map[$array_item->key->value] = new Union([
-                            new TNamedObject($array_item->value->class->toString()),
-                        ]);
-                    } elseif ($array_item->value instanceof PhpParser\Node\Scalar\String_) {
+        if ($args[1]->value->name->get_parts() === ['map'] && $args[1]->value->get_args() && $args[1]->value->get_args()[0]->value instanceof Php_Parser\Node\Expr\Array_) {
+            foreach ($args[1]->value->get_args()[0]->value->items as $array_item) {
+                if ($array_item && $array_item->key instanceof Php_Parser\Node\Scalar\String_) {
+                    if ($array_item->value instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $array_item->value->class instanceof Php_Parser\Node\Name\Fully_Qualified && $array_item->value->name instanceof Php_Parser\Node\Identifier && strtolower($array_item->value->name->name)) {
+                        $map[$array_item->key->value] = new Union([new T_Named_Object($array_item->value->class->to_string())]);
+                    } elseif ($array_item->value instanceof Php_Parser\Node\Scalar\String_) {
                         $map[$array_item->key->value] = $array_item->value->value;
                     }
-                } elseif ($array_item
-                    && $array_item->key instanceof PhpParser\Node\Expr\ClassConstFetch
-                    && $array_item->key->class instanceof PhpParser\Node\Name\FullyQualified
-                    && $array_item->key->name instanceof PhpParser\Node\Identifier
-                ) {
+                } elseif ($array_item && $array_item->key instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $array_item->key->class instanceof Php_Parser\Node\Name\Fully_Qualified && $array_item->key->name instanceof Php_Parser\Node\Identifier) {
                     /** @var string|null $resolved_name */
-                    $resolved_name =  $array_item->key->class->getAttribute('resolvedName');
+                    $resolved_name = $array_item->key->class->get_attribute('resolvedName');
                     if (!$resolved_name) {
                         continue;
                     }
-
-                    $constant_type = $codebase->classlikes->getClassConstantType(
-                        $resolved_name,
-                        $array_item->key->name->name,
-                        ReflectionProperty::IS_PRIVATE,
-                    );
+                    $constant_type = $codebase->classlikes->get_class_constant_type($resolved_name, $array_item->key->name->name, ReflectionProperty::IS_PRIVATE);
                     if (!$constant_type instanceof Union) {
                         continue;
                     }
-                    if (!$constant_type->isSingleStringLiteral()) {
+                    if (!$constant_type->is_single_string_literal()) {
                         continue;
                     }
-
-                    $meta_key = $constant_type->getSingleStringLiteral()->value;
-
-                    if ($array_item->value instanceof PhpParser\Node\Expr\ClassConstFetch
-                        && $array_item->value->class instanceof PhpParser\Node\Name\FullyQualified
-                        && $array_item->value->name instanceof PhpParser\Node\Identifier
-                        && strtolower($array_item->value->name->name)
-                    ) {
-                        $map[$meta_key] = new Union([
-                            new TNamedObject($array_item->value->class->toString()),
-                        ]);
-                    } elseif ($array_item->value instanceof PhpParser\Node\Scalar\String_) {
+                    $meta_key = $constant_type->get_single_string_literal()->value;
+                    if ($array_item->value instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $array_item->value->class instanceof Php_Parser\Node\Name\Fully_Qualified && $array_item->value->name instanceof Php_Parser\Node\Identifier && strtolower($array_item->value->name->name)) {
+                        $map[$meta_key] = new Union([new T_Named_Object($array_item->value->class->to_string())]);
+                    } elseif ($array_item->value instanceof Php_Parser\Node\Scalar\String_) {
                         $map[$meta_key] = $array_item->value->value;
                     }
                 }
             }
         }
-
         $type_offset = null;
-
-        if ($args[1]->value->name->getParts() === ['type']
-            && $args[1]->value->getArgs()
-            && $args[1]->value->getArgs()[0]->value instanceof PhpParser\Node\Scalar\Int_
-        ) {
-            $type_offset = $args[1]->value->getArgs()[0]->value->value;
+        if ($args[1]->value->name->get_parts() === ['type'] && $args[1]->value->get_args() && $args[1]->value->get_args()[0]->value instanceof Php_Parser\Node\Scalar\Int_) {
+            $type_offset = $args[1]->value->get_args()[0]->value->value;
         }
-
         $element_type_offset = null;
-
-        if ($args[1]->value->name->getParts() === ['elementType']
-            && $args[1]->value->getArgs()
-            && $args[1]->value->getArgs()[0]->value instanceof PhpParser\Node\Scalar\Int_
-        ) {
-            $element_type_offset = $args[1]->value->getArgs()[0]->value->value;
+        if ($args[1]->value->name->get_parts() === ['elementType'] && $args[1]->value->get_args() && $args[1]->value->get_args()[0]->value instanceof Php_Parser\Node\Scalar\Int_) {
+            $element_type_offset = $args[1]->value->get_args()[0]->value->value;
         }
-
-        if ($identifier instanceof PhpParser\Node\Expr\StaticCall
-            && $identifier->class instanceof PhpParser\Node\Name\FullyQualified
-            && $identifier->name instanceof PhpParser\Node\Identifier
-            && (
-                $identifier->getArgs() === []
-                || $identifier->getArgs()[0]->value instanceof PhpParser\Node\Scalar\Int_
-            )
-        ) {
-            $meta_fq_classlike_name = $identifier->class->toString();
-
+        if ($identifier instanceof Php_Parser\Node\Expr\Static_Call && $identifier->class instanceof Php_Parser\Node\Name\Fully_Qualified && $identifier->name instanceof Php_Parser\Node\Identifier && ($identifier->get_args() === [] || $identifier->get_args()[0]->value instanceof Php_Parser\Node\Scalar\Int_)) {
+            $meta_fq_classlike_name = $identifier->class->to_string();
             $meta_method_name = strtolower($identifier->name->name);
-
             if ($map) {
                 $offset = 0;
-                if ($identifier->getArgs()
-                    && $identifier->getArgs()[0]->value instanceof PhpParser\Node\Scalar\Int_
-                ) {
-                    $offset = $identifier->getArgs()[0]->value->value;
+                if ($identifier->get_args() && $identifier->get_args()[0]->value instanceof Php_Parser\Node\Scalar\Int_) {
+                    $offset = $identifier->get_args()[0]->value->value;
                 }
-
-                $codebase->methods->return_type_provider->registerClosure(
-                    $meta_fq_classlike_name,
-                    static function (
-                        MethodReturnTypeProviderEvent $event,
-                    ) use (
-                        $map,
-                        $offset,
-                        $meta_fq_classlike_name,
-                        $meta_method_name,
-                    ): ?Union {
-                        $statements_analyzer = $event->getSource();
-                        $call_args = $event->getCallArgs();
-                        $method_name = $event->getMethodNameLowercase();
-                        $fq_classlike_name = $event->getFqClasslikeName();
-                        if (!$statements_analyzer instanceof StatementsAnalyzer) {
-                            return Type::getMixed();
-                        }
-
-                        if ($meta_method_name !== $method_name
-                            || $meta_fq_classlike_name !== $fq_classlike_name
-                        ) {
-                            return null;
-                        }
-
-                        if (isset($call_args[$offset]->value)
-                            && ($call_arg_type = $statements_analyzer->node_data->getType($call_args[$offset]->value))
-                            && $call_arg_type->isSingleStringLiteral()
-                        ) {
-                            $offset_arg_value = $call_arg_type->getSingleStringLiteral()->value;
-
-                            if ($mapped_type = $map[$offset_arg_value] ?? null) {
-                                if ($mapped_type instanceof Union) {
-                                    return $mapped_type;
-                                }
-                            }
-
-                            if (($mapped_type = $map[''] ?? null) && is_string($mapped_type)) {
-                                if (str_contains($mapped_type, '@')) {
-                                    $mapped_type = str_replace('@', $offset_arg_value, $mapped_type);
-
-                                    if (!str_contains($mapped_type, '.')) {
-                                        return new Union([
-                                            new TNamedObject($mapped_type),
-                                        ]);
-                                    }
-                                }
-                            }
-                        }
-
+                $codebase->methods->return_type_provider->register_closure($meta_fq_classlike_name, static function (Method_Return_Type_Provider_Event $event) use ($map, $offset, $meta_fq_classlike_name, $meta_method_name): ?Union {
+                    $statements_analyzer = $event->get_source();
+                    $call_args = $event->get_call_args();
+                    $method_name = $event->get_method_name_lowercase();
+                    $fq_classlike_name = $event->get_fq_classlike_name();
+                    if (!$statements_analyzer instanceof Statements_Analyzer) {
+                        return Type::get_mixed();
+                    }
+                    if ($meta_method_name !== $method_name || $meta_fq_classlike_name !== $fq_classlike_name) {
                         return null;
-                    },
-                );
+                    }
+                    if (isset($call_args[$offset]->value) && ($call_arg_type = $statements_analyzer->node_data->get_type($call_args[$offset]->value)) && $call_arg_type->is_single_string_literal()) {
+                        $offset_arg_value = $call_arg_type->get_single_string_literal()->value;
+                        if ($mapped_type = $map[$offset_arg_value] ?? null) {
+                            if ($mapped_type instanceof Union) {
+                                return $mapped_type;
+                            }
+                        }
+                        if (($mapped_type = $map[''] ?? null) && is_string($mapped_type)) {
+                            if (str_contains($mapped_type, '@')) {
+                                $mapped_type = str_replace('@', $offset_arg_value, $mapped_type);
+                                if (!str_contains($mapped_type, '.')) {
+                                    return new Union([new T_Named_Object($mapped_type)]);
+                                }
+                            }
+                        }
+                    }
+                    return null;
+                });
             } elseif ($type_offset !== null) {
-                $codebase->methods->return_type_provider->registerClosure(
-                    $meta_fq_classlike_name,
-                    static function (
-                        MethodReturnTypeProviderEvent $event,
-                    ) use (
-                        $type_offset,
-                        $meta_fq_classlike_name,
-                        $meta_method_name,
-                    ): ?Union {
-                        $statements_analyzer = $event->getSource();
-                        $call_args = $event->getCallArgs();
-                        $method_name = $event->getMethodNameLowercase();
-                        $fq_classlike_name = $event->getFqClasslikeName();
-                        if (!$statements_analyzer instanceof StatementsAnalyzer) {
-                            return Type::getMixed();
-                        }
-
-                        if ($meta_method_name !== $method_name
-                            || $meta_fq_classlike_name !== $fq_classlike_name
-                        ) {
-                            return null;
-                        }
-
-                        if (isset($call_args[$type_offset]->value)
-                            && ($call_arg_type
-                                = $statements_analyzer->node_data->getType($call_args[$type_offset]->value))
-                        ) {
-                            return $call_arg_type;
-                        }
-
+                $codebase->methods->return_type_provider->register_closure($meta_fq_classlike_name, static function (Method_Return_Type_Provider_Event $event) use ($type_offset, $meta_fq_classlike_name, $meta_method_name): ?Union {
+                    $statements_analyzer = $event->get_source();
+                    $call_args = $event->get_call_args();
+                    $method_name = $event->get_method_name_lowercase();
+                    $fq_classlike_name = $event->get_fq_classlike_name();
+                    if (!$statements_analyzer instanceof Statements_Analyzer) {
+                        return Type::get_mixed();
+                    }
+                    if ($meta_method_name !== $method_name || $meta_fq_classlike_name !== $fq_classlike_name) {
                         return null;
-                    },
-                );
+                    }
+                    if (isset($call_args[$type_offset]->value) && $call_arg_type = $statements_analyzer->node_data->get_type($call_args[$type_offset]->value)) {
+                        return $call_arg_type;
+                    }
+                    return null;
+                });
             } elseif ($element_type_offset !== null) {
-                $codebase->methods->return_type_provider->registerClosure(
-                    $meta_fq_classlike_name,
-                    static function (
-                        MethodReturnTypeProviderEvent $event,
-                    ) use (
-                        $element_type_offset,
-                        $meta_fq_classlike_name,
-                        $meta_method_name,
-                    ): ?Union {
-                        $statements_analyzer = $event->getSource();
-                        $call_args = $event->getCallArgs();
-                        $method_name = $event->getMethodNameLowercase();
-                        $fq_classlike_name = $event->getFqClasslikeName();
-                        if (!$statements_analyzer instanceof StatementsAnalyzer) {
-                            return Type::getMixed();
-                        }
-
-                        if ($meta_method_name !== $method_name
-                            || $meta_fq_classlike_name !== $fq_classlike_name
-                        ) {
-                            return null;
-                        }
-
-                        if (isset($call_args[$element_type_offset]->value)
-                            && ($call_arg_type
-                                = $statements_analyzer->node_data->getType($call_args[$element_type_offset]->value))
-                            && $call_arg_type->hasArray()
-                        ) {
-                            /**
-                             * @var TArray|TKeyedArray
-                             */
-                            $array_atomic_type = $call_arg_type->getArray();
-
-                            if ($array_atomic_type instanceof TKeyedArray) {
-                                return $array_atomic_type->getGenericValueType();
-                            }
-
-                            return $array_atomic_type->type_params[1];
-                        }
-
+                $codebase->methods->return_type_provider->register_closure($meta_fq_classlike_name, static function (Method_Return_Type_Provider_Event $event) use ($element_type_offset, $meta_fq_classlike_name, $meta_method_name): ?Union {
+                    $statements_analyzer = $event->get_source();
+                    $call_args = $event->get_call_args();
+                    $method_name = $event->get_method_name_lowercase();
+                    $fq_classlike_name = $event->get_fq_classlike_name();
+                    if (!$statements_analyzer instanceof Statements_Analyzer) {
+                        return Type::get_mixed();
+                    }
+                    if ($meta_method_name !== $method_name || $meta_fq_classlike_name !== $fq_classlike_name) {
                         return null;
-                    },
-                );
+                    }
+                    if (isset($call_args[$element_type_offset]->value) && ($call_arg_type = $statements_analyzer->node_data->get_type($call_args[$element_type_offset]->value)) && $call_arg_type->has_array()) {
+                        /**
+                         * @var TArray|TKeyedArray
+                         */
+                        $array_atomic_type = $call_arg_type->get_array();
+                        if ($array_atomic_type instanceof T_Keyed_Array) {
+                            return $array_atomic_type->get_generic_value_type();
+                        }
+                        return $array_atomic_type->type_params[1];
+                    }
+                    return null;
+                });
             }
         }
-
-        if ($identifier instanceof PhpParser\Node\Expr\FuncCall
-            && $identifier->name instanceof PhpParser\Node\Name\FullyQualified
-            && (
-                $identifier->getArgs() === []
-                || $identifier->getArgs()[0]->value instanceof PhpParser\Node\Scalar\Int_
-            )
-        ) {
-            $function_id = strtolower($identifier->name->toString());
-
+        if ($identifier instanceof Php_Parser\Node\Expr\Func_Call && $identifier->name instanceof Php_Parser\Node\Name\Fully_Qualified && ($identifier->get_args() === [] || $identifier->get_args()[0]->value instanceof Php_Parser\Node\Scalar\Int_)) {
+            $function_id = strtolower($identifier->name->to_string());
             if ($map) {
                 $offset = 0;
-                if ($identifier->getArgs()
-                    && $identifier->getArgs()[0]->value instanceof PhpParser\Node\Scalar\Int_
-                ) {
-                    $offset = $identifier->getArgs()[0]->value->value;
+                if ($identifier->get_args() && $identifier->get_args()[0]->value instanceof Php_Parser\Node\Scalar\Int_) {
+                    $offset = $identifier->get_args()[0]->value->value;
                 }
-
-                $codebase->functions->return_type_provider->registerClosure(
-                    $function_id,
-                    static function (
-                        FunctionReturnTypeProviderEvent $event,
-                    ) use (
-                        $map,
-                        $offset,
-                    ): Union {
-                        $statements_analyzer = $event->getStatementsSource();
-                        $call_args = $event->getCallArgs();
-                        $function_id = $event->getFunctionId();
-                        if (!$statements_analyzer instanceof StatementsAnalyzer) {
-                            return Type::getMixed();
-                        }
-
-                        if (isset($call_args[$offset]->value)
-                            && ($call_arg_type
-                                = $statements_analyzer->node_data->getType($call_args[$offset]->value))
-                            && $call_arg_type->isSingleStringLiteral()
-                        ) {
-                            $offset_arg_value = $call_arg_type->getSingleStringLiteral()->value;
-
-                            if ($mapped_type = $map[$offset_arg_value] ?? null) {
-                                if ($mapped_type instanceof Union) {
-                                    return $mapped_type;
-                                }
+                $codebase->functions->return_type_provider->register_closure($function_id, static function (Function_Return_Type_Provider_Event $event) use ($map, $offset): Union {
+                    $statements_analyzer = $event->get_statements_source();
+                    $call_args = $event->get_call_args();
+                    $function_id = $event->get_function_id();
+                    if (!$statements_analyzer instanceof Statements_Analyzer) {
+                        return Type::get_mixed();
+                    }
+                    if (isset($call_args[$offset]->value) && ($call_arg_type = $statements_analyzer->node_data->get_type($call_args[$offset]->value)) && $call_arg_type->is_single_string_literal()) {
+                        $offset_arg_value = $call_arg_type->get_single_string_literal()->value;
+                        if ($mapped_type = $map[$offset_arg_value] ?? null) {
+                            if ($mapped_type instanceof Union) {
+                                return $mapped_type;
                             }
-
-                            if (($mapped_type = $map[''] ?? null) && is_string($mapped_type)) {
-                                if (str_contains($mapped_type, '@')) {
-                                    $mapped_type = str_replace('@', $offset_arg_value, $mapped_type);
-
-                                    if (!str_contains($mapped_type, '.')) {
-                                        return new Union([
-                                            new TNamedObject($mapped_type),
-                                        ]);
-                                    }
+                        }
+                        if (($mapped_type = $map[''] ?? null) && is_string($mapped_type)) {
+                            if (str_contains($mapped_type, '@')) {
+                                $mapped_type = str_replace('@', $offset_arg_value, $mapped_type);
+                                if (!str_contains($mapped_type, '.')) {
+                                    return new Union([new T_Named_Object($mapped_type)]);
                                 }
                             }
                         }
-
-                        $storage = $statements_analyzer->getCodebase()->functions->getStorage(
-                            $statements_analyzer,
-                            strtolower($function_id),
-                        );
-
-                        return $storage->return_type ?: Type::getMixed();
-                    },
-                );
+                    }
+                    $storage = $statements_analyzer->get_codebase()->functions->get_storage($statements_analyzer, strtolower($function_id));
+                    return $storage->return_type ?: Type::get_mixed();
+                });
             } elseif ($type_offset !== null) {
-                $codebase->functions->return_type_provider->registerClosure(
-                    $function_id,
-                    static function (
-                        FunctionReturnTypeProviderEvent $event,
-                    ) use (
-                        $type_offset,
-                    ): Union {
-                        $statements_analyzer = $event->getStatementsSource();
-                        $call_args = $event->getCallArgs();
-                        $function_id = $event->getFunctionId();
-                        if (!$statements_analyzer instanceof StatementsAnalyzer) {
-                            return Type::getMixed();
-                        }
-
-                        if (isset($call_args[$type_offset]->value)
-                            && ($call_arg_type
-                                = $statements_analyzer->node_data->getType($call_args[$type_offset]->value))
-                        ) {
-                            return $call_arg_type;
-                        }
-
-                        $storage = $statements_analyzer->getCodebase()->functions->getStorage(
-                            $statements_analyzer,
-                            strtolower($function_id),
-                        );
-
-                        return $storage->return_type ?: Type::getMixed();
-                    },
-                );
+                $codebase->functions->return_type_provider->register_closure($function_id, static function (Function_Return_Type_Provider_Event $event) use ($type_offset): Union {
+                    $statements_analyzer = $event->get_statements_source();
+                    $call_args = $event->get_call_args();
+                    $function_id = $event->get_function_id();
+                    if (!$statements_analyzer instanceof Statements_Analyzer) {
+                        return Type::get_mixed();
+                    }
+                    if (isset($call_args[$type_offset]->value) && $call_arg_type = $statements_analyzer->node_data->get_type($call_args[$type_offset]->value)) {
+                        return $call_arg_type;
+                    }
+                    $storage = $statements_analyzer->get_codebase()->functions->get_storage($statements_analyzer, strtolower($function_id));
+                    return $storage->return_type ?: Type::get_mixed();
+                });
             } elseif ($element_type_offset !== null) {
-                $codebase->functions->return_type_provider->registerClosure(
-                    $function_id,
-                    static function (
-                        FunctionReturnTypeProviderEvent $event,
-                    ) use (
-                        $element_type_offset,
-                    ): Union {
-                        $statements_analyzer = $event->getStatementsSource();
-                        $call_args = $event->getCallArgs();
-                        $function_id = $event->getFunctionId();
-                        if (!$statements_analyzer instanceof StatementsAnalyzer) {
-                            return Type::getMixed();
+                $codebase->functions->return_type_provider->register_closure($function_id, static function (Function_Return_Type_Provider_Event $event) use ($element_type_offset): Union {
+                    $statements_analyzer = $event->get_statements_source();
+                    $call_args = $event->get_call_args();
+                    $function_id = $event->get_function_id();
+                    if (!$statements_analyzer instanceof Statements_Analyzer) {
+                        return Type::get_mixed();
+                    }
+                    if (isset($call_args[$element_type_offset]->value) && ($call_arg_type = $statements_analyzer->node_data->get_type($call_args[$element_type_offset]->value)) && $call_arg_type->has_array()) {
+                        /**
+                         * @var TArray|TKeyedArray
+                         */
+                        $array_atomic_type = $call_arg_type->get_array();
+                        if ($array_atomic_type instanceof T_Keyed_Array) {
+                            return $array_atomic_type->get_generic_value_type();
                         }
-
-                        if (isset($call_args[$element_type_offset]->value)
-                            && ($call_arg_type
-                                = $statements_analyzer->node_data->getType($call_args[$element_type_offset]->value))
-                            && $call_arg_type->hasArray()
-                        ) {
-                            /**
-                             * @var TArray|TKeyedArray
-                             */
-                            $array_atomic_type = $call_arg_type->getArray();
-
-                            if ($array_atomic_type instanceof TKeyedArray) {
-                                return $array_atomic_type->getGenericValueType();
-                            }
-
-                            return $array_atomic_type->type_params[1];
-                        }
-
-                        $storage = $statements_analyzer->getCodebase()->functions->getStorage(
-                            $statements_analyzer,
-                            strtolower($function_id),
-                        );
-
-                        return $storage->return_type ?: Type::getMixed();
-                    },
-                );
+                        return $array_atomic_type->type_params[1];
+                    }
+                    $storage = $statements_analyzer->get_codebase()->functions->get_storage($statements_analyzer, strtolower($function_id));
+                    return $storage->return_type ?: Type::get_mixed();
+                });
             }
         }
     }

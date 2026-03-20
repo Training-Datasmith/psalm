@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\UnaryMinus;
-use Psalm\Node\VirtualNode;
-
-final class VirtualUnaryMinus extends UnaryMinus implements VirtualNode
+use Php_Parser\Node\Expr\Unary_Minus;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Unary_Minus extends Unary_Minus implements Virtual_Node
 {
-
 }

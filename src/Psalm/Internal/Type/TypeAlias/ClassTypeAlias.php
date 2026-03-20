@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Type\Type_Alias;
 
-namespace Psalm\Internal\Type\TypeAlias;
-
-use Psalm\Internal\Type\TypeAlias;
+use Psalm\Internal\Type\Type_Alias;
 use Psalm\Type\Atomic;
-
 /**
  * @internal
  */
-final class ClassTypeAlias implements TypeAlias
+final class Class_Type_Alias implements Type_Alias
 {
     /**
      * @param list<Atomic> $replacement_atomic_types

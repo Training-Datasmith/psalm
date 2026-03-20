@@ -1,38 +1,31 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal;
 
-use Psalm\Type\Atomic\TFloat;
-use Psalm\Type\Atomic\TInt;
-use Psalm\Type\Atomic\TString;
+use Psalm\Type\Atomic\T_Float;
+use Psalm\Type\Atomic\T_Int;
+use Psalm\Type\Atomic\T_String;
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class ReferenceConstraint
+final class Reference_Constraint
 {
     public ?Union $type = null;
-
     public function __construct(?Union $type = null)
     {
         if ($type) {
-            $type = $type->getBuilder();
-
-            if ($type->getLiteralStrings()) {
-                $type->addType(new TString);
+            $type = $type->get_builder();
+            if ($type->get_literal_strings()) {
+                $type->add_type(new T_String());
             }
-
-            if ($type->getLiteralInts()) {
-                $type->addType(new TInt);
+            if ($type->get_literal_ints()) {
+                $type->add_type(new T_Int());
             }
-
-            if ($type->getLiteralFloats()) {
-                $type->addType(new TFloat);
+            if ($type->get_literal_floats()) {
+                $type->add_type(new T_Float());
             }
-
             $this->type = $type->freeze();
         }
     }

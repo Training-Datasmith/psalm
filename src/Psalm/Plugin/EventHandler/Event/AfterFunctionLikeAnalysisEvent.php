@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler\Event;
 
-namespace Psalm\Plugin\EventHandler\Event;
-
-use PhpParser\Node;
+use Php_Parser\Node;
 use Psalm\Codebase;
 use Psalm\Context;
-use Psalm\FileManipulation;
-use Psalm\NodeTypeProvider;
-use Psalm\StatementsSource;
-use Psalm\Storage\FunctionLikeStorage;
-
-final class AfterFunctionLikeAnalysisEvent
+use Psalm\File_Manipulation;
+use Psalm\Node_Type_Provider;
+use Psalm\Statements_Source;
+use Psalm\Storage\Function_Like_Storage;
+final class After_Function_Like_Analysis_Event
 {
     /**
      * Called after a statement has been checked
@@ -20,59 +18,44 @@ final class AfterFunctionLikeAnalysisEvent
      * @param  FileManipulation[]   $file_replacements
      * @internal
      */
-    public function __construct(
-        private readonly Node\FunctionLike $stmt,
-        private readonly FunctionLikeStorage $functionlike_storage,
-        private readonly StatementsSource $statements_source,
-        private readonly Codebase $codebase,
-        private array $file_replacements,
-        private readonly NodeTypeProvider $node_type_provider,
-        private readonly Context $context,
-    ) {
+    public function __construct(private readonly Node\Function_Like $stmt, private readonly Function_Like_Storage $functionlike_storage, private readonly Statements_Source $statements_source, private readonly Codebase $codebase, private array $file_replacements, private readonly Node_Type_Provider $node_type_provider, private readonly Context $context)
+    {
     }
-
-    public function getStmt(): Node\FunctionLike
+    public function get_stmt(): Node\Function_Like
     {
         return $this->stmt;
     }
-
-    public function getFunctionlikeStorage(): FunctionLikeStorage
+    public function get_functionlike_storage(): Function_Like_Storage
     {
         return $this->functionlike_storage;
     }
-
-    public function getStatementsSource(): StatementsSource
+    public function get_statements_source(): Statements_Source
     {
         return $this->statements_source;
     }
-
-    public function getCodebase(): Codebase
+    public function get_codebase(): Codebase
     {
         return $this->codebase;
     }
-
     /**
      * @return FileManipulation[]
      */
-    public function getFileReplacements(): array
+    public function get_file_replacements(): array
     {
         return $this->file_replacements;
     }
-
     /**
      * @param FileManipulation[] $file_replacements
      */
-    public function setFileReplacements(array $file_replacements): void
+    public function set_file_replacements(array $file_replacements): void
     {
         $this->file_replacements = $file_replacements;
     }
-
-    public function getNodeTypeProvider(): NodeTypeProvider
+    public function get_node_type_provider(): Node_Type_Provider
     {
         return $this->node_type_provider;
     }
-
-    public function getContext(): Context
+    public function get_context(): Context
     {
         return $this->context;
     }

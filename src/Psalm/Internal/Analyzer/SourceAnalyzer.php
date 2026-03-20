@@ -1,140 +1,121 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Analyzer;
 
 use Override;
 use Psalm\Aliases;
 use Psalm\Codebase;
-use Psalm\NodeTypeProvider;
-use Psalm\StatementsSource;
+use Psalm\Node_Type_Provider;
+use Psalm\Statements_Source;
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-abstract class SourceAnalyzer implements StatementsSource
+abstract class Source_Analyzer implements Statements_Source
 {
-    protected SourceAnalyzer $source;
-
+    protected Source_Analyzer $source;
     public function __destruct()
     {
         unset($this->source);
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getAliases(): Aliases
+    public function get_aliases(): Aliases
     {
-        return $this->source->getAliases();
+        return $this->source->get_aliases();
     }
-
     /**
      * @psalm-mutation-free
      * @return array<lowercase-string, string>
      */
     #[Override]
-    public function getAliasedClassesFlipped(): array
+    public function get_aliased_classes_flipped(): array
     {
-        return $this->source->getAliasedClassesFlipped();
+        return $this->source->get_aliased_classes_flipped();
     }
-
     /**
      * @psalm-mutation-free
      * @return array<string, string>
      */
     #[Override]
-    public function getAliasedClassesFlippedReplaceable(): array
+    public function get_aliased_classes_flipped_replaceable(): array
     {
-        return $this->source->getAliasedClassesFlippedReplaceable();
+        return $this->source->get_aliased_classes_flipped_replaceable();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getFQCLN(): ?string
+    public function get_fqcln(): ?string
     {
-        return $this->source->getFQCLN();
+        return $this->source->get_fqcln();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getClassName(): ?string
+    public function get_class_name(): ?string
     {
-        return $this->source->getClassName();
+        return $this->source->get_class_name();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getParentFQCLN(): ?string
+    public function get_parent_fqcln(): ?string
     {
-        return $this->source->getParentFQCLN();
+        return $this->source->get_parent_fqcln();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getFileName(): string
+    public function get_file_name(): string
     {
-        return $this->source->getFileName();
+        return $this->source->get_file_name();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getFilePath(): string
+    public function get_file_path(): string
     {
-        return $this->source->getFilePath();
+        return $this->source->get_file_path();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getRootFileName(): string
+    public function get_root_file_name(): string
     {
-        return $this->source->getRootFileName();
+        return $this->source->get_root_file_name();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getRootFilePath(): string
+    public function get_root_file_path(): string
     {
-        return $this->source->getRootFilePath();
+        return $this->source->get_root_file_path();
     }
-
     #[Override]
-    public function setRootFilePath(string $file_path, string $file_name): void
+    public function set_root_file_path(string $file_path, string $file_name): void
     {
-        $this->source->setRootFilePath($file_path, $file_name);
+        $this->source->set_root_file_path($file_path, $file_name);
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function hasParentFilePath(string $file_path): bool
+    public function has_parent_file_path(string $file_path): bool
     {
-        return $this->source->hasParentFilePath($file_path);
+        return $this->source->has_parent_file_path($file_path);
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function hasAlreadyRequiredFilePath(string $file_path): bool
+    public function has_already_required_file_path(string $file_path): bool
     {
-        return $this->source->hasAlreadyRequiredFilePath($file_path);
+        return $this->source->has_already_required_file_path($file_path);
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getRequireNesting(): int
+    public function get_require_nesting(): int
     {
-        return $this->source->getRequireNesting();
+        return $this->source->get_require_nesting();
     }
-
     /**
      * @psalm-mutation-free
      */
     #[Override]
-    public function getSource(): StatementsSource
+    public function get_source(): Statements_Source
     {
         return $this->source;
     }
-
     /**
      * Get a list of suppressed issues
      *
@@ -142,82 +123,73 @@ abstract class SourceAnalyzer implements StatementsSource
      * @return array<string>
      */
     #[Override]
-    public function getSuppressedIssues(): array
+    public function get_suppressed_issues(): array
     {
-        return $this->source->getSuppressedIssues();
+        return $this->source->get_suppressed_issues();
     }
-
     /**
      * @param array<int, string> $new_issues
      */
     #[Override]
-    public function addSuppressedIssues(array $new_issues): void
+    public function add_suppressed_issues(array $new_issues): void
     {
-        $this->source->addSuppressedIssues($new_issues);
+        $this->source->add_suppressed_issues($new_issues);
     }
-
     /**
      * @param array<int, string> $new_issues
      */
     #[Override]
-    public function removeSuppressedIssues(array $new_issues): void
+    public function remove_suppressed_issues(array $new_issues): void
     {
-        $this->source->removeSuppressedIssues($new_issues);
+        $this->source->remove_suppressed_issues($new_issues);
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getNamespace(): ?string
+    public function get_namespace(): ?string
     {
-        return $this->source->getNamespace();
+        return $this->source->get_namespace();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function isStatic(): bool
+    public function is_static(): bool
     {
-        return $this->source->isStatic();
+        return $this->source->is_static();
     }
-
     /**
      * @psalm-mutation-free
      */
     #[Override]
-    public function getCodebase(): Codebase
+    public function get_codebase(): Codebase
     {
-        return $this->source->getCodebase();
+        return $this->source->get_codebase();
     }
-
     /**
      * @psalm-mutation-free
      */
-    public function getProjectAnalyzer(): ProjectAnalyzer
+    public function get_project_analyzer(): Project_Analyzer
     {
-        return $this->source->getProjectAnalyzer();
+        return $this->source->get_project_analyzer();
     }
-
     /**
      * @psalm-mutation-free
      */
-    public function getFileAnalyzer(): FileAnalyzer
+    public function get_file_analyzer(): File_Analyzer
     {
-        return $this->source->getFileAnalyzer();
+        return $this->source->get_file_analyzer();
     }
-
     /**
      * @psalm-mutation-free
      * @return array<string, array<string, Union>>|null
      */
     #[Override]
-    public function getTemplateTypeMap(): ?array
+    public function get_template_type_map(): ?array
     {
-        return $this->source->getTemplateTypeMap();
+        return $this->source->get_template_type_map();
     }
-
     /** @psalm-mutation-free */
     #[Override]
-    public function getNodeTypeProvider(): NodeTypeProvider
+    public function get_node_type_provider(): Node_Type_Provider
     {
-        return $this->source->getNodeTypeProvider();
+        return $this->source->get_node_type_provider();
     }
 }

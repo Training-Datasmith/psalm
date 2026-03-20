@@ -1,14 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\Nop;
-use Psalm\Node\VirtualNode;
-
+use Php_Parser\Node\Stmt\Nop;
+use Psalm\Node\Virtual_Node;
 /** Nop/empty statement (;). */
-final class VirtualNop extends Nop implements VirtualNode
+final class Virtual_Nop extends Nop implements Virtual_Node
 {
-
 }

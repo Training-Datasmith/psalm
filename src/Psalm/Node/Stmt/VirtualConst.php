@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\Const_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualConst extends Const_ implements VirtualNode
+use Php_Parser\Node\Stmt\Const_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Const extends Const_ implements Virtual_Node
 {
-
 }

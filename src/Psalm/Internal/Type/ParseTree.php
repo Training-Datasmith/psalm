@@ -1,36 +1,30 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Type;
 
 /**
  * @internal
  */
-class ParseTree
+class Parse_Tree
 {
     /**
      * @var list<ParseTree>
      */
     public array $children = [];
-
     public bool $possibly_undefined = false;
-
-    public function __construct(public ?ParseTree $parent = null)
+    public function __construct(public ?Parse_Tree $parent = null)
     {
     }
-
     public function __destruct()
     {
         $this->parent = null;
     }
-
-    public function cleanParents(): void
+    public function clean_parents(): void
     {
         foreach ($this->children as $child) {
-            $child->cleanParents();
+            $child->clean_parents();
         }
-
         $this->parent = null;
     }
 }

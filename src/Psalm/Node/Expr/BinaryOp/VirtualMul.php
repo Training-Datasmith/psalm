@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\Mul;
-use Psalm\Node\VirtualNode;
-
-final class VirtualMul extends Mul implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Mul;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Mul extends Mul implements Virtual_Node
 {
-
 }

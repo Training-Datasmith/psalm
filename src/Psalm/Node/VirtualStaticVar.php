@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node;
 
-use PhpParser\Node\StaticVar;
-use Psalm\Node\VirtualNode;
-
-final class VirtualStaticVar extends StaticVar implements VirtualNode
+use Php_Parser\Node\Static_Var;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Static_Var extends Static_Var implements Virtual_Node
 {
-
 }

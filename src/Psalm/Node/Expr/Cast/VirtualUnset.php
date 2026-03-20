@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr\Cast;
 
-use PhpParser\Node\Expr\Cast\Unset_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualUnset extends Unset_ implements VirtualNode
+use Php_Parser\Node\Expr\Cast\Unset_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Unset extends Unset_ implements Virtual_Node
 {
-
 }

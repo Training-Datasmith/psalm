@@ -1,39 +1,31 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Plugin;
 
-use PhpParser;
+use Php_Parser;
 use Psalm\Context;
-use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
+use Psalm\Internal\Analyzer\Statements\Expression_Analyzer;
+use Psalm\Internal\Analyzer\Statements_Analyzer;
 use Psalm\Type;
 use Psalm\Type\Union;
-
-final class ArgTypeInferer
+final class Arg_Type_Inferer
 {
     /**
      * @internal
      */
-    public function __construct(
-        private readonly Context $context,
-        private readonly StatementsAnalyzer $statements_analyzer,
-    ) {
-    }
-
-    public function infer(PhpParser\Node\Arg $arg): null|Union
+    public function __construct(private readonly Context $context, private readonly Statements_Analyzer $statements_analyzer)
     {
-        $already_inferred_type = $this->statements_analyzer->node_data->getType($arg->value);
-
+    }
+    public function infer(Php_Parser\Node\Arg $arg): null|Union
+    {
+        $already_inferred_type = $this->statements_analyzer->node_data->get_type($arg->value);
         if ($already_inferred_type) {
             return $already_inferred_type;
         }
-
-        if (ExpressionAnalyzer::analyze($this->statements_analyzer, $arg->value, $this->context) === false) {
+        if (Expression_Analyzer::analyze($this->statements_analyzer, $arg->value, $this->context) === false) {
             return null;
         }
-
-        return $this->statements_analyzer->node_data->getType($arg->value) ?? Type::getMixed();
+        return $this->statements_analyzer->node_data->get_type($arg->value) ?? Type::get_mixed();
     }
 }

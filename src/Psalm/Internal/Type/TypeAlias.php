@@ -1,9 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Type;
 
-interface TypeAlias
+interface Type_Alias
 {
 }

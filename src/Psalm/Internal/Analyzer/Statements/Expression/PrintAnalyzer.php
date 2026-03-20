@@ -1,114 +1,57 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Analyzer\Statements\Expression;
 
-use PhpParser;
-use Psalm\CodeLocation;
+use Php_Parser;
+use Psalm\Code_Location;
 use Psalm\Context;
-use Psalm\Internal\Analyzer\FunctionLikeAnalyzer;
-use Psalm\Internal\Analyzer\Statements\Expression\Call\ArgumentAnalyzer;
-use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
-use Psalm\Internal\Codebase\TaintFlowGraph;
-use Psalm\Internal\DataFlow\TaintSink;
-use Psalm\Issue\ForbiddenCode;
-use Psalm\Issue\ImpureFunctionCall;
-use Psalm\IssueBuffer;
-use Psalm\Storage\FunctionLikeParameter;
+use Psalm\Internal\Analyzer\Function_Like_Analyzer;
+use Psalm\Internal\Analyzer\Statements\Expression\Call\Argument_Analyzer;
+use Psalm\Internal\Analyzer\Statements\Expression_Analyzer;
+use Psalm\Internal\Analyzer\Statements_Analyzer;
+use Psalm\Internal\Codebase\Taint_Flow_Graph;
+use Psalm\Internal\Data_Flow\Taint_Sink;
+use Psalm\Issue\Forbidden_Code;
+use Psalm\Issue\Impure_Function_Call;
+use Psalm\Issue_Buffer;
+use Psalm\Storage\Function_Like_Parameter;
 use Psalm\Type;
-use Psalm\Type\TaintKind;
-
+use Psalm\Type\Taint_Kind;
 /**
  * @internal
  */
-final class PrintAnalyzer
+final class Print_Analyzer
 {
-    public static function analyze(
-        StatementsAnalyzer $statements_analyzer,
-        PhpParser\Node\Expr\Print_ $stmt,
-        Context $context,
-    ): bool {
-        $codebase = $statements_analyzer->getCodebase();
-
-        if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->expr, $context) === false) {
+    public static function analyze(Statements_Analyzer $statements_analyzer, Php_Parser\Node\Expr\Print_ $stmt, Context $context): bool
+    {
+        $codebase = $statements_analyzer->get_codebase();
+        if (Expression_Analyzer::analyze($statements_analyzer, $stmt->expr, $context) === false) {
             return false;
         }
-
-        if ($statements_analyzer->data_flow_graph instanceof TaintFlowGraph) {
-            $call_location = new CodeLocation($statements_analyzer->getSource(), $stmt);
-
-            $print_param_sink = TaintSink::getForMethodArgument(
-                'print',
-                'print',
-                0,
-                null,
-                $call_location,
-            );
-
-            $print_param_sink->taints = [
-                TaintKind::INPUT_HTML,
-                TaintKind::INPUT_HAS_QUOTES,
-                TaintKind::USER_SECRET,
-                TaintKind::SYSTEM_SECRET,
-            ];
-
-            $statements_analyzer->data_flow_graph->addSink($print_param_sink);
+        if ($statements_analyzer->data_flow_graph instanceof Taint_Flow_Graph) {
+            $call_location = new Code_Location($statements_analyzer->get_source(), $stmt);
+            $print_param_sink = Taint_Sink::get_for_method_argument('print', 'print', 0, null, $call_location);
+            $print_param_sink->taints = [Taint_Kind::INPUT_HTML, Taint_Kind::INPUT_HAS_QUOTES, Taint_Kind::USER_SECRET, Taint_Kind::SYSTEM_SECRET];
+            $statements_analyzer->data_flow_graph->add_sink($print_param_sink);
         }
-
-        if ($stmt_expr_type = $statements_analyzer->node_data->getType($stmt->expr)) {
-            if (ArgumentAnalyzer::verifyType(
-                $statements_analyzer,
-                $stmt_expr_type,
-                Type::getString(),
-                null,
-                'print',
-                null,
-                0,
-                new CodeLocation($statements_analyzer->getSource(), $stmt->expr),
-                $stmt->expr,
-                $context,
-                new FunctionLikeParameter('var', false),
-                false,
-                null,
-                true,
-                true,
-                new CodeLocation($statements_analyzer->getSource(), $stmt),
-            ) === false) {
+        if ($stmt_expr_type = $statements_analyzer->node_data->get_type($stmt->expr)) {
+            if (Argument_Analyzer::verify_type($statements_analyzer, $stmt_expr_type, Type::get_string(), null, 'print', null, 0, new Code_Location($statements_analyzer->get_source(), $stmt->expr), $stmt->expr, $context, new Function_Like_Parameter('var', false), false, null, true, true, new Code_Location($statements_analyzer->get_source(), $stmt)) === false) {
                 return false;
             }
         }
-
         if (isset($codebase->config->forbidden_functions['print'])) {
-            IssueBuffer::maybeAdd(
-                new ForbiddenCode(
-                    'You have forbidden the use of print',
-                    new CodeLocation($statements_analyzer->getSource(), $stmt),
-                ),
-                $statements_analyzer->getSuppressedIssues(),
-            );
+            Issue_Buffer::maybe_add(new Forbidden_Code('You have forbidden the use of print', new Code_Location($statements_analyzer->get_source(), $stmt)), $statements_analyzer->get_suppressed_issues());
         }
-
         if (!$context->collect_initializations && !$context->collect_mutations) {
             if ($context->mutation_free || $context->external_mutation_free) {
-                IssueBuffer::maybeAdd(
-                    new ImpureFunctionCall(
-                        'Cannot call print from a mutation-free context',
-                        new CodeLocation($statements_analyzer, $stmt),
-                    ),
-                    $statements_analyzer->getSuppressedIssues(),
-                );
-            } elseif ($statements_analyzer->getSource() instanceof FunctionLikeAnalyzer
-                && $statements_analyzer->getSource()->track_mutations
-            ) {
-                $statements_analyzer->getSource()->inferred_has_mutation = true;
-                $statements_analyzer->getSource()->inferred_impure = true;
+                Issue_Buffer::maybe_add(new Impure_Function_Call('Cannot call print from a mutation-free context', new Code_Location($statements_analyzer, $stmt)), $statements_analyzer->get_suppressed_issues());
+            } elseif ($statements_analyzer->get_source() instanceof Function_Like_Analyzer && $statements_analyzer->get_source()->track_mutations) {
+                $statements_analyzer->get_source()->inferred_has_mutation = true;
+                $statements_analyzer->get_source()->inferred_impure = true;
             }
         }
-
-        $statements_analyzer->node_data->setType($stmt, Type::getInt(false, 1));
-
+        $statements_analyzer->node_data->set_type($stmt, Type::get_int(false, 1));
         return true;
     }
 }

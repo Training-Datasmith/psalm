@@ -1,29 +1,27 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Fork;
 
-use Amp\ByteStream\StreamChannel;
+use Amp\Byte_Stream\Stream_Channel;
 use Amp\Cancellation;
 use Amp\Future;
-use Amp\Parallel\Context\ContextException;
-use Amp\Parallel\Context\Internal\AbstractContext;
-use Amp\Parallel\Context\Internal\ContextChannel;
-use Amp\Parallel\Context\Internal\ExitFailure;
-use Amp\Parallel\Context\Internal\ExitSuccess;
-use Amp\Parallel\Ipc\IpcHub;
-use Amp\Serialization\NativeSerializer;
-use Amp\Serialization\SerializationException;
-use Amp\TimeoutCancellation;
+use Amp\Parallel\Context\Context_Exception;
+use Amp\Parallel\Context\Internal\Abstract_Context;
+use Amp\Parallel\Context\Internal\Context_Channel;
+use Amp\Parallel\Context\Internal\Exit_Failure;
+use Amp\Parallel\Context\Internal\Exit_Success;
+use Amp\Parallel\Ipc\Ipc_Hub;
+use Amp\Serialization\Native_Serializer;
+use Amp\Serialization\Serialization_Exception;
+use Amp\Timeout_Cancellation;
 use Error;
 use Override;
 use ParseError;
-use Revolt\EventLoop;
+use Revolt\Event_Loop;
 use RuntimeException;
 use Throwable;
 use TypeError;
-
 use function Amp\Parallel\Ipc\connect;
 use function count;
 use function define;
@@ -45,12 +43,10 @@ use function posix_kill;
 use function posix_strerror;
 use function sprintf;
 use function trigger_error;
-
 use const E_USER_ERROR;
 use const PHP_EOL;
 use const STDERR;
 use const WNOHANG;
-
 /**
  * @internal
  * @template-covariant TResult
@@ -58,10 +54,9 @@ use const WNOHANG;
  * @template TSend
  * @extends AbstractContext<TResult, TReceive, TSend>
  */
-final class ForkContext extends AbstractContext
+final class Fork_Context extends Abstract_Context
 {
     private const DEFAULT_START_TIMEOUT = 5;
-
     /**
      * @param string|non-empty-list<string> $argv Path to PHP script or array with first element as path and
      *     following elements options to the PHP script (e.g.: ['bin/worker.php', 'Option1Value', 'Option2Value']).
@@ -69,156 +64,106 @@ final class ForkContext extends AbstractContext
      *      before failing.
      * @throws ContextException If starting the process fails.
      */
-    public static function start(
-        string|array $argv,
-        IpcHub $ipcHub,
-        ?Cancellation $cancellation = null,
-        int $childConnectTimeout = self::DEFAULT_START_TIMEOUT,
-    ): self {
-        $serializer = extension_loaded('igbinary')
-            ? new IgbinarySerializer
-            : new NativeSerializer;
-
-        $key = $ipcHub->generateKey();
-
+    public static function start(string|array $argv, Ipc_Hub $ipc_hub, ?Cancellation $cancellation = null, int $child_connect_timeout = self::DEFAULT_START_TIMEOUT): self
+    {
+        $serializer = extension_loaded('igbinary') ? new Igbinary_Serializer() : new Native_Serializer();
+        $key = $ipc_hub->generate_key();
         // Fork
         if (($pid = pcntl_fork()) < 0) {
             throw new RuntimeException(posix_strerror(posix_get_last_error()));
         }
-
         // Parent
         if ($pid > 0) {
             try {
-                $socket = $ipcHub->accept($key, $cancellation);
-                $ipcChannel = new StreamChannel($socket, $socket, $serializer);
-        
-                $socket = $ipcHub->accept($key, $cancellation);
-                $resultChannel = new StreamChannel($socket, $socket, $serializer);
+                $socket = $ipc_hub->accept($key, $cancellation);
+                $ipc_channel = new Stream_Channel($socket, $socket, $serializer);
+                $socket = $ipc_hub->accept($key, $cancellation);
+                $result_channel = new Stream_Channel($socket, $socket, $serializer);
             } catch (Throwable $exception) {
-                $cancellation?->throwIfRequested();
-        
-                throw new ContextException("Starting the process failed", 0, $exception);
+                $cancellation?->throw_if_requested();
+                throw new Context_Exception("Starting the process failed", 0, $exception);
             }
-        
-            return new self($pid, $ipcChannel, $resultChannel);
+            return new self($pid, $ipc_channel, $result_channel);
         }
-
         // Child
         define("AMP_CONTEXT", "parallel");
         if (is_string($argv)) {
             $argv = [$argv];
         }
-
-        $connectCancellation = new TimeoutCancellation((float) $childConnectTimeout);
-        $uri = $ipcHub->getUri();
-
+        $connect_cancellation = new Timeout_Cancellation((float) $child_connect_timeout);
+        $uri = $ipc_hub->get_uri();
         try {
-            $socket = connect($uri, $key, $connectCancellation);
-            $ipcChannel = new StreamChannel($socket, $socket, $serializer);
-
-            $socket = connect($uri, $key, $connectCancellation);
-            $resultChannel = new StreamChannel($socket, $socket, $serializer);
+            $socket = connect($uri, $key, $connect_cancellation);
+            $ipc_channel = new Stream_Channel($socket, $socket, $serializer);
+            $socket = connect($uri, $key, $connect_cancellation);
+            $result_channel = new Stream_Channel($socket, $socket, $serializer);
         } catch (Throwable $exception) {
-            trigger_error($exception->getMessage(), E_USER_ERROR);
+            trigger_error($exception->get_message(), E_USER_ERROR);
         }
-
         try {
             if (!isset($argv[0])) {
                 throw new Error("No script path given");
             }
-
             if (!is_file($argv[0])) {
-                throw new Error(sprintf(
-                    "No script found at '%s' (be sure to provide the full path to the script)",
-                    $argv[0],
-                ));
+                throw new Error(sprintf("No script found at '%s' (be sure to provide the full path to the script)", $argv[0]));
             }
-
             try {
                 $argc = count($argv);
                 $callable = require $argv[0];
             } catch (TypeError $exception) {
-                throw new Error(sprintf(
-                    "Script '%s' did not return a callable function: %s",
-                    $argv[0],
-                    $exception->getMessage(),
-                ), 0, $exception);
+                throw new Error(sprintf("Script '%s' did not return a callable function: %s", $argv[0], $exception->get_message()), 0, $exception);
             } catch (ParseError $exception) {
-                throw new Error(sprintf(
-                    "Script '%s' contains a parse error: %s",
-                    $argv[0],
-                    $exception->getMessage(),
-                ), 0, $exception);
+                throw new Error(sprintf("Script '%s' contains a parse error: %s", $argv[0], $exception->get_message()), 0, $exception);
             }
-
-            $returnValue = $callable(new ContextChannel($ipcChannel));
-            $result = new ExitSuccess($returnValue instanceof Future ? $returnValue->await() : $returnValue);
+            $return_value = $callable(new Context_Channel($ipc_channel));
+            $result = new Exit_Success($return_value instanceof Future ? $return_value->await() : $return_value);
         } catch (Throwable $exception) {
-            $result = new ExitFailure($exception);
+            $result = new Exit_Failure($exception);
         }
-
         try {
             try {
-                $resultChannel->send($result);
-            } catch (SerializationException $exception) {
+                $result_channel->send($result);
+            } catch (Serialization_Exception $exception) {
                 // Serializing the result failed. Send the reason why.
-                $resultChannel->send(new ExitFailure($exception));
+                $result_channel->send(new Exit_Failure($exception));
             }
         } catch (Throwable $exception) {
-            fprintf(
-                STDERR,
-                "Could not send result to parent: '%s'; be sure to shutdown the child before ending the parent".PHP_EOL,
-                $exception->getMessage(),
-            );
+            fprintf(STDERR, "Could not send result to parent: '%s'; be sure to shutdown the child before ending the parent" . PHP_EOL, $exception->get_message());
         }
-
-        EventLoop::run();
-
-        fwrite(STDERR, "ERROR IN WORKER: Unreachable!".PHP_EOL);
+        Event_Loop::run();
+        fwrite(STDERR, "ERROR IN WORKER: Unreachable!" . PHP_EOL);
         exit(1);
     }
-
     private ?int $exited = null;
-
     /**
      * @param StreamChannel<TReceive, TSend> $ipcChannel
      */
-    private function __construct(
-        private readonly int $pid,
-        StreamChannel $ipcChannel,
-        StreamChannel $resultChannel,
-    ) {
-        parent::__construct($ipcChannel, $resultChannel);
+    private function __construct(private readonly int $pid, Stream_Channel $ipc_channel, Stream_Channel $result_channel)
+    {
+        parent::__construct($ipc_channel, $result_channel);
     }
-
     public function __destruct()
     {
         $this->close();
     }
-
     #[Override]
     public function receive(?Cancellation $cancellation = null): mixed
     {
-        $this->checkExit();
-
+        $this->check_exit();
         return parent::receive($cancellation);
     }
-
     #[Override]
     public function send(mixed $data): void
     {
-        $this->checkExit();
-
+        $this->check_exit();
         parent::send($data);
     }
-
-    private function checkExit(bool $wait = false): ?int
+    private function check_exit(bool $wait = false): ?int
     {
         if ($this->exited === null) {
             if (pcntl_waitpid($this->pid, $status, $wait ? 0 : WNOHANG) === 0) {
                 return null;
             }
-
             $signal = -1;
             if (pcntl_wifsignaled($status)) {
                 $signal = pcntl_wtermsig($status);
@@ -229,46 +174,36 @@ final class ForkContext extends AbstractContext
             }
             $this->exited = $signal;
         }
-
-        if (!$this->weKilled && $this->exited > 0) {
+        if (!$this->we_killed && $this->exited > 0) {
             $signal = $this->exited;
             if ($signal === 11) {
-                $signal = "11: THIS IS A PHP BUG, please report this to https://github.com/vimeo/psalm/issues".
-                    " AND to https://github.com/php/php-src/issues";
+                $signal = "11: THIS IS A PHP BUG, please report this to https://github.com/vimeo/psalm/issues" . " AND to https://github.com/php/php-src/issues";
             } elseif ($signal === 9) {
-                $signal = "9: the process was likely killed by the OOM killer, try increasing the swap space ".
-                    "or use the arrayCache=\"false\" config to reduce memory usage";
+                $signal = "9: the process was likely killed by the OOM killer, try increasing the swap space " . "or use the arrayCache=\"false\" config to reduce memory usage";
             }
-            throw new ContextException("Worker exited due to signal $signal!");
+            throw new Context_Exception("Worker exited due to signal {$signal}!");
         }
-
         return $this->exited;
     }
-
-    private bool $weKilled = false;
-
+    private bool $we_killed = false;
     #[Override]
     public function close(): void
     {
-        if ($this->checkExit() === null) {
-            $this->weKilled = true;
+        if ($this->check_exit() === null) {
+            $this->we_killed = true;
             posix_kill($this->pid, 9);
-
-            $this->checkExit(true);
+            $this->check_exit(true);
         }
-
         parent::close();
     }
-
     #[Override]
     public function join(?Cancellation $cancellation = null): mixed
     {
         try {
-            $data = $this->receiveExitResult($cancellation);
+            $data = $this->receive_exit_result($cancellation);
         } finally {
             $this->close();
         }
-
-        return $data->getResult();
+        return $data->get_result();
     }
 }

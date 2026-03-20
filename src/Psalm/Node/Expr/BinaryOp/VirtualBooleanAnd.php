@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
-use Psalm\Node\VirtualNode;
-
-final class VirtualBooleanAnd extends BooleanAnd implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Boolean_And;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Boolean_And extends Boolean_And implements Virtual_Node
 {
-
 }

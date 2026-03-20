@@ -1,129 +1,61 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Analyzer\Statements;
 
-use PhpParser;
-use Psalm\CodeLocation;
+use Php_Parser;
+use Psalm\Code_Location;
 use Psalm\Context;
-use Psalm\Internal\Analyzer\FunctionLikeAnalyzer;
-use Psalm\Internal\Analyzer\Statements\Expression\Call\ArgumentAnalyzer;
-use Psalm\Internal\Analyzer\Statements\Expression\CastAnalyzer;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
-use Psalm\Internal\Codebase\TaintFlowGraph;
-use Psalm\Internal\DataFlow\TaintSink;
-use Psalm\Issue\ForbiddenCode;
-use Psalm\Issue\ImpureFunctionCall;
-use Psalm\IssueBuffer;
-use Psalm\Storage\FunctionLikeParameter;
+use Psalm\Internal\Analyzer\Function_Like_Analyzer;
+use Psalm\Internal\Analyzer\Statements\Expression\Call\Argument_Analyzer;
+use Psalm\Internal\Analyzer\Statements\Expression\Cast_Analyzer;
+use Psalm\Internal\Analyzer\Statements_Analyzer;
+use Psalm\Internal\Codebase\Taint_Flow_Graph;
+use Psalm\Internal\Data_Flow\Taint_Sink;
+use Psalm\Issue\Forbidden_Code;
+use Psalm\Issue\Impure_Function_Call;
+use Psalm\Issue_Buffer;
+use Psalm\Storage\Function_Like_Parameter;
 use Psalm\Type;
-use Psalm\Type\TaintKind;
-
+use Psalm\Type\Taint_Kind;
 /**
  * @internal
  */
-final class EchoAnalyzer
+final class Echo_Analyzer
 {
-    public static function analyze(
-        StatementsAnalyzer $statements_analyzer,
-        PhpParser\Node\Stmt\Echo_ $stmt,
-        Context $context,
-    ): bool {
-        $echo_param = new FunctionLikeParameter(
-            'var',
-            false,
-        );
-
-        $codebase = $statements_analyzer->getCodebase();
-
+    public static function analyze(Statements_Analyzer $statements_analyzer, Php_Parser\Node\Stmt\Echo_ $stmt, Context $context): bool
+    {
+        $echo_param = new Function_Like_Parameter('var', false);
+        $codebase = $statements_analyzer->get_codebase();
         foreach ($stmt->exprs as $i => $expr) {
             $context->inside_call = true;
-            ExpressionAnalyzer::analyze($statements_analyzer, $expr, $context);
+            Expression_Analyzer::analyze($statements_analyzer, $expr, $context);
             $context->inside_call = false;
-
-            $expr_type = $statements_analyzer->node_data->getType($expr);
-
-            if ($statements_analyzer->data_flow_graph instanceof TaintFlowGraph) {
-                if ($expr_type && $expr_type->hasObjectType()) {
-                    $expr_type = CastAnalyzer::castStringAttempt(
-                        $statements_analyzer,
-                        $context,
-                        $expr_type,
-                        $expr,
-                        false,
-                    );
+            $expr_type = $statements_analyzer->node_data->get_type($expr);
+            if ($statements_analyzer->data_flow_graph instanceof Taint_Flow_Graph) {
+                if ($expr_type && $expr_type->has_object_type()) {
+                    $expr_type = Cast_Analyzer::cast_string_attempt($statements_analyzer, $context, $expr_type, $expr, false);
                 }
-
-                $call_location = new CodeLocation($statements_analyzer->getSource(), $stmt);
-
-                $echo_param_sink = TaintSink::getForMethodArgument(
-                    'echo',
-                    'echo',
-                    (int) $i,
-                    null,
-                    $call_location,
-                );
-
-                $echo_param_sink->taints = [
-                    TaintKind::INPUT_HTML,
-                    TaintKind::INPUT_HAS_QUOTES,
-                    TaintKind::USER_SECRET,
-                    TaintKind::SYSTEM_SECRET,
-                ];
-
-                $statements_analyzer->data_flow_graph->addSink($echo_param_sink);
+                $call_location = new Code_Location($statements_analyzer->get_source(), $stmt);
+                $echo_param_sink = Taint_Sink::get_for_method_argument('echo', 'echo', (int) $i, null, $call_location);
+                $echo_param_sink->taints = [Taint_Kind::INPUT_HTML, Taint_Kind::INPUT_HAS_QUOTES, Taint_Kind::USER_SECRET, Taint_Kind::SYSTEM_SECRET];
+                $statements_analyzer->data_flow_graph->add_sink($echo_param_sink);
             }
-
-            if (ArgumentAnalyzer::verifyType(
-                $statements_analyzer,
-                $expr_type ?? Type::getMixed(),
-                Type::getString(),
-                null,
-                'echo',
-                null,
-                (int)$i,
-                new CodeLocation($statements_analyzer->getSource(), $expr),
-                $expr,
-                $context,
-                $echo_param,
-                false,
-                null,
-                true,
-                true,
-                new CodeLocation($statements_analyzer, $stmt),
-            ) === false) {
+            if (Argument_Analyzer::verify_type($statements_analyzer, $expr_type ?? Type::get_mixed(), Type::get_string(), null, 'echo', null, (int) $i, new Code_Location($statements_analyzer->get_source(), $expr), $expr, $context, $echo_param, false, null, true, true, new Code_Location($statements_analyzer, $stmt)) === false) {
                 return false;
             }
         }
-
         if (isset($codebase->config->forbidden_functions['echo'])) {
-            IssueBuffer::maybeAdd(
-                new ForbiddenCode(
-                    'Use of echo',
-                    new CodeLocation($statements_analyzer, $stmt),
-                ),
-                $statements_analyzer->getSource()->getSuppressedIssues(),
-            );
+            Issue_Buffer::maybe_add(new Forbidden_Code('Use of echo', new Code_Location($statements_analyzer, $stmt)), $statements_analyzer->get_source()->get_suppressed_issues());
         }
-
         if (!$context->collect_initializations && !$context->collect_mutations) {
             if ($context->mutation_free || $context->external_mutation_free) {
-                IssueBuffer::maybeAdd(
-                    new ImpureFunctionCall(
-                        'Cannot call echo from a mutation-free context',
-                        new CodeLocation($statements_analyzer, $stmt),
-                    ),
-                    $statements_analyzer->getSuppressedIssues(),
-                );
-            } elseif ($statements_analyzer->getSource() instanceof FunctionLikeAnalyzer
-                && $statements_analyzer->getSource()->track_mutations
-            ) {
-                $statements_analyzer->getSource()->inferred_has_mutation = true;
-                $statements_analyzer->getSource()->inferred_impure = true;
+                Issue_Buffer::maybe_add(new Impure_Function_Call('Cannot call echo from a mutation-free context', new Code_Location($statements_analyzer, $stmt)), $statements_analyzer->get_suppressed_issues());
+            } elseif ($statements_analyzer->get_source() instanceof Function_Like_Analyzer && $statements_analyzer->get_source()->track_mutations) {
+                $statements_analyzer->get_source()->inferred_has_mutation = true;
+                $statements_analyzer->get_source()->inferred_impure = true;
             }
         }
-
         return true;
     }
 }

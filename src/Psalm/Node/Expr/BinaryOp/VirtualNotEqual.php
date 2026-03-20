@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\NotEqual;
-use Psalm\Node\VirtualNode;
-
-final class VirtualNotEqual extends NotEqual implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Not_Equal;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Not_Equal extends Not_Equal implements Virtual_Node
 {
-
 }

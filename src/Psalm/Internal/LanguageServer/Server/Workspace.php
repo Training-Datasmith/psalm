@@ -1,23 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\LanguageServer\Server;
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server\Server;
 
 use InvalidArgumentException;
-use LanguageServerProtocol\FileChangeType;
-use LanguageServerProtocol\FileEvent;
+use Language_Server_Protocol\File_Change_Type;
+use Language_Server_Protocol\File_Event;
 use Psalm\Codebase;
-use Psalm\Internal\Analyzer\ProjectAnalyzer;
+use Psalm\Internal\Analyzer\Project_Analyzer;
 use Psalm\Internal\Composer;
-use Psalm\Internal\LanguageServer\LanguageServer;
-use Psalm\Internal\Provider\FileReferenceProvider;
-
+use Psalm\Internal\Language_Server\Language_Server;
+use Psalm\Internal\Provider\File_Reference_Provider;
 use function array_filter;
 use function array_map;
 use function in_array;
 use function realpath;
-
 /**
  * Provides method handlers for all workspace/* methods
  *
@@ -25,13 +22,9 @@ use function realpath;
  */
 final class Workspace
 {
-    public function __construct(
-        protected LanguageServer $server,
-        protected Codebase $codebase,
-        protected ProjectAnalyzer $project_analyzer,
-    ) {
+    public function __construct(protected Language_Server $server, protected Codebase $codebase, protected Project_Analyzer $project_analyzer)
+    {
     }
-
     /**
      * The watched files notification is sent from the client to the server when the client
      * detects changes to files and folders watched by the language client (note although
@@ -43,72 +36,56 @@ final class Workspace
      * @param FileEvent[] $changes
      * @psalm-suppress PossiblyUnusedMethod
      */
-    public function didChangeWatchedFiles(array $changes): void
+    public function did_change_watched_files(array $changes): void
     {
-        $this->server->logDebug(
-            'workspace/didChangeWatchedFiles',
-        );
-
-        $realFiles = array_filter(
-            array_map(function (FileEvent $change): ?string {
-                try {
-                    return $this->server->uriToPath($change->uri);
-                } catch (InvalidArgumentException) {
-                    return null;
-                }
-            }, $changes),
-        );
-
-        $composerLockFile = realpath(Composer::getLockFilePath($this->codebase->config->base_dir));
-        if (in_array($composerLockFile, $realFiles)) {
-            $this->server->logInfo('Composer.lock file changed. Reloading codebase');
-            FileReferenceProvider::clearCache();
-            $this->server->queueFileAnalysisWithOpenedFiles();
+        $this->server->log_debug('workspace/didChangeWatchedFiles');
+        $real_files = array_filter(array_map(function (File_Event $change): ?string {
+            try {
+                return $this->server->uri_to_path($change->uri);
+            } catch (InvalidArgumentException) {
+                return null;
+            }
+        }, $changes));
+        $composer_lock_file = realpath(Composer::get_lock_file_path($this->codebase->config->base_dir));
+        if (in_array($composer_lock_file, $real_files)) {
+            $this->server->log_info('Composer.lock file changed. Reloading codebase');
+            File_Reference_Provider::clear_cache();
+            $this->server->queue_file_analysis_with_opened_files();
             return;
         }
-
         foreach ($changes as $change) {
-            $file_path = $this->server->uriToPath($change->uri);
-
-            if ($composerLockFile === $file_path) {
+            $file_path = $this->server->uri_to_path($change->uri);
+            if ($composer_lock_file === $file_path) {
                 continue;
             }
-
-            if ($change->type === FileChangeType::DELETED) {
-                $this->codebase->invalidateInformationForFile($file_path);
+            if ($change->type === File_Change_Type::DELETED) {
+                $this->codebase->invalidate_information_for_file($file_path);
                 continue;
             }
-
-            if (!$this->codebase->config->isInProjectDirs($file_path)) {
+            if (!$this->codebase->config->is_in_project_dirs($file_path)) {
                 continue;
             }
-
             if ($this->project_analyzer->onchange_line_limit === 0) {
                 continue;
             }
-
             //If the file is currently open then dont analyze it because its tracked in didChange
-            if (!$this->codebase->file_provider->isOpen($file_path)) {
-                $this->server->queueClosedFileAnalysis($file_path, $change->uri);
+            if (!$this->codebase->file_provider->is_open($file_path)) {
+                $this->server->queue_closed_file_analysis($file_path, $change->uri);
             }
         }
     }
-
     // @codingStandardsIgnoreStart
     /**
      * A notification sent from the client to the server to signal the change of configuration settings.
      *
      * @psalm-suppress PossiblyUnusedMethod, UnusedParam, MissingParamType
      */
-    public function didChangeConfiguration(): void
+    public function did_change_configuration(): void
     {
         // @codingStandardsIgnoreEnd
-        $this->server->logDebug(
-            'workspace/didChangeConfiguration',
-        );
-        $this->server->client->refreshConfiguration();
+        $this->server->log_debug('workspace/didChangeConfiguration');
+        $this->server->client->refresh_configuration();
     }
-
     // @codingStandardsIgnoreStart
     /**
      * The workspace/executeCommand request is sent from the client to the server to
@@ -116,34 +93,19 @@ final class Workspace
      *
      * @psalm-suppress PossiblyUnusedMethod, MissingParamType
      */
-    public function executeCommand(string $command, $arguments): void
+    public function execute_command(string $command, $arguments): void
     {
         // @codingStandardsIgnoreEnd
-        $this->server->logDebug(
-            'workspace/executeCommand',
-            [
-                'command' => $command,
-                'arguments' => $arguments,
-            ],
-        );
-
+        $this->server->log_debug('workspace/executeCommand', ['command' => $command, 'arguments' => $arguments]);
         switch ($command) {
             case 'psalm.analyze.uri':
                 /** @var array{uri: string} */
                 $arguments = (array) $arguments;
-                $file = $this->server->uriToPath($arguments['uri']);
-                $this->codebase->reloadFiles(
-                    $this->project_analyzer,
-                    [$file],
-                    true,
-                );
-
-                $this->codebase->analyzer->addFilesToAnalyze(
-                    [$file => $file],
-                );
-                $this->codebase->analyzer->analyzeFiles($this->project_analyzer, 1, false);
-
-                $this->server->emitVersionedIssues([$file => $arguments['uri']]);
+                $file = $this->server->uri_to_path($arguments['uri']);
+                $this->codebase->reload_files($this->project_analyzer, [$file], true);
+                $this->codebase->analyzer->add_files_to_analyze([$file => $file]);
+                $this->codebase->analyzer->analyze_files($this->project_analyzer, 1, false);
+                $this->server->emit_versioned_issues([$file => $arguments['uri']]);
                 break;
         }
     }

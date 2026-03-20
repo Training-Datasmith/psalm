@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\Identical;
-use Psalm\Node\VirtualNode;
-
-final class VirtualIdentical extends Identical implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Identical;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Identical extends Identical implements Virtual_Node
 {
-
 }

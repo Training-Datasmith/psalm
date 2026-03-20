@@ -1,24 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Type\Parse_Tree;
 
-namespace Psalm\Internal\Type\ParseTree;
-
-use Psalm\Internal\Type\ParseTree;
-
+use Psalm\Internal\Type\Parse_Tree;
 /**
  * @internal
  */
-final class MethodParamTree extends ParseTree
+final class Method_Param_Tree extends Parse_Tree
 {
     public string $default = '';
-
-    public function __construct(
-        public string $name,
-        public bool $byref,
-        public bool $variadic,
-        ?ParseTree $parent = null,
-    ) {
+    public function __construct(public string $name, public bool $byref, public bool $variadic, ?Parse_Tree $parent = null)
+    {
         $this->parent = $parent;
     }
 }

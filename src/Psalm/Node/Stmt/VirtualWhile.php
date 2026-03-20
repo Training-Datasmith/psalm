@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\While_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualWhile extends While_ implements VirtualNode
+use Php_Parser\Node\Stmt\While_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_While extends While_ implements Virtual_Node
 {
-
 }

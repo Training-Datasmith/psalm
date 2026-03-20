@@ -1,56 +1,42 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\TypeVisitor;
+declare (strict_types=1);
+namespace Psalm\Internal\Type_Visitor;
 
 use Override;
 use Psalm\Type;
-use Psalm\Type\Atomic\TConditional;
-use Psalm\Type\Atomic\TTemplateParam;
-use Psalm\Type\Atomic\TTemplateParamClass;
-use Psalm\Type\TypeNode;
-use Psalm\Type\TypeVisitor;
+use Psalm\Type\Atomic\T_Conditional;
+use Psalm\Type\Atomic\T_Template_Param;
+use Psalm\Type\Atomic\T_Template_Param_Class;
+use Psalm\Type\Type_Node;
+use Psalm\Type\Type_Visitor;
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class TemplateTypeCollector extends TypeVisitor
+final class Template_Type_Collector extends Type_Visitor
 {
     /**
      * @var list<TTemplateParam>
      */
     private array $template_types = [];
-
     #[Override]
-    protected function enterNode(TypeNode $type): ?int
+    protected function enter_node(Type_Node $type): ?int
     {
-        if ($type instanceof TTemplateParam) {
+        if ($type instanceof T_Template_Param) {
             $this->template_types[] = $type;
-        } elseif ($type instanceof TTemplateParamClass) {
+        } elseif ($type instanceof T_Template_Param_Class) {
             $extends = $type->as_type;
-
-            $this->template_types[] = new TTemplateParam(
-                $type->param_name,
-                $extends ? new Union([$extends]) : Type::getMixed(),
-                $type->defining_class,
-            );
-        } elseif ($type instanceof TConditional) {
-            $this->template_types[] = new TTemplateParam(
-                $type->param_name,
-                Type::getMixed(),
-                $type->defining_class,
-            );
+            $this->template_types[] = new T_Template_Param($type->param_name, $extends ? new Union([$extends]) : Type::get_mixed(), $type->defining_class);
+        } elseif ($type instanceof T_Conditional) {
+            $this->template_types[] = new T_Template_Param($type->param_name, Type::get_mixed(), $type->defining_class);
         }
-
         return null;
     }
-
     /**
      * @return list<TTemplateParam>
      */
-    public function getTemplateTypes(): array
+    public function get_template_types(): array
     {
         return $this->template_types;
     }

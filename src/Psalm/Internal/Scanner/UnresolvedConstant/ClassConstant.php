@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Scanner\Unresolved_Constant;
 
-namespace Psalm\Internal\Scanner\UnresolvedConstant;
-
-use Psalm\Internal\Scanner\UnresolvedConstantComponent;
-
+use Psalm\Internal\Scanner\Unresolved_Constant_Component;
 /**
  * @psalm-immutable
  * @internal
  */
-final class ClassConstant extends UnresolvedConstantComponent
+final class Class_Constant extends Unresolved_Constant_Component
 {
     public function __construct(public readonly string $fqcln, public readonly string $name)
     {

@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler\Event;
 
-namespace Psalm\Plugin\EventHandler\Event;
-
-use Psalm\StatementsSource;
-
-final class FunctionExistenceProviderEvent
+use Psalm\Statements_Source;
+final class Function_Existence_Provider_Event
 {
     /**
      * Use this hook for informing whether or not a global function exists. If you know the function does
@@ -15,18 +13,14 @@ final class FunctionExistenceProviderEvent
      *
      * @internal
      */
-    public function __construct(
-        private readonly StatementsSource $statements_source,
-        private readonly string $function_id,
-    ) {
+    public function __construct(private readonly Statements_Source $statements_source, private readonly string $function_id)
+    {
     }
-
-    public function getStatementsSource(): StatementsSource
+    public function get_statements_source(): Statements_Source
     {
         return $this->statements_source;
     }
-
-    public function getFunctionId(): string
+    public function get_function_id(): string
     {
         return $this->function_id;
     }

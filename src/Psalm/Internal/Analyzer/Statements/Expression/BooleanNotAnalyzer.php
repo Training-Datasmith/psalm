@@ -1,60 +1,43 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Analyzer\Statements\Expression;
 
-use PhpParser;
+use Php_Parser;
 use Psalm\Context;
-use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
+use Psalm\Internal\Analyzer\Statements\Expression_Analyzer;
+use Psalm\Internal\Analyzer\Statements_Analyzer;
 use Psalm\Type;
-use Psalm\Type\Atomic\TBool;
-use Psalm\Type\Atomic\TFalse;
-use Psalm\Type\Atomic\TTrue;
+use Psalm\Type\Atomic\T_Bool;
+use Psalm\Type\Atomic\T_False;
+use Psalm\Type\Atomic\T_True;
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class BooleanNotAnalyzer
+final class Boolean_Not_Analyzer
 {
-    public static function analyze(
-        StatementsAnalyzer $statements_analyzer,
-        PhpParser\Node\Expr\BooleanNot $stmt,
-        Context $context,
-    ): bool {
-
-
+    public static function analyze(Statements_Analyzer $statements_analyzer, Php_Parser\Node\Expr\Boolean_Not $stmt, Context $context): bool
+    {
         $inside_negation = $context->inside_negation;
-
         $context->inside_negation = !$inside_negation;
-
-        $result = ExpressionAnalyzer::analyze($statements_analyzer, $stmt->expr, $context);
-
+        $result = Expression_Analyzer::analyze($statements_analyzer, $stmt->expr, $context);
         $context->inside_negation = $inside_negation;
-
-        $expr_type = $statements_analyzer->node_data->getType($stmt->expr);
-
+        $expr_type = $statements_analyzer->node_data->get_type($stmt->expr);
         if ($expr_type) {
-            if ($expr_type->isAlwaysTruthy()) {
-                $stmt_type = new TFalse($expr_type->from_docblock);
-            } elseif ($expr_type->isAlwaysFalsy()) {
-                $stmt_type = new TTrue($expr_type->from_docblock);
+            if ($expr_type->is_always_truthy()) {
+                $stmt_type = new T_False($expr_type->from_docblock);
+            } elseif ($expr_type->is_always_falsy()) {
+                $stmt_type = new T_True($expr_type->from_docblock);
             } else {
-                ExpressionAnalyzer::checkRiskyTruthyFalsyComparison($expr_type, $statements_analyzer, $stmt);
-                $stmt_type = new TBool();
+                Expression_Analyzer::check_risky_truthy_falsy_comparison($expr_type, $statements_analyzer, $stmt);
+                $stmt_type = new T_Bool();
             }
-
-            $stmt_type = new Union([$stmt_type], [
-                'parent_nodes' => $expr_type->parent_nodes,
-            ]);
+            $stmt_type = new Union([$stmt_type], ['parent_nodes' => $expr_type->parent_nodes]);
         } else {
-            $stmt_type = Type::getBool();
+            $stmt_type = Type::get_bool();
         }
-
-        $statements_analyzer->node_data->setType($stmt, $stmt_type);
-
+        $statements_analyzer->node_data->set_type($stmt, $stmt_type);
         return $result;
     }
 }

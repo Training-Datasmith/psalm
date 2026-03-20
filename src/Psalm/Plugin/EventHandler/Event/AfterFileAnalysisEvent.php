@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler\Event;
 
-namespace Psalm\Plugin\EventHandler\Event;
-
-use PhpParser\Node\Stmt;
+use Php_Parser\Node\Stmt;
 use Psalm\Codebase;
 use Psalm\Context;
-use Psalm\StatementsSource;
-use Psalm\Storage\FileStorage;
-
-final class AfterFileAnalysisEvent
+use Psalm\Statements_Source;
+use Psalm\Storage\File_Storage;
+final class After_File_Analysis_Event
 {
     /**
      * Called after a file has been checked
@@ -18,39 +16,29 @@ final class AfterFileAnalysisEvent
      * @param array<Stmt> $stmts
      * @internal
      */
-    public function __construct(
-        private readonly StatementsSource $statements_source,
-        private readonly Context $file_context,
-        private readonly FileStorage $file_storage,
-        private readonly Codebase $codebase,
-        private readonly array $stmts,
-    ) {
+    public function __construct(private readonly Statements_Source $statements_source, private readonly Context $file_context, private readonly File_Storage $file_storage, private readonly Codebase $codebase, private readonly array $stmts)
+    {
     }
-
-    public function getStatementsSource(): StatementsSource
+    public function get_statements_source(): Statements_Source
     {
         return $this->statements_source;
     }
-
-    public function getFileContext(): Context
+    public function get_file_context(): Context
     {
         return $this->file_context;
     }
-
-    public function getFileStorage(): FileStorage
+    public function get_file_storage(): File_Storage
     {
         return $this->file_storage;
     }
-
-    public function getCodebase(): Codebase
+    public function get_codebase(): Codebase
     {
         return $this->codebase;
     }
-
     /**
      * @return Stmt[]
      */
-    public function getStmts(): array
+    public function get_stmts(): array
     {
         return $this->stmts;
     }

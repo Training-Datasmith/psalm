@@ -1,24 +1,18 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Scanner\Unresolved_Constant;
 
-namespace Psalm\Internal\Scanner\UnresolvedConstant;
-
-use Psalm\Internal\Scanner\UnresolvedConstantComponent;
-use Psalm\Storage\ImmutableNonCloneableTrait;
-
+use Psalm\Internal\Scanner\Unresolved_Constant_Component;
+use Psalm\Storage\Immutable_Non_Cloneable_Trait;
 /**
  * @psalm-immutable
  * @internal
  */
-final class UnresolvedTernary extends UnresolvedConstantComponent
+final class Unresolved_Ternary extends Unresolved_Constant_Component
 {
-    use ImmutableNonCloneableTrait;
-
-    public function __construct(
-        public readonly UnresolvedConstantComponent $cond,
-        public readonly ?UnresolvedConstantComponent $if,
-        public readonly UnresolvedConstantComponent $else,
-    ) {
+    use Immutable_Non_Cloneable_Trait;
+    public function __construct(public readonly Unresolved_Constant_Component $cond, public readonly ?Unresolved_Constant_Component $if, public readonly Unresolved_Constant_Component $else)
+    {
     }
 }

@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Assign_Op;
 
-namespace Psalm\Node\Expr\AssignOp;
-
-use PhpParser\Node\Expr\AssignOp\Pow;
-use Psalm\Node\VirtualNode;
-
-final class VirtualPow extends Pow implements VirtualNode
+use Php_Parser\Node\Expr\Assign_Op\Pow;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Pow extends Pow implements Virtual_Node
 {
-
 }

@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Scalar;
 
-use PhpParser\Node\Scalar\Int_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualInt extends Int_ implements VirtualNode
+use Php_Parser\Node\Scalar\Int_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Int extends Int_ implements Virtual_Node
 {
-
 }

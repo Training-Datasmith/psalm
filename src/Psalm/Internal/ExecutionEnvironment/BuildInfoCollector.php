@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Execution_Environment;
 
-namespace Psalm\Internal\ExecutionEnvironment;
-
-use Psalm\SourceControl\Git\CommitInfo;
-use Psalm\SourceControl\Git\GitInfo;
-
+use Psalm\Source_Control\Git\Commit_Info;
+use Psalm\Source_Control\Git\Git_Info;
 use function assert;
 use function explode;
 use function file_get_contents;
@@ -14,54 +12,40 @@ use function json_decode;
 use function str_contains;
 use function str_replace;
 use function strtotime;
-
 use const JSON_THROW_ON_ERROR;
-
 /**
  * Environment variables collector for CI environment.
  *
  * @author Kitamura Satoshi <with.no.parachute@gmail.com>
  * @internal
  */
-final class BuildInfoCollector
+final class Build_Info_Collector
 {
     /**
      * Read environment variables.
      */
-    private array $readEnv = [];
-
+    private array $read_env = [];
     public function __construct(
         /**
          * Environment variables.
          *
          * Overwritten through collection process.
          */
-        protected array $env,
-    ) {
+        protected array $env
+    )
+    {
     }
-
     // API
-
     /**
      * Collect environment variables.
      */
     public function collect(): array
     {
-        $this->readEnv = [];
-
-        $this
-            ->fillTravisCi()
-            ->fillCircleCi()
-            ->fillAppVeyor()
-            ->fillJenkins()
-            ->fillScrutinizer()
-            ->fillGithubActions();
-
-        return $this->readEnv;
+        $this->read_env = [];
+        $this->fill_travis_ci()->fill_circle_ci()->fill_app_veyor()->fill_jenkins()->fill_scrutinizer()->fill_github_actions();
+        return $this->read_env;
     }
-
     // internal method
-
     /**
      * Fill Travis CI environment variables.
      *
@@ -70,42 +54,33 @@ final class BuildInfoCollector
      * @return $this
      * @psalm-suppress PossiblyUndefinedStringArrayOffset
      */
-    private function fillTravisCi(): self
+    private function fill_travis_ci(): self
     {
         if (isset($this->env['TRAVIS']) && $this->env['TRAVIS'] && isset($this->env['TRAVIS_JOB_ID'])) {
-            $this->readEnv['CI_JOB_ID'] = $this->env['TRAVIS_JOB_ID'];
+            $this->read_env['CI_JOB_ID'] = $this->env['TRAVIS_JOB_ID'];
             $this->env['CI_NAME'] = 'travis-ci';
-
             // backup
-            $this->readEnv['TRAVIS'] = $this->env['TRAVIS'];
-            $this->readEnv['TRAVIS_JOB_ID'] = $this->env['TRAVIS_JOB_ID'];
-            $this->readEnv['CI_NAME'] = $this->env['CI_NAME'];
-            $this->readEnv['TRAVIS_TAG'] = $this->env['TRAVIS_TAG'] ?? '';
-
+            $this->read_env['TRAVIS'] = $this->env['TRAVIS'];
+            $this->read_env['TRAVIS_JOB_ID'] = $this->env['TRAVIS_JOB_ID'];
+            $this->read_env['CI_NAME'] = $this->env['CI_NAME'];
+            $this->read_env['TRAVIS_TAG'] = $this->env['TRAVIS_TAG'] ?? '';
             $repo_slug = (string) $this->env['TRAVIS_REPO_SLUG'];
-
             if ($repo_slug) {
                 $slug_parts = explode('/', $repo_slug);
-                $this->readEnv['CI_REPO_OWNER'] = $slug_parts[0];
-                $this->readEnv['CI_REPO_NAME'] = $slug_parts[1];
+                $this->read_env['CI_REPO_OWNER'] = $slug_parts[0];
+                $this->read_env['CI_REPO_NAME'] = $slug_parts[1];
             }
-
             $pr_slug = (string) ($this->env['TRAVIS_PULL_REQUEST_SLUG'] ?? '');
-
             if ($pr_slug) {
                 $slug_parts = explode('/', $pr_slug);
-
-                $this->readEnv['CI_PR_REPO_OWNER'] = $slug_parts[0];
-                $this->readEnv['CI_PR_REPO_NAME'] = $slug_parts[1];
+                $this->read_env['CI_PR_REPO_OWNER'] = $slug_parts[0];
+                $this->read_env['CI_PR_REPO_NAME'] = $slug_parts[1];
             }
-
-            $this->readEnv['CI_PR_NUMBER'] = $this->env['TRAVIS_PULL_REQUEST'];
-            $this->readEnv['CI_BRANCH'] = $this->env['TRAVIS_BRANCH'];
+            $this->read_env['CI_PR_NUMBER'] = $this->env['TRAVIS_PULL_REQUEST'];
+            $this->read_env['CI_BRANCH'] = $this->env['TRAVIS_BRANCH'];
         }
-
         return $this;
     }
-
     /**
      * Fill CircleCI environment variables.
      *
@@ -113,31 +88,24 @@ final class BuildInfoCollector
      *
      * @return $this
      */
-    private function fillCircleCi(): self
+    private function fill_circle_ci(): self
     {
         if (isset($this->env['CIRCLECI']) && $this->env['CIRCLECI'] && isset($this->env['CIRCLE_BUILD_NUM'])) {
             $this->env['CI_BUILD_NUMBER'] = $this->env['CIRCLE_BUILD_NUM'];
             $this->env['CI_NAME'] = 'circleci';
-
             // backup
-            $this->readEnv['CIRCLECI'] = $this->env['CIRCLECI'];
-            $this->readEnv['CIRCLE_BUILD_NUM'] = $this->env['CIRCLE_BUILD_NUM'];
-            $this->readEnv['CI_NAME'] = $this->env['CI_NAME'];
-
-            $this->readEnv['CI_PR_REPO_OWNER'] = $this->env['CIRCLE_PR_USERNAME'] ?? null;
-            $this->readEnv['CI_PR_REPO_NAME'] = $this->env['CIRCLE_PR_REPONAME'] ?? null;
-
-            $this->readEnv['CI_REPO_OWNER'] = $this->env['CIRCLE_PROJECT_USERNAME'] ?? null;
-            $this->readEnv['CI_REPO_NAME'] = $this->env['CIRCLE_PROJECT_REPONAME'] ?? null;
-
-            $this->readEnv['CI_PR_NUMBER'] = $this->env['CIRCLE_PR_NUMBER'] ?? null;
-
-            $this->readEnv['CI_BRANCH'] = $this->env['CIRCLE_BRANCH'] ?? null;
+            $this->read_env['CIRCLECI'] = $this->env['CIRCLECI'];
+            $this->read_env['CIRCLE_BUILD_NUM'] = $this->env['CIRCLE_BUILD_NUM'];
+            $this->read_env['CI_NAME'] = $this->env['CI_NAME'];
+            $this->read_env['CI_PR_REPO_OWNER'] = $this->env['CIRCLE_PR_USERNAME'] ?? null;
+            $this->read_env['CI_PR_REPO_NAME'] = $this->env['CIRCLE_PR_REPONAME'] ?? null;
+            $this->read_env['CI_REPO_OWNER'] = $this->env['CIRCLE_PROJECT_USERNAME'] ?? null;
+            $this->read_env['CI_REPO_NAME'] = $this->env['CIRCLE_PROJECT_REPONAME'] ?? null;
+            $this->read_env['CI_PR_NUMBER'] = $this->env['CIRCLE_PR_NUMBER'] ?? null;
+            $this->read_env['CI_BRANCH'] = $this->env['CIRCLE_BRANCH'] ?? null;
         }
-
         return $this;
     }
-
     /**
      * Fill AppVeyor environment variables.
      *
@@ -146,46 +114,35 @@ final class BuildInfoCollector
      * @psalm-suppress PossiblyUndefinedStringArrayOffset
      * @return $this
      */
-    private function fillAppVeyor(): self
+    private function fill_app_veyor(): self
     {
         if (isset($this->env['APPVEYOR']) && $this->env['APPVEYOR'] && isset($this->env['APPVEYOR_BUILD_NUMBER'])) {
-            $this->readEnv['CI_BUILD_NUMBER'] = $this->env['APPVEYOR_BUILD_NUMBER'];
-            $this->readEnv['CI_JOB_ID'] = $this->env['APPVEYOR_JOB_NUMBER'];
-            $this->readEnv['CI_PR_NUMBER'] = $this->env['APPVEYOR_PULL_REQUEST_NUMBER'] ?? '';
+            $this->read_env['CI_BUILD_NUMBER'] = $this->env['APPVEYOR_BUILD_NUMBER'];
+            $this->read_env['CI_JOB_ID'] = $this->env['APPVEYOR_JOB_NUMBER'];
+            $this->read_env['CI_PR_NUMBER'] = $this->env['APPVEYOR_PULL_REQUEST_NUMBER'] ?? '';
             $this->env['CI_NAME'] = 'AppVeyor';
-
             // backup
-            $this->readEnv['APPVEYOR'] = $this->env['APPVEYOR'];
-            $this->readEnv['APPVEYOR_BUILD_NUMBER'] = $this->env['APPVEYOR_BUILD_NUMBER'];
-            $this->readEnv['APPVEYOR_JOB_NUMBER'] = $this->env['APPVEYOR_JOB_NUMBER'];
-            $this->readEnv['APPVEYOR_REPO_BRANCH'] = $this->env['APPVEYOR_REPO_BRANCH'];
-            $this->readEnv['CI_NAME'] = $this->env['CI_NAME'];
-
+            $this->read_env['APPVEYOR'] = $this->env['APPVEYOR'];
+            $this->read_env['APPVEYOR_BUILD_NUMBER'] = $this->env['APPVEYOR_BUILD_NUMBER'];
+            $this->read_env['APPVEYOR_JOB_NUMBER'] = $this->env['APPVEYOR_JOB_NUMBER'];
+            $this->read_env['APPVEYOR_REPO_BRANCH'] = $this->env['APPVEYOR_REPO_BRANCH'];
+            $this->read_env['CI_NAME'] = $this->env['CI_NAME'];
             $repo_slug = (string) ($this->env['APPVEYOR_REPO_NAME'] ?? '');
-
             if ($repo_slug) {
                 $slug_parts = explode('/', $repo_slug);
-
-                $this->readEnv['CI_REPO_OWNER'] = $slug_parts[0];
-                $this->readEnv['CI_REPO_NAME'] = $slug_parts[1];
+                $this->read_env['CI_REPO_OWNER'] = $slug_parts[0];
+                $this->read_env['CI_REPO_NAME'] = $slug_parts[1];
             }
-
             $pr_slug = (string) ($this->env['APPVEYOR_PULL_REQUEST_HEAD_REPO_NAME'] ?? '');
-
             if ($pr_slug) {
                 $slug_parts = explode('/', $pr_slug);
-
-                $this->readEnv['CI_PR_REPO_OWNER'] = $slug_parts[0];
-                $this->readEnv['CI_PR_REPO_NAME'] = $slug_parts[1];
+                $this->read_env['CI_PR_REPO_OWNER'] = $slug_parts[0];
+                $this->read_env['CI_PR_REPO_NAME'] = $slug_parts[1];
             }
-
-            $this->readEnv['CI_BRANCH'] = $this->env['APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH']
-                ?? $this->env['APPVEYOR_REPO_BRANCH'];
+            $this->read_env['CI_BRANCH'] = $this->env['APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH'] ?? $this->env['APPVEYOR_REPO_BRANCH'];
         }
-
         return $this;
     }
-
     /**
      * Fill Jenkins environment variables.
      *
@@ -193,22 +150,19 @@ final class BuildInfoCollector
      *
      * @return $this
      */
-    private function fillJenkins(): self
+    private function fill_jenkins(): self
     {
         if (isset($this->env['JENKINS_URL']) && isset($this->env['BUILD_NUMBER'])) {
-            $this->readEnv['CI_BUILD_NUMBER'] = $this->env['BUILD_NUMBER'];
-            $this->readEnv['CI_BUILD_URL'] = $this->env['JENKINS_URL'];
+            $this->read_env['CI_BUILD_NUMBER'] = $this->env['BUILD_NUMBER'];
+            $this->read_env['CI_BUILD_URL'] = $this->env['JENKINS_URL'];
             $this->env['CI_NAME'] = 'jenkins';
-
             // backup
-            $this->readEnv['BUILD_NUMBER'] = $this->env['BUILD_NUMBER'];
-            $this->readEnv['JENKINS_URL'] = $this->env['JENKINS_URL'];
-            $this->readEnv['CI_NAME'] = $this->env['CI_NAME'];
+            $this->read_env['BUILD_NUMBER'] = $this->env['BUILD_NUMBER'];
+            $this->read_env['JENKINS_URL'] = $this->env['JENKINS_URL'];
+            $this->read_env['CI_NAME'] = $this->env['CI_NAME'];
         }
-
         return $this;
     }
-
     /**
      * Fill Scrutinizer environment variables.
      *
@@ -217,70 +171,57 @@ final class BuildInfoCollector
      * @psalm-suppress PossiblyUndefinedStringArrayOffset
      * @return $this
      */
-    private function fillScrutinizer(): self
+    private function fill_scrutinizer(): self
     {
         if (isset($this->env['SCRUTINIZER']) && $this->env['SCRUTINIZER']) {
-            $this->readEnv['CI_JOB_ID'] = $this->env['SCRUTINIZER_INSPECTION_UUID'];
-            $this->readEnv['CI_BRANCH'] = $this->env['SCRUTINIZER_BRANCH'];
-            $this->readEnv['CI_PR_NUMBER'] = $this->env['SCRUTINIZER_PR_NUMBER'] ?? '';
-
+            $this->read_env['CI_JOB_ID'] = $this->env['SCRUTINIZER_INSPECTION_UUID'];
+            $this->read_env['CI_BRANCH'] = $this->env['SCRUTINIZER_BRANCH'];
+            $this->read_env['CI_PR_NUMBER'] = $this->env['SCRUTINIZER_PR_NUMBER'] ?? '';
             // backup
-            $this->readEnv['CI_NAME'] = 'Scrutinizer';
-
+            $this->read_env['CI_NAME'] = 'Scrutinizer';
             $repo_slug = (string) ($this->env['SCRUTINIZER_PROJECT'] ?? '');
-
             if ($repo_slug) {
                 $slug_parts = explode('/', $repo_slug);
-
-                if ($this->readEnv['CI_PR_NUMBER']) {
-                    $this->readEnv['CI_PR_REPO_OWNER'] = $slug_parts[1];
-                    $this->readEnv['CI_PR_REPO_NAME'] = $slug_parts[2];
+                if ($this->read_env['CI_PR_NUMBER']) {
+                    $this->read_env['CI_PR_REPO_OWNER'] = $slug_parts[1];
+                    $this->read_env['CI_PR_REPO_NAME'] = $slug_parts[2];
                 } else {
-                    $this->readEnv['CI_REPO_OWNER'] = $slug_parts[1];
-                    $this->readEnv['CI_REPO_NAME'] = $slug_parts[2];
+                    $this->read_env['CI_REPO_OWNER'] = $slug_parts[1];
+                    $this->read_env['CI_REPO_NAME'] = $slug_parts[2];
                 }
             }
         }
-
         return $this;
     }
-
     /**
      * Fill GitHub Actions environment variables.
      *
      * @psalm-suppress PossiblyUndefinedStringArrayOffset
      */
-    private function fillGithubActions(): BuildInfoCollector
+    private function fill_github_actions(): Build_Info_Collector
     {
         if (isset($this->env['GITHUB_ACTIONS'])) {
             $this->env['CI_NAME'] = 'github-actions';
             $this->env['CI_JOB_ID'] = $this->env['GITHUB_ACTIONS'];
-
-            $githubRef = (string) $this->env['GITHUB_REF'];
-            if (str_contains($githubRef, 'refs/heads/')) {
-                $githubRef = str_replace('refs/heads/', '', $githubRef);
-            } elseif (str_contains($githubRef, 'refs/tags/')) {
-                $githubRef = str_replace('refs/tags/', '', $githubRef);
+            $github_ref = (string) $this->env['GITHUB_REF'];
+            if (str_contains($github_ref, 'refs/heads/')) {
+                $github_ref = str_replace('refs/heads/', '', $github_ref);
+            } elseif (str_contains($github_ref, 'refs/tags/')) {
+                $github_ref = str_replace('refs/tags/', '', $github_ref);
             }
-
-            $this->env['CI_BRANCH'] = $githubRef;
-
-            $this->readEnv['GITHUB_ACTIONS'] = $this->env['GITHUB_ACTIONS'];
-            $this->readEnv['GITHUB_REF'] = $this->env['GITHUB_REF'];
-            $this->readEnv['CI_NAME'] = $this->env['CI_NAME'];
-            $this->readEnv['CI_BRANCH'] = $this->env['CI_BRANCH'];
-
+            $this->env['CI_BRANCH'] = $github_ref;
+            $this->read_env['GITHUB_ACTIONS'] = $this->env['GITHUB_ACTIONS'];
+            $this->read_env['GITHUB_REF'] = $this->env['GITHUB_REF'];
+            $this->read_env['CI_NAME'] = $this->env['CI_NAME'];
+            $this->read_env['CI_BRANCH'] = $this->env['CI_BRANCH'];
             $slug_parts = explode('/', (string) $this->env['GITHUB_REPOSITORY']);
-
-            $this->readEnv['CI_REPO_OWNER'] = $slug_parts[0];
-            $this->readEnv['CI_REPO_NAME'] = $slug_parts[1];
-
+            $this->read_env['CI_REPO_OWNER'] = $slug_parts[0];
+            $this->read_env['CI_REPO_NAME'] = $slug_parts[1];
             if (isset($this->env['GITHUB_EVENT_PATH'])) {
                 $event_json = file_get_contents((string) $this->env['GITHUB_EVENT_PATH']);
                 assert($event_json !== false);
                 /** @var array */
                 $event_data = json_decode($event_json, true, 512, JSON_THROW_ON_ERROR);
-
                 if (isset($event_data['head_commit'])) {
                     /**
                      * @var array{
@@ -292,24 +233,11 @@ final class BuildInfoCollector
                      * }
                      */
                     $head_commit_data = $event_data['head_commit'];
-                    $gitinfo = new GitInfo(
-                        $githubRef,
-                        (new CommitInfo())
-                            ->setId($head_commit_data['id'])
-                            ->setAuthorName($head_commit_data['author']['name'])
-                            ->setAuthorEmail($head_commit_data['author']['email'])
-                            ->setCommitterName($head_commit_data['committer']['name'])
-                            ->setCommitterEmail($head_commit_data['committer']['email'])
-                            ->setMessage($head_commit_data['message'])
-                            ->setDate((int) strtotime($head_commit_data['timestamp'])),
-                        [],
-                    );
-
-                    $this->readEnv['git'] = $gitinfo->toArray();
+                    $gitinfo = new Git_Info($github_ref, (new Commit_Info())->set_id($head_commit_data['id'])->set_author_name($head_commit_data['author']['name'])->set_author_email($head_commit_data['author']['email'])->set_committer_name($head_commit_data['committer']['name'])->set_committer_email($head_commit_data['committer']['email'])->set_message($head_commit_data['message'])->set_date((int) strtotime($head_commit_data['timestamp'])), []);
+                    $this->read_env['git'] = $gitinfo->to_array();
                 }
-
                 if ($this->env['GITHUB_EVENT_PATH'] === 'pull_request') {
-                    $this->readEnv['CI_PR_NUMBER'] = $event_data['number'];
+                    $this->read_env['CI_PR_NUMBER'] = $event_data['number'];
                 }
             }
         }

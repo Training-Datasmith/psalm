@@ -1,64 +1,61 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Provider;
 
 use Closure;
-use PhpParser;
-use Psalm\CodeLocation;
+use Php_Parser;
+use Psalm\Code_Location;
 use Psalm\Context;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayChunkReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayColumnReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayCombineReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayFillKeysReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayFillReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayFilterReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayMapReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayMergeReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayPadReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayPointerAdjustmentReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayPopReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayRandReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayReduceReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArrayReverseReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArraySliceReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ArraySpliceReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\BasenameReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\DateReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\DirnameReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\FilterInputReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\FilterVarReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\FirstArgStringReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\GetClassMethodsReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\GetObjectVarsReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\HexdecReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\InArrayReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\IteratorToArrayReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\MbInternalEncodingReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\MinMaxReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\MktimeReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\ParseUrlReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\PowReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\RandReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\RoundReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\SprintfReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\StrReplaceReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\StrTrReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\TriggerErrorReturnTypeProvider;
-use Psalm\Internal\Provider\ReturnTypeProvider\VersionCompareReturnTypeProvider;
-use Psalm\Plugin\EventHandler\Event\FunctionReturnTypeProviderEvent;
-use Psalm\Plugin\EventHandler\FunctionReturnTypeProviderInterface;
-use Psalm\StatementsSource;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Chunk_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Column_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Combine_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Fill_Keys_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Fill_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Filter_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Map_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Merge_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Pad_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Pointer_Adjustment_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Pop_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Rand_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Reduce_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Reverse_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Slice_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Array_Splice_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Basename_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Date_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Dirname_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Filter_Input_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Filter_Var_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\First_Arg_String_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Get_Class_Methods_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Get_Object_Vars_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Hexdec_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\In_Array_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Iterator_To_Array_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Mb_Internal_Encoding_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Min_Max_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Mktime_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Parse_Url_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Pow_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Rand_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Round_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Sprintf_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Str_Replace_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Str_Tr_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Trigger_Error_Return_Type_Provider;
+use Psalm\Internal\Provider\Return_Type_Provider\Version_Compare_Return_Type_Provider;
+use Psalm\Plugin\Event_Handler\Event\Function_Return_Type_Provider_Event;
+use Psalm\Plugin\Event_Handler\Function_Return_Type_Provider_Interface;
+use Psalm\Statements_Source;
 use Psalm\Type\Union;
-
 use function is_subclass_of;
 use function strtolower;
-
 /**
  * @internal
  */
-final class FunctionReturnTypeProvider
+final class Function_Return_Type_Provider
 {
     /**
      * @var array<
@@ -67,105 +64,85 @@ final class FunctionReturnTypeProvider
      * >
      */
     private static array $handlers = [];
-
     public function __construct()
     {
         self::$handlers = [];
-
-        $this->registerClass(ArrayChunkReturnTypeProvider::class);
-        $this->registerClass(ArrayColumnReturnTypeProvider::class);
-        $this->registerClass(ArrayCombineReturnTypeProvider::class);
-        $this->registerClass(ArrayFilterReturnTypeProvider::class);
-        $this->registerClass(ArrayMapReturnTypeProvider::class);
-        $this->registerClass(ArrayMergeReturnTypeProvider::class);
-        $this->registerClass(ArrayPadReturnTypeProvider::class);
-        $this->registerClass(ArrayPointerAdjustmentReturnTypeProvider::class);
-        $this->registerClass(ArrayPopReturnTypeProvider::class);
-        $this->registerClass(ArrayRandReturnTypeProvider::class);
-        $this->registerClass(ArrayReduceReturnTypeProvider::class);
-        $this->registerClass(ArraySliceReturnTypeProvider::class);
-        $this->registerClass(ArraySpliceReturnTypeProvider::class);
-        $this->registerClass(ArrayReverseReturnTypeProvider::class);
-        $this->registerClass(ArrayFillReturnTypeProvider::class);
-        $this->registerClass(ArrayFillKeysReturnTypeProvider::class);
-        $this->registerClass(FilterInputReturnTypeProvider::class);
-        $this->registerClass(FilterVarReturnTypeProvider::class);
-        $this->registerClass(IteratorToArrayReturnTypeProvider::class);
-        $this->registerClass(ParseUrlReturnTypeProvider::class);
-        $this->registerClass(StrReplaceReturnTypeProvider::class);
-        $this->registerClass(StrTrReturnTypeProvider::class);
-        $this->registerClass(VersionCompareReturnTypeProvider::class);
-        $this->registerClass(MktimeReturnTypeProvider::class);
-        $this->registerClass(BasenameReturnTypeProvider::class);
-        $this->registerClass(DirnameReturnTypeProvider::class);
-        $this->registerClass(GetObjectVarsReturnTypeProvider::class);
-        $this->registerClass(GetClassMethodsReturnTypeProvider::class);
-        $this->registerClass(FirstArgStringReturnTypeProvider::class);
-        $this->registerClass(HexdecReturnTypeProvider::class);
-        $this->registerClass(MinMaxReturnTypeProvider::class);
-        $this->registerClass(TriggerErrorReturnTypeProvider::class);
-        $this->registerClass(RandReturnTypeProvider::class);
-        $this->registerClass(InArrayReturnTypeProvider::class);
-        $this->registerClass(RoundReturnTypeProvider::class);
-        $this->registerClass(MbInternalEncodingReturnTypeProvider::class);
-        $this->registerClass(DateReturnTypeProvider::class);
-        $this->registerClass(PowReturnTypeProvider::class);
-        $this->registerClass(SprintfReturnTypeProvider::class);
+        $this->register_class(Array_Chunk_Return_Type_Provider::class);
+        $this->register_class(Array_Column_Return_Type_Provider::class);
+        $this->register_class(Array_Combine_Return_Type_Provider::class);
+        $this->register_class(Array_Filter_Return_Type_Provider::class);
+        $this->register_class(Array_Map_Return_Type_Provider::class);
+        $this->register_class(Array_Merge_Return_Type_Provider::class);
+        $this->register_class(Array_Pad_Return_Type_Provider::class);
+        $this->register_class(Array_Pointer_Adjustment_Return_Type_Provider::class);
+        $this->register_class(Array_Pop_Return_Type_Provider::class);
+        $this->register_class(Array_Rand_Return_Type_Provider::class);
+        $this->register_class(Array_Reduce_Return_Type_Provider::class);
+        $this->register_class(Array_Slice_Return_Type_Provider::class);
+        $this->register_class(Array_Splice_Return_Type_Provider::class);
+        $this->register_class(Array_Reverse_Return_Type_Provider::class);
+        $this->register_class(Array_Fill_Return_Type_Provider::class);
+        $this->register_class(Array_Fill_Keys_Return_Type_Provider::class);
+        $this->register_class(Filter_Input_Return_Type_Provider::class);
+        $this->register_class(Filter_Var_Return_Type_Provider::class);
+        $this->register_class(Iterator_To_Array_Return_Type_Provider::class);
+        $this->register_class(Parse_Url_Return_Type_Provider::class);
+        $this->register_class(Str_Replace_Return_Type_Provider::class);
+        $this->register_class(Str_Tr_Return_Type_Provider::class);
+        $this->register_class(Version_Compare_Return_Type_Provider::class);
+        $this->register_class(Mktime_Return_Type_Provider::class);
+        $this->register_class(Basename_Return_Type_Provider::class);
+        $this->register_class(Dirname_Return_Type_Provider::class);
+        $this->register_class(Get_Object_Vars_Return_Type_Provider::class);
+        $this->register_class(Get_Class_Methods_Return_Type_Provider::class);
+        $this->register_class(First_Arg_String_Return_Type_Provider::class);
+        $this->register_class(Hexdec_Return_Type_Provider::class);
+        $this->register_class(Min_Max_Return_Type_Provider::class);
+        $this->register_class(Trigger_Error_Return_Type_Provider::class);
+        $this->register_class(Rand_Return_Type_Provider::class);
+        $this->register_class(In_Array_Return_Type_Provider::class);
+        $this->register_class(Round_Return_Type_Provider::class);
+        $this->register_class(Mb_Internal_Encoding_Return_Type_Provider::class);
+        $this->register_class(Date_Return_Type_Provider::class);
+        $this->register_class(Pow_Return_Type_Provider::class);
+        $this->register_class(Sprintf_Return_Type_Provider::class);
     }
-
     /**
      * @param class-string $class
      */
-    public function registerClass(string $class): void
+    public function register_class(string $class): void
     {
-        if (is_subclass_of($class, FunctionReturnTypeProviderInterface::class, true)) {
-            $callable = $class::getFunctionReturnType(...);
-
-            foreach ($class::getFunctionIds() as $function_id) {
-                $this->registerClosure($function_id, $callable);
+        if (is_subclass_of($class, Function_Return_Type_Provider_Interface::class, true)) {
+            $callable = $class::get_function_return_type(...);
+            foreach ($class::get_function_ids() as $function_id) {
+                $this->register_closure($function_id, $callable);
             }
         }
     }
-
     /**
      * @param lowercase-string $function_id
      * @param Closure(FunctionReturnTypeProviderEvent): ?Union $c
      */
-    public function registerClosure(string $function_id, Closure $c): void
+    public function register_closure(string $function_id, Closure $c): void
     {
         self::$handlers[$function_id][] = $c;
     }
-
     public function has(string $function_id): bool
     {
         return isset(self::$handlers[strtolower($function_id)]);
     }
-
     /**
      * @param  non-empty-string $function_id
      */
-    public function getReturnType(
-        StatementsSource $statements_source,
-        string $function_id,
-        PhpParser\Node\Expr\FuncCall $stmt,
-        Context $context,
-        CodeLocation $code_location,
-    ): ?Union {
+    public function get_return_type(Statements_Source $statements_source, string $function_id, Php_Parser\Node\Expr\Func_Call $stmt, Context $context, Code_Location $code_location): ?Union
+    {
         foreach (self::$handlers[strtolower($function_id)] ?? [] as $function_handler) {
-            $event = new FunctionReturnTypeProviderEvent(
-                $statements_source,
-                $function_id,
-                $stmt,
-                $context,
-                $code_location,
-            );
+            $event = new Function_Return_Type_Provider_Event($statements_source, $function_id, $stmt, $context, $code_location);
             $return_type = $function_handler($event);
-
             if ($return_type) {
                 return $return_type;
             }
         }
-
         return null;
     }
 }

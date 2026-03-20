@@ -1,38 +1,32 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\PhpVisitor;
+declare (strict_types=1);
+namespace Psalm\Internal\Php_Visitor;
 
 use Override;
-use PhpParser;
-
+use Php_Parser;
 use function is_string;
-
 /**
  * @internal
  */
-final class ShortClosureVisitor extends PhpParser\NodeVisitorAbstract
+final class Short_Closure_Visitor extends Php_Parser\Node_Visitor_Abstract
 {
     /**
      * @var array<string, bool>
      */
     private array $used_variables = [];
-
     #[Override]
-    public function enterNode(PhpParser\Node $node): ?int
+    public function enter_node(Php_Parser\Node $node): ?int
     {
-        if ($node instanceof PhpParser\Node\Expr\Variable && is_string($node->name)) {
+        if ($node instanceof Php_Parser\Node\Expr\Variable && is_string($node->name)) {
             $this->used_variables['$' . $node->name] = true;
         }
-
         return null;
     }
-
     /**
      * @return array<string, bool>
      */
-    public function getUsedVariables(): array
+    public function get_used_variables(): array
     {
         return $this->used_variables;
     }

@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class MissingDependency extends ClassIssue
+final class Missing_Dependency extends Class_Issue
 {
     public const SHORTCODE = 157;
 }

@@ -1,262 +1,97 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\Provider\ReturnTypeProvider;
+declare (strict_types=1);
+namespace Psalm\Internal\Provider\Return_Type_Provider;
 
 use Override;
 use Psalm\Config;
-use Psalm\Plugin\EventHandler\Event\MethodReturnTypeProviderEvent;
-use Psalm\Plugin\EventHandler\MethodReturnTypeProviderInterface;
+use Psalm\Plugin\Event_Handler\Event\Method_Return_Type_Provider_Event;
+use Psalm\Plugin\Event_Handler\Method_Return_Type_Provider_Interface;
 use Psalm\Type;
-use Psalm\Type\Atomic\TArray;
-use Psalm\Type\Atomic\TFalse;
-use Psalm\Type\Atomic\TNamedObject;
-use Psalm\Type\Atomic\TNull;
-use Psalm\Type\Atomic\TObject;
-use Psalm\Type\Atomic\TScalar;
+use Psalm\Type\Atomic\T_Array;
+use Psalm\Type\Atomic\T_False;
+use Psalm\Type\Atomic\T_Named_Object;
+use Psalm\Type\Atomic\T_Null;
+use Psalm\Type\Atomic\T_Object;
+use Psalm\Type\Atomic\T_Scalar;
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class PdoStatementReturnTypeProvider implements MethodReturnTypeProviderInterface
+final class Pdo_Statement_Return_Type_Provider implements Method_Return_Type_Provider_Interface
 {
     #[Override]
-    public static function getClassLikeNames(): array
+    public static function get_class_like_names(): array
     {
         return ['PDOStatement'];
     }
-
     #[Override]
-    public static function getMethodReturnType(MethodReturnTypeProviderEvent $event): ?Union
+    public static function get_method_return_type(Method_Return_Type_Provider_Event $event): ?Union
     {
-        $config = Config::getInstance();
-        $method_name_lowercase = $event->getMethodNameLowercase();
-
+        $config = Config::get_instance();
+        $method_name_lowercase = $event->get_method_name_lowercase();
         if (!$config->php_extensions["pdo"]) {
             return null;
         }
-
         if ($method_name_lowercase === 'fetch') {
-            return self::handleFetch($event);
+            return self::handle_fetch($event);
         }
-
         if ($method_name_lowercase === 'fetchall') {
-            return self::handleFetchAll($event);
+            return self::handle_fetch_all($event);
         }
-
         return null;
     }
-
-    private static function handleFetch(MethodReturnTypeProviderEvent $event): ?Union
+    private static function handle_fetch(Method_Return_Type_Provider_Event $event): ?Union
     {
-        $source = $event->getSource();
-        $call_args = $event->getCallArgs();
+        $source = $event->get_source();
+        $call_args = $event->get_call_args();
         $fetch_mode = 0;
-        
         foreach ($call_args as $call_arg) {
             $arg_name = $call_arg->name;
             if (!isset($arg_name) || $arg_name->name === "mode") {
-                $arg_type = $source->getNodeTypeProvider()->getType($call_arg->value);
-                if (isset($arg_type) && $arg_type->isSingleIntLiteral()) {
-                    $fetch_mode = $arg_type->getSingleIntLiteral()->value;
+                $arg_type = $source->get_node_type_provider()->get_type($call_arg->value);
+                if (isset($arg_type) && $arg_type->is_single_int_literal()) {
+                    $fetch_mode = $arg_type->get_single_int_literal()->value;
                 }
                 break;
             }
         }
         return match ($fetch_mode) {
-            2 => new Union([
-                new TArray([
-                    Type::getString(),
-                    new Union([
-                        new TScalar(),
-                        new TNull(),
-                    ]),
-                ]),
-                new TFalse(),
-            ]),
-            4 => new Union([
-                new TArray([
-                    Type::getArrayKey(),
-                    new Union([
-                        new TScalar(),
-                        new TNull(),
-                    ]),
-                ]),
-                new TFalse(),
-            ]),
-            6 => Type::getBool(),
-            7 => new Union([
-                new TScalar(),
-                new TNull(),
-                new TFalse(),
-            ]),
-            8 => new Union([
-                new TObject(),
-                new TFalse(),
-            ]),
-            1 => new Union([
-                new TObject(),
-                new TFalse(),
-            ]),
-            11 => new Union([
-                new TArray([
-                    Type::getString(),
-                    new Union([
-                        new TScalar(),
-                        new TNull(),
-                        Type::getListAtomic(
-                            new Union([
-                                new TScalar(),
-                                new TNull(),
-                            ]),
-                        ),
-                    ]),
-                ]),
-                new TFalse(),
-            ]),
-            12 => new Union([
-                new TArray([
-                    Type::getArrayKey(),
-                    new Union([
-                        new TScalar(),
-                        new TNull(),
-                    ]),
-                ]),
-            ]),
-            3 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        new TScalar(),
-                        new TNull(),
-                    ]),
-                ),
-                new TFalse(),
-            ]),
-            5 => new Union([
-                new TNamedObject('stdClass'),
-                new TFalse(),
-            ]),
+            2 => new Union([new T_Array([Type::get_string(), new Union([new T_Scalar(), new T_Null()])]), new T_False()]),
+            4 => new Union([new T_Array([Type::get_array_key(), new Union([new T_Scalar(), new T_Null()])]), new T_False()]),
+            6 => Type::get_bool(),
+            7 => new Union([new T_Scalar(), new T_Null(), new T_False()]),
+            8 => new Union([new T_Object(), new T_False()]),
+            1 => new Union([new T_Object(), new T_False()]),
+            11 => new Union([new T_Array([Type::get_string(), new Union([new T_Scalar(), new T_Null(), Type::get_list_atomic(new Union([new T_Scalar(), new T_Null()]))])]), new T_False()]),
+            12 => new Union([new T_Array([Type::get_array_key(), new Union([new T_Scalar(), new T_Null()])])]),
+            3 => new Union([Type::get_list_atomic(new Union([new T_Scalar(), new T_Null()])), new T_False()]),
+            5 => new Union([new T_Named_Object('stdClass'), new T_False()]),
             default => null,
         };
     }
-
-    private static function handleFetchAll(MethodReturnTypeProviderEvent $event): ?Union
+    private static function handle_fetch_all(Method_Return_Type_Provider_Event $event): ?Union
     {
-        $source = $event->getSource();
-        $call_args = $event->getCallArgs();
+        $source = $event->get_source();
+        $call_args = $event->get_call_args();
         $fetch_mode = 0;
-
-        if (isset($call_args[0])
-            && ($first_arg_type = $source->getNodeTypeProvider()->getType($call_args[0]->value))
-            && $first_arg_type->isSingleIntLiteral()
-        ) {
-            $fetch_mode = $first_arg_type->getSingleIntLiteral()->value;
+        if (isset($call_args[0]) && ($first_arg_type = $source->get_node_type_provider()->get_type($call_args[0]->value)) && $first_arg_type->is_single_int_literal()) {
+            $fetch_mode = $first_arg_type->get_single_int_literal()->value;
         }
-
         $fetch_class_name = null;
-
-        if (isset($call_args[1])
-            && ($second_arg_type = $source->getNodeTypeProvider()->getType($call_args[1]->value))
-            && $second_arg_type->isSingleStringLiteral()
-        ) {
-            $fetch_class_name = $second_arg_type->getSingleStringLiteral()->value;
+        if (isset($call_args[1]) && ($second_arg_type = $source->get_node_type_provider()->get_type($call_args[1]->value)) && $second_arg_type->is_single_string_literal()) {
+            $fetch_class_name = $second_arg_type->get_single_string_literal()->value;
         }
         return match ($fetch_mode) {
-            2 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        new TArray([
-                            Type::getString(),
-                            new Union([
-                                new TScalar(),
-                                new TNull(),
-                            ]),
-                        ]),
-                    ]),
-                ),
-            ]),
-            4 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        new TArray([
-                            Type::getArrayKey(),
-                            new Union([
-                                new TScalar(),
-                                new TNull(),
-                            ]),
-                        ]),
-                    ]),
-                ),
-            ]),
-            6 => new Union([
-                Type::getListAtomic(
-                    Type::getBool(),
-                ),
-            ]),
-            7 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        new TScalar(),
-                        new TNull(),
-                    ]),
-                ),
-            ]),
-            8 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        $fetch_class_name ? new TNamedObject($fetch_class_name) : new TObject(),
-                    ]),
-                ),
-            ]),
-            11 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        new TArray([
-                            Type::getString(),
-                            new Union([
-                                new TScalar(),
-                                new TNull(),
-                                Type::getListAtomic(
-                                    new Union([
-                                        new TScalar(),
-                                        new TNull(),
-                                    ]),
-                                ),
-                            ]),
-                        ]),
-                    ]),
-                ),
-            ]),
-            12 => new Union([
-                new TArray([
-                    Type::getArrayKey(),
-                    new Union([
-                        new TScalar(),
-                        new TNull(),
-                    ]),
-                ]),
-            ]),
-            3 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        Type::getListAtomic(
-                            new Union([
-                                new TScalar(),
-                                new TNull(),
-                            ]),
-                        ),
-                    ]),
-                ),
-            ]),
-            5 => new Union([
-                Type::getListAtomic(
-                    new Union([
-                        new TNamedObject('stdClass'),
-                    ]),
-                ),
-            ]),
+            2 => new Union([Type::get_list_atomic(new Union([new T_Array([Type::get_string(), new Union([new T_Scalar(), new T_Null()])])]))]),
+            4 => new Union([Type::get_list_atomic(new Union([new T_Array([Type::get_array_key(), new Union([new T_Scalar(), new T_Null()])])]))]),
+            6 => new Union([Type::get_list_atomic(Type::get_bool())]),
+            7 => new Union([Type::get_list_atomic(new Union([new T_Scalar(), new T_Null()]))]),
+            8 => new Union([Type::get_list_atomic(new Union([$fetch_class_name ? new T_Named_Object($fetch_class_name) : new T_Object()]))]),
+            11 => new Union([Type::get_list_atomic(new Union([new T_Array([Type::get_string(), new Union([new T_Scalar(), new T_Null(), Type::get_list_atomic(new Union([new T_Scalar(), new T_Null()]))])])]))]),
+            12 => new Union([new T_Array([Type::get_array_key(), new Union([new T_Scalar(), new T_Null()])])]),
+            3 => new Union([Type::get_list_atomic(new Union([Type::get_list_atomic(new Union([new T_Scalar(), new T_Null()]))]))]),
+            5 => new Union([Type::get_list_atomic(new Union([new T_Named_Object('stdClass')]))]),
             default => null,
         };
     }

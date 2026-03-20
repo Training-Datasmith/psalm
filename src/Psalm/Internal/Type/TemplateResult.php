@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Type;
 
 use Psalm\Type\Union;
-
 use function array_replace_recursive;
-
 /**
  * This class captures the result of running Psalm's argument analysis with
  * regard to generic parameters.
@@ -25,53 +22,46 @@ use function array_replace_recursive;
  *
  * @internal
  */
-final class TemplateResult
+final class Template_Result
 {
     /**
      * @var array<string, array<string, non-empty-list<TemplateBound>>>
      */
     public array $lower_bounds = [];
-
     /**
      * @var array<string, array<string, TemplateBound>>
      */
     public array $upper_bounds = [];
-
     /**
      * If set to true then we shouldn't update the template bounds
      */
     public bool $readonly = false;
-
     /**
      * @var list<Union>
      */
     public array $upper_bounds_unintersectable_types = [];
-
     /**
      * @param  array<string, array<string, Union>> $template_types
      * @param  array<string, array<string, Union>> $lower_bounds
      */
     public function __construct(public array $template_types, array $lower_bounds)
     {
-        foreach ($lower_bounds as $key1 => $boundSet) {
-            foreach ($boundSet as $key2 => $bound) {
-                $this->lower_bounds[$key1][$key2] = [new TemplateBound($bound)];
+        foreach ($lower_bounds as $key1 => $bound_set) {
+            foreach ($bound_set as $key2 => $bound) {
+                $this->lower_bounds[$key1][$key2] = [new Template_Bound($bound)];
             }
         }
     }
-
-    public function merge(TemplateResult $result): TemplateResult
+    public function merge(Template_Result $result): Template_Result
     {
         if ($result === $this) {
             return $this;
         }
-
         $instance = clone $this;
         /** @var array<string, array<string, non-empty-list<TemplateBound>>> $lower_bounds */
         $lower_bounds = array_replace_recursive($instance->lower_bounds, $result->lower_bounds);
         $instance->lower_bounds = $lower_bounds;
         $instance->template_types = [...$instance->template_types, ...$result->template_types];
-
         return $instance;
     }
 }

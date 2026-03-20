@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
-use Psalm\Node\VirtualNode;
-
-final class VirtualSmallerOrEqual extends SmallerOrEqual implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Smaller_Or_Equal;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Smaller_Or_Equal extends Smaller_Or_Equal implements Virtual_Node
 {
-
 }

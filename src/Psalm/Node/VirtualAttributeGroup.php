@@ -1,12 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node;
 
-use PhpParser\Node\AttributeGroup;
-
-final class VirtualAttributeGroup extends AttributeGroup implements VirtualNode
+use Php_Parser\Node\Attribute_Group;
+final class Virtual_Attribute_Group extends Attribute_Group implements Virtual_Node
 {
-
 }

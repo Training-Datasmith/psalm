@@ -1,21 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm;
 
-use Psalm\Storage\UnserializeMemoryUsageSuppressionTrait;
-
+use Psalm\Storage\Unserialize_Memory_Usage_Suppression_Trait;
 final class Aliases
 {
-    use UnserializeMemoryUsageSuppressionTrait;
-
+    use Unserialize_Memory_Usage_Suppression_Trait;
     public ?int $namespace_first_stmt_start = null;
-
     public ?int $uses_start = null;
-
     public ?int $uses_end = null;
-
     /**
      * @param array<lowercase-string, string> $uses
      * @param array<lowercase-string, non-empty-string> $functions
@@ -26,14 +20,7 @@ final class Aliases
      * @internal
      * @psalm-mutation-free
      */
-    public function __construct(
-        public ?string $namespace = null,
-        public array $uses = [],
-        public array $functions = [],
-        public array $constants = [],
-        public array $uses_flipped = [],
-        public array $functions_flipped = [],
-        public array $constants_flipped = [],
-    ) {
+    public function __construct(public ?string $namespace = null, public array $uses = [], public array $functions = [], public array $constants = [], public array $uses_flipped = [], public array $functions_flipped = [], public array $constants_flipped = [])
+    {
     }
 }

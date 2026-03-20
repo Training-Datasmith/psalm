@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Exception;
 
 use Exception;
-
-final class InvalidClasslikeOverrideException extends Exception
+final class Invalid_Classlike_Override_Exception extends Exception
 {
 }

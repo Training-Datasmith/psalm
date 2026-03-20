@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal;
 
 use RuntimeException;
 use Throwable;
-
 use function defined;
 use function error_reporting;
 use function fwrite;
@@ -14,36 +12,31 @@ use function implode;
 use function ini_set;
 use function set_error_handler;
 use function set_exception_handler;
-
 use const E_ALL;
 use const STDERR;
-
 /**
  * @internal
  */
-final class ErrorHandler
+final class Error_Handler
 {
     private static bool $exceptions_enabled = true;
-
     private static string $args = '';
-
     /**
      * @param array<int,string> $argv
      */
     public static function install(array $argv = []): void
     {
         self::$args = implode(' ', $argv);
-        self::setErrorReporting();
-        self::installErrorHandler();
-        self::installExceptionHandler();
+        self::set_error_reporting();
+        self::install_error_handler();
+        self::install_exception_handler();
     }
-
     /**
      * @template T
      * @param callable():T $f
      * @return T
      */
-    public static function runWithExceptionsSuppressed(callable $f)
+    public static function run_with_exceptions_suppressed(callable $f)
     {
         try {
             self::$exceptions_enabled = false;
@@ -52,40 +45,26 @@ final class ErrorHandler
             self::$exceptions_enabled = true;
         }
     }
-
     /** @psalm-suppress UnusedConstructor added to prevent instantiations */
     private function __construct()
     {
     }
-
-    private static function setErrorReporting(): void
+    private static function set_error_reporting(): void
     {
         error_reporting(E_ALL);
         ini_set('display_errors', '1');
     }
-
-    private static function installErrorHandler(): void
+    private static function install_error_handler(): void
     {
-        set_error_handler(static function (
-            int $error_code,
-            string $error_message,
-            string $error_filename = 'unknown',
-            int $error_line = -1,
-        ): bool {
-            if (ErrorHandler::$exceptions_enabled && ($error_code & error_reporting())) {
-                throw new RuntimeException(
-                    'PHP Error: ' . $error_message
-                    . ' in ' . $error_filename . ':' . $error_line
-                    . ' for command with CLI args "' . ErrorHandler::$args . '"',
-                    $error_code,
-                );
+        set_error_handler(static function (int $error_code, string $error_message, string $error_filename = 'unknown', int $error_line = -1): bool {
+            if (Error_Handler::$exceptions_enabled && $error_code & error_reporting()) {
+                throw new RuntimeException('PHP Error: ' . $error_message . ' in ' . $error_filename . ':' . $error_line . ' for command with CLI args "' . Error_Handler::$args . '"', $error_code);
             }
             // let PHP handle suppressed errors how it sees fit
             return false;
         });
     }
-
-    private static function installExceptionHandler(): void
+    private static function install_exception_handler(): void
     {
         /**
          * If there is an uncaught exception,
@@ -93,9 +72,9 @@ final class ErrorHandler
          * then exit with a non-zero exit code to indicate failure.
          */
         set_exception_handler(static function (Throwable $throwable): never {
-            fwrite(STDERR, "Uncaught $throwable\n");
+            fwrite(STDERR, "Uncaught {$throwable}\n");
             $version = defined('PSALM_VERSION') ? PSALM_VERSION : '(unknown version)';
-            fwrite(STDERR, "(Psalm $version crashed due to an uncaught Throwable)\n");
+            fwrite(STDERR, "(Psalm {$version} crashed due to an uncaught Throwable)\n");
             exit(1);
         });
     }

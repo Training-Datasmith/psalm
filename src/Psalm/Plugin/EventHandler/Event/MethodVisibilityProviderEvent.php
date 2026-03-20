@@ -1,46 +1,34 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler\Event;
 
-namespace Psalm\Plugin\EventHandler\Event;
-
-use Psalm\CodeLocation;
+use Psalm\Code_Location;
 use Psalm\Context;
-use Psalm\StatementsSource;
-
-final class MethodVisibilityProviderEvent
+use Psalm\Statements_Source;
+final class Method_Visibility_Provider_Event
 {
     /** @internal */
-    public function __construct(
-        private readonly StatementsSource $source,
-        private readonly string $fq_classlike_name,
-        private readonly string $method_name_lowercase,
-        private readonly Context $context,
-        private readonly ?CodeLocation $code_location = null,
-    ) {
+    public function __construct(private readonly Statements_Source $source, private readonly string $fq_classlike_name, private readonly string $method_name_lowercase, private readonly Context $context, private readonly ?Code_Location $code_location = null)
+    {
     }
-
-    public function getSource(): StatementsSource
+    public function get_source(): Statements_Source
     {
         return $this->source;
     }
-
-    public function getFqClasslikeName(): string
+    public function get_fq_classlike_name(): string
     {
         return $this->fq_classlike_name;
     }
-
-    public function getMethodNameLowercase(): string
+    public function get_method_name_lowercase(): string
     {
         return $this->method_name_lowercase;
     }
-
-    public function getContext(): Context
+    public function get_context(): Context
     {
         return $this->context;
     }
-
-    public function getCodeLocation(): ?CodeLocation
+    public function get_code_location(): ?Code_Location
     {
         return $this->code_location;
     }

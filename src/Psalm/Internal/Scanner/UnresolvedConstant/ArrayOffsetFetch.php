@@ -1,20 +1,16 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Scanner\Unresolved_Constant;
 
-namespace Psalm\Internal\Scanner\UnresolvedConstant;
-
-use Psalm\Internal\Scanner\UnresolvedConstantComponent;
-
+use Psalm\Internal\Scanner\Unresolved_Constant_Component;
 /**
  * @psalm-immutable
  * @internal
  */
-final class ArrayOffsetFetch extends UnresolvedConstantComponent
+final class Array_Offset_Fetch extends Unresolved_Constant_Component
 {
-    public function __construct(
-        public readonly UnresolvedConstantComponent $array,
-        public readonly UnresolvedConstantComponent $offset,
-    ) {
+    public function __construct(public readonly Unresolved_Constant_Component $array, public readonly Unresolved_Constant_Component $offset)
+    {
     }
 }

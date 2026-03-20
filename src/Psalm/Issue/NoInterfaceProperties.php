@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class NoInterfaceProperties extends ClassIssue
+final class No_Interface_Properties extends Class_Issue
 {
     public const ERROR_LEVEL = 4;
     public const SHORTCODE = 28;

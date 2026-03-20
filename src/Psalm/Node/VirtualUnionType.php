@@ -1,12 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node;
 
-use PhpParser\Node\UnionType;
-
-final class VirtualUnionType extends UnionType implements VirtualNode
+use Php_Parser\Node\Union_Type;
+final class Virtual_Union_Type extends Union_Type implements Virtual_Node
 {
-
 }

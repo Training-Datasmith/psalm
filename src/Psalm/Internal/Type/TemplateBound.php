@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Type;
 
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class TemplateBound
+final class Template_Bound
 {
     public function __construct(
         public Union $type,
@@ -30,7 +28,8 @@ final class TemplateBound
         /**
          * When non-null, indicates an equality template bound (vs a lower or upper bound)
          */
-        public ?string $equality_bound_classlike = null,
-    ) {
+        public ?string $equality_bound_classlike = null
+    )
+    {
     }
 }

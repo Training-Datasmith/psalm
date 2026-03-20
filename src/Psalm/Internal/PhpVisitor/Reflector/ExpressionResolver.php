@@ -1,39 +1,37 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Php_Visitor\Reflector;
 
-namespace Psalm\Internal\PhpVisitor\Reflector;
-
-use PhpParser;
-use PhpParser\ConstExprEvaluationException;
-use PhpParser\ConstExprEvaluator;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\ConstFetch;
+use Php_Parser;
+use Php_Parser\Const_Expr_Evaluation_Exception;
+use Php_Parser\Const_Expr_Evaluator;
+use Php_Parser\Node\Expr;
+use Php_Parser\Node\Expr\Const_Fetch;
 use Psalm\Aliases;
 use Psalm\Codebase;
-use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
-use Psalm\Internal\Scanner\UnresolvedConstant\ArrayOffsetFetch;
-use Psalm\Internal\Scanner\UnresolvedConstant\ArraySpread;
-use Psalm\Internal\Scanner\UnresolvedConstant\ArrayValue;
-use Psalm\Internal\Scanner\UnresolvedConstant\ClassConstant;
-use Psalm\Internal\Scanner\UnresolvedConstant\Constant;
-use Psalm\Internal\Scanner\UnresolvedConstant\EnumNameFetch;
-use Psalm\Internal\Scanner\UnresolvedConstant\EnumValueFetch;
-use Psalm\Internal\Scanner\UnresolvedConstant\KeyValuePair;
-use Psalm\Internal\Scanner\UnresolvedConstant\ScalarValue;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedAdditionOp;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedBitwiseAnd;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedBitwiseOr;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedBitwiseXor;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedConcatOp;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedDivisionOp;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedMultiplicationOp;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedSubtractionOp;
-use Psalm\Internal\Scanner\UnresolvedConstant\UnresolvedTernary;
-use Psalm\Internal\Scanner\UnresolvedConstantComponent;
+use Psalm\Internal\Analyzer\Class_Like_Analyzer;
+use Psalm\Internal\Scanner\Unresolved_Constant\Array_Offset_Fetch;
+use Psalm\Internal\Scanner\Unresolved_Constant\Array_Spread;
+use Psalm\Internal\Scanner\Unresolved_Constant\Array_Value;
+use Psalm\Internal\Scanner\Unresolved_Constant\Class_Constant;
+use Psalm\Internal\Scanner\Unresolved_Constant\Constant;
+use Psalm\Internal\Scanner\Unresolved_Constant\Enum_Name_Fetch;
+use Psalm\Internal\Scanner\Unresolved_Constant\Enum_Value_Fetch;
+use Psalm\Internal\Scanner\Unresolved_Constant\Key_Value_Pair;
+use Psalm\Internal\Scanner\Unresolved_Constant\Scalar_Value;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Addition_Op;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Bitwise_And;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Bitwise_Or;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Bitwise_Xor;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Concat_Op;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Division_Op;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Multiplication_Op;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Subtraction_Op;
+use Psalm\Internal\Scanner\Unresolved_Constant\Unresolved_Ternary;
+use Psalm\Internal\Scanner\Unresolved_Constant_Component;
 use ReflectionClass;
 use ReflectionFunction;
-
 use function array_merge;
 use function array_values;
 use function assert;
@@ -43,493 +41,265 @@ use function get_defined_constants;
 use function in_array;
 use function interface_exists;
 use function strtolower;
-
 /**
  * @internal
  */
-final class ExpressionResolver
+final class Expression_Resolver
 {
-    public static function getUnresolvedClassConstExpr(
-        PhpParser\Node\Expr $stmt,
-        Aliases $aliases,
-        ?string $fq_classlike_name,
-        ?string $parent_fq_class_name = null,
-    ): ?UnresolvedConstantComponent {
-        if ($stmt instanceof PhpParser\Node\Expr\BinaryOp) {
-            $left = self::getUnresolvedClassConstExpr(
-                $stmt->left,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
-            $right = self::getUnresolvedClassConstExpr(
-                $stmt->right,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
+    public static function get_unresolved_class_const_expr(Php_Parser\Node\Expr $stmt, Aliases $aliases, ?string $fq_classlike_name, ?string $parent_fq_class_name = null): ?Unresolved_Constant_Component
+    {
+        if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op) {
+            $left = self::get_unresolved_class_const_expr($stmt->left, $aliases, $fq_classlike_name, $parent_fq_class_name);
+            $right = self::get_unresolved_class_const_expr($stmt->right, $aliases, $fq_classlike_name, $parent_fq_class_name);
             if (!$left || !$right) {
                 return null;
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Plus) {
-                return new UnresolvedAdditionOp($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Plus) {
+                return new Unresolved_Addition_Op($left, $right);
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Minus) {
-                return new UnresolvedSubtractionOp($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Minus) {
+                return new Unresolved_Subtraction_Op($left, $right);
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Mul) {
-                return new UnresolvedMultiplicationOp($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Mul) {
+                return new Unresolved_Multiplication_Op($left, $right);
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Div) {
-                return new UnresolvedDivisionOp($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Div) {
+                return new Unresolved_Division_Op($left, $right);
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Concat) {
-                return new UnresolvedConcatOp($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Concat) {
+                return new Unresolved_Concat_Op($left, $right);
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseOr) {
-                return new UnresolvedBitwiseOr($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Bitwise_Or) {
+                return new Unresolved_Bitwise_Or($left, $right);
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseXor) {
-                return new UnresolvedBitwiseXor($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Bitwise_Xor) {
+                return new Unresolved_Bitwise_Xor($left, $right);
             }
-
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseAnd) {
-                return new UnresolvedBitwiseAnd($left, $right);
+            if ($stmt instanceof Php_Parser\Node\Expr\Binary_Op\Bitwise_And) {
+                return new Unresolved_Bitwise_And($left, $right);
             }
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\Ternary) {
-            $cond = self::getUnresolvedClassConstExpr(
-                $stmt->cond,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Ternary) {
+            $cond = self::get_unresolved_class_const_expr($stmt->cond, $aliases, $fq_classlike_name, $parent_fq_class_name);
             $if = null;
-
             if ($stmt->if) {
-                $if = self::getUnresolvedClassConstExpr(
-                    $stmt->if,
-                    $aliases,
-                    $fq_classlike_name,
-                    $parent_fq_class_name,
-                );
-
+                $if = self::get_unresolved_class_const_expr($stmt->if, $aliases, $fq_classlike_name, $parent_fq_class_name);
                 if ($if === null) {
                     $if = false;
                 }
             }
-
-            $else = self::getUnresolvedClassConstExpr(
-                $stmt->else,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
+            $else = self::get_unresolved_class_const_expr($stmt->else, $aliases, $fq_classlike_name, $parent_fq_class_name);
             if ($cond && $else && $if !== false) {
-                return new UnresolvedTernary($cond, $if, $else);
+                return new Unresolved_Ternary($cond, $if, $else);
             }
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\ConstFetch) {
-            $part0_lc = strtolower($stmt->name->getFirst());
+        if ($stmt instanceof Php_Parser\Node\Expr\Const_Fetch) {
+            $part0_lc = strtolower($stmt->name->get_first());
             if ($part0_lc === 'false') {
-                return new ScalarValue(false);
+                return new Scalar_Value(false);
             }
-
             if ($part0_lc === 'true') {
-                return new ScalarValue(true);
+                return new Scalar_Value(true);
             }
-
             if ($part0_lc === 'null') {
-                return new ScalarValue(null);
+                return new Scalar_Value(null);
             }
-
             if ($part0_lc === '__namespace__') {
-                return new ScalarValue($aliases->namespace);
+                return new Scalar_Value($aliases->namespace);
             }
-
-            return new Constant(
-                $stmt->name->toString(),
-                $stmt->name instanceof PhpParser\Node\Name\FullyQualified,
-            );
+            return new Constant($stmt->name->to_string(), $stmt->name instanceof Php_Parser\Node\Name\Fully_Qualified);
         }
-
-        if ($stmt instanceof PhpParser\Node\Scalar\MagicConst\Namespace_) {
-            return new ScalarValue($aliases->namespace);
+        if ($stmt instanceof Php_Parser\Node\Scalar\Magic_Const\Namespace_) {
+            return new Scalar_Value($aliases->namespace);
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\ArrayDimFetch && $stmt->dim) {
-            $left = self::getUnresolvedClassConstExpr(
-                $stmt->var,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
-            $right = self::getUnresolvedClassConstExpr(
-                $stmt->dim,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Array_Dim_Fetch && $stmt->dim) {
+            $left = self::get_unresolved_class_const_expr($stmt->var, $aliases, $fq_classlike_name, $parent_fq_class_name);
+            $right = self::get_unresolved_class_const_expr($stmt->dim, $aliases, $fq_classlike_name, $parent_fq_class_name);
             if ($left && $right) {
-                return new ArrayOffsetFetch($left, $right);
+                return new Array_Offset_Fetch($left, $right);
             }
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\ClassConstFetch) {
-            if ($stmt->class instanceof PhpParser\Node\Name
-                && $stmt->name instanceof PhpParser\Node\Identifier
-                && $fq_classlike_name
-                && $stmt->class->getParts() !== ['static']
-                && ($stmt->class->getParts() !== ['parent'] || $parent_fq_class_name !== null)
-            ) {
-                if ($stmt->class->getParts() === ['self']) {
+        if ($stmt instanceof Php_Parser\Node\Expr\Class_Const_Fetch) {
+            if ($stmt->class instanceof Php_Parser\Node\Name && $stmt->name instanceof Php_Parser\Node\Identifier && $fq_classlike_name && $stmt->class->get_parts() !== ['static'] && ($stmt->class->get_parts() !== ['parent'] || $parent_fq_class_name !== null)) {
+                if ($stmt->class->get_parts() === ['self']) {
                     $const_fq_class_name = $fq_classlike_name;
+                } else if ($stmt->class->get_parts() === ['parent']) {
+                    assert($parent_fq_class_name !== null);
+                    $const_fq_class_name = $parent_fq_class_name;
                 } else {
-                    if ($stmt->class->getParts() === ['parent']) {
-                        assert($parent_fq_class_name !== null);
-                        $const_fq_class_name = $parent_fq_class_name;
-                    } else {
-                        $const_fq_class_name = ClassLikeAnalyzer::getFQCLNFromNameObject(
-                            $stmt->class,
-                            $aliases,
-                        );
-                    }
+                    $const_fq_class_name = Class_Like_Analyzer::get_fqcln_from_name_object($stmt->class, $aliases);
                 }
-
-                return new ClassConstant($const_fq_class_name, $stmt->name->name);
+                return new Class_Constant($const_fq_class_name, $stmt->name->name);
             }
-
             return null;
         }
-
-        if ($stmt instanceof PhpParser\Node\Scalar\String_
-            || $stmt instanceof PhpParser\Node\Scalar\Int_
-            || $stmt instanceof PhpParser\Node\Scalar\Float_
-        ) {
-            return new ScalarValue($stmt->value);
+        if ($stmt instanceof Php_Parser\Node\Scalar\String_ || $stmt instanceof Php_Parser\Node\Scalar\Int_ || $stmt instanceof Php_Parser\Node\Scalar\Float_) {
+            return new Scalar_Value($stmt->value);
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\UnaryPlus) {
-            $right = self::getUnresolvedClassConstExpr(
-                $stmt->expr,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Unary_Plus) {
+            $right = self::get_unresolved_class_const_expr($stmt->expr, $aliases, $fq_classlike_name, $parent_fq_class_name);
             if (!$right) {
                 return null;
             }
-
-            return new UnresolvedAdditionOp(
-                new ScalarValue(0),
-                $right,
-            );
+            return new Unresolved_Addition_Op(new Scalar_Value(0), $right);
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\UnaryMinus) {
-            $right = self::getUnresolvedClassConstExpr(
-                $stmt->expr,
-                $aliases,
-                $fq_classlike_name,
-                $parent_fq_class_name,
-            );
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Unary_Minus) {
+            $right = self::get_unresolved_class_const_expr($stmt->expr, $aliases, $fq_classlike_name, $parent_fq_class_name);
             if (!$right) {
                 return null;
             }
-
-            return new UnresolvedSubtractionOp(
-                new ScalarValue(0),
-                $right,
-            );
+            return new Unresolved_Subtraction_Op(new Scalar_Value(0), $right);
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\Array_) {
+        if ($stmt instanceof Php_Parser\Node\Expr\Array_) {
             $items = [];
-
             foreach ($stmt->items as $item) {
                 if ($item === null) {
                     return null;
                 }
-
                 if ($item->key) {
-                    $item_key_type = self::getUnresolvedClassConstExpr(
-                        $item->key,
-                        $aliases,
-                        $fq_classlike_name,
-                        $parent_fq_class_name,
-                    );
-
+                    $item_key_type = self::get_unresolved_class_const_expr($item->key, $aliases, $fq_classlike_name, $parent_fq_class_name);
                     if (!$item_key_type) {
                         return null;
                     }
                 } else {
                     $item_key_type = null;
                 }
-
-                $item_value_type = self::getUnresolvedClassConstExpr(
-                    $item->value,
-                    $aliases,
-                    $fq_classlike_name,
-                    $parent_fq_class_name,
-                );
-
+                $item_value_type = self::get_unresolved_class_const_expr($item->value, $aliases, $fq_classlike_name, $parent_fq_class_name);
                 if (!$item_value_type) {
                     return null;
                 }
-
                 if ($item->unpack) {
-                    $items[] = new ArraySpread($item_value_type);
+                    $items[] = new Array_Spread($item_value_type);
                 } else {
-                    $items[] = new KeyValuePair($item_key_type, $item_value_type);
+                    $items[] = new Key_Value_Pair($item_key_type, $item_value_type);
                 }
             }
-
-            return new ArrayValue($items);
+            return new Array_Value($items);
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\PropertyFetch
-            && $stmt->var instanceof PhpParser\Node\Expr\ClassConstFetch
-            && $stmt->var->class instanceof PhpParser\Node\Name
-            && $stmt->var->name instanceof PhpParser\Node\Identifier
-            && $stmt->name instanceof PhpParser\Node\Identifier
-            && in_array($stmt->name->name, ['name', 'value'], true)
-            && ($stmt->var->class->getParts() !== ['self'] || $fq_classlike_name !== null)
-            && $stmt->var->class->getParts() !== ['static']
-            && ($stmt->var->class->getParts() !== ['parent'] || $parent_fq_class_name !== null)
-        ) {
-            if ($stmt->var->class->getParts() === ['self']) {
+        if ($stmt instanceof Php_Parser\Node\Expr\Property_Fetch && $stmt->var instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $stmt->var->class instanceof Php_Parser\Node\Name && $stmt->var->name instanceof Php_Parser\Node\Identifier && $stmt->name instanceof Php_Parser\Node\Identifier && in_array($stmt->name->name, ['name', 'value'], true) && ($stmt->var->class->get_parts() !== ['self'] || $fq_classlike_name !== null) && $stmt->var->class->get_parts() !== ['static'] && ($stmt->var->class->get_parts() !== ['parent'] || $parent_fq_class_name !== null)) {
+            if ($stmt->var->class->get_parts() === ['self']) {
                 assert($fq_classlike_name !== null);
                 $enum_fq_class_name = $fq_classlike_name;
+            } else if ($stmt->var->class->get_parts() === ['parent']) {
+                assert($parent_fq_class_name !== null);
+                $enum_fq_class_name = $parent_fq_class_name;
             } else {
-                if ($stmt->var->class->getParts() === ['parent']) {
-                    assert($parent_fq_class_name !== null);
-                    $enum_fq_class_name = $parent_fq_class_name;
-                } else {
-                    $enum_fq_class_name = ClassLikeAnalyzer::getFQCLNFromNameObject(
-                        $stmt->var->class,
-                        $aliases,
-                    );
-                }
+                $enum_fq_class_name = Class_Like_Analyzer::get_fqcln_from_name_object($stmt->var->class, $aliases);
             }
             if ($stmt->name->name === 'value') {
-                return new EnumValueFetch($enum_fq_class_name, $stmt->var->name->name);
+                return new Enum_Value_Fetch($enum_fq_class_name, $stmt->var->name->name);
             }
-            return new EnumNameFetch($enum_fq_class_name, $stmt->var->name->name);
+            return new Enum_Name_Fetch($enum_fq_class_name, $stmt->var->name->name);
         }
-
         return null;
     }
-
-    public static function enterConditional(
-        Codebase $codebase,
-        string $file_path,
-        PhpParser\Node\Expr $expr,
-    ): ?bool {
-        if ($expr instanceof PhpParser\Node\Expr\BooleanNot) {
-            $enter_negated = self::enterConditional($codebase, $file_path, $expr->expr);
-
+    public static function enter_conditional(Codebase $codebase, string $file_path, Php_Parser\Node\Expr $expr): ?bool
+    {
+        if ($expr instanceof Php_Parser\Node\Expr\Boolean_Not) {
+            $enter_negated = self::enter_conditional($codebase, $file_path, $expr->expr);
             return $enter_negated === null ? null : !$enter_negated;
         }
-
-        if ($expr instanceof PhpParser\Node\Expr\BinaryOp\BooleanAnd) {
-            $enter_conditional_left = self::enterConditional($codebase, $file_path, $expr->left);
-            $enter_conditional_right = self::enterConditional($codebase, $file_path, $expr->right);
-
+        if ($expr instanceof Php_Parser\Node\Expr\Binary_Op\Boolean_And) {
+            $enter_conditional_left = self::enter_conditional($codebase, $file_path, $expr->left);
+            $enter_conditional_right = self::enter_conditional($codebase, $file_path, $expr->right);
             return $enter_conditional_left !== false && $enter_conditional_right !== false;
         }
-
-        if ($expr instanceof PhpParser\Node\Expr\BinaryOp\BooleanOr) {
-            $enter_conditional_left = self::enterConditional($codebase, $file_path, $expr->left);
-            $enter_conditional_right = self::enterConditional($codebase, $file_path, $expr->right);
-
+        if ($expr instanceof Php_Parser\Node\Expr\Binary_Op\Boolean_Or) {
+            $enter_conditional_left = self::enter_conditional($codebase, $file_path, $expr->left);
+            $enter_conditional_right = self::enter_conditional($codebase, $file_path, $expr->right);
             return $enter_conditional_left !== false || $enter_conditional_right !== false;
         }
-
         if ($codebase->register_autoload_files) {
-            if ((
-                    $expr instanceof PhpParser\Node\Expr\BinaryOp\GreaterOrEqual
-                    || $expr instanceof PhpParser\Node\Expr\BinaryOp\Greater
-                    || $expr instanceof PhpParser\Node\Expr\BinaryOp\SmallerOrEqual
-                    || $expr instanceof PhpParser\Node\Expr\BinaryOp\Smaller
-                ) && (
-                    (
-                        $expr->left instanceof PhpParser\Node\Expr\ConstFetch
-                        && $expr->left->name->getParts() === ['PHP_VERSION_ID']
-                        && $expr->right instanceof PhpParser\Node\Scalar\Int_
-                    ) || (
-                        $expr->right instanceof PhpParser\Node\Expr\ConstFetch
-                        && $expr->right->name->getParts() === ['PHP_VERSION_ID']
-                        && $expr->left instanceof PhpParser\Node\Scalar\Int_
-                    )
-                )
-            ) {
+            if (($expr instanceof Php_Parser\Node\Expr\Binary_Op\Greater_Or_Equal || $expr instanceof Php_Parser\Node\Expr\Binary_Op\Greater || $expr instanceof Php_Parser\Node\Expr\Binary_Op\Smaller_Or_Equal || $expr instanceof Php_Parser\Node\Expr\Binary_Op\Smaller) && ($expr->left instanceof Php_Parser\Node\Expr\Const_Fetch && $expr->left->name->get_parts() === ['PHP_VERSION_ID'] && $expr->right instanceof Php_Parser\Node\Scalar\Int_ || $expr->right instanceof Php_Parser\Node\Expr\Const_Fetch && $expr->right->name->get_parts() === ['PHP_VERSION_ID'] && $expr->left instanceof Php_Parser\Node\Scalar\Int_)) {
                 $php_version_id = $codebase->analysis_php_version_id;
-                $evaluator = new ConstExprEvaluator(static function (Expr $expr) use ($php_version_id): int {
-                    if ($expr instanceof ConstFetch && $expr->name->getParts() === ['PHP_VERSION_ID']) {
+                $evaluator = new Const_Expr_Evaluator(static function (Expr $expr) use ($php_version_id): int {
+                    if ($expr instanceof Const_Fetch && $expr->name->get_parts() === ['PHP_VERSION_ID']) {
                         return $php_version_id;
                     }
-                    throw new ConstExprEvaluationException('unexpected');
+                    throw new Const_Expr_Evaluation_Exception('unexpected');
                 });
                 try {
-                    return (bool) $evaluator->evaluateSilently($expr);
-                } catch (ConstExprEvaluationException) {
+                    return (bool) $evaluator->evaluate_silently($expr);
+                } catch (Const_Expr_Evaluation_Exception) {
                     return null;
                 }
             }
         }
-
-        if (!$expr instanceof PhpParser\Node\Expr\FuncCall) {
+        if (!$expr instanceof Php_Parser\Node\Expr\Func_Call) {
             return null;
         }
-
-        return self::functionEvaluatesToTrue($codebase, $file_path, $expr);
+        return self::function_evaluates_to_true($codebase, $file_path, $expr);
     }
-
-    private static function functionEvaluatesToTrue(
-        Codebase $codebase,
-        string $file_path,
-        PhpParser\Node\Expr\FuncCall $function,
-    ): ?bool {
-        if (!$function->name instanceof PhpParser\Node\Name) {
+    private static function function_evaluates_to_true(Codebase $codebase, string $file_path, Php_Parser\Node\Expr\Func_Call $function): ?bool
+    {
+        if (!$function->name instanceof Php_Parser\Node\Name) {
             return null;
         }
-
-        if ($function->name->getParts() === ['function_exists']
-            && isset($function->getArgs()[0])
-            && $function->getArgs()[0]->value instanceof PhpParser\Node\Scalar\String_
-            && function_exists($function->getArgs()[0]->value->value)
-        ) {
-            $reflection_function = new ReflectionFunction($function->getArgs()[0]->value->value);
-
-            if ($reflection_function->isInternal()) {
+        if ($function->name->get_parts() === ['function_exists'] && isset($function->get_args()[0]) && $function->get_args()[0]->value instanceof Php_Parser\Node\Scalar\String_ && function_exists($function->get_args()[0]->value->value)) {
+            $reflection_function = new ReflectionFunction($function->get_args()[0]->value->value);
+            if ($reflection_function->is_internal()) {
                 return true;
             }
-
             return false;
         }
-
-        if ($function->name->getParts() === ['class_exists']
-            && isset($function->getArgs()[0])
-        ) {
+        if ($function->name->get_parts() === ['class_exists'] && isset($function->get_args()[0])) {
             $string_value = null;
-
-            if ($function->getArgs()[0]->value instanceof PhpParser\Node\Scalar\String_) {
-                $string_value = $function->getArgs()[0]->value->value;
-            } elseif ($function->getArgs()[0]->value instanceof PhpParser\Node\Expr\ClassConstFetch
-                && $function->getArgs()[0]->value->class instanceof PhpParser\Node\Name
-                && $function->getArgs()[0]->value->name instanceof PhpParser\Node\Identifier
-                && strtolower($function->getArgs()[0]->value->name->name) === 'class'
-            ) {
-                $string_value = (string) $function->getArgs()[0]->value->class->getAttribute('resolvedName');
+            if ($function->get_args()[0]->value instanceof Php_Parser\Node\Scalar\String_) {
+                $string_value = $function->get_args()[0]->value->value;
+            } elseif ($function->get_args()[0]->value instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $function->get_args()[0]->value->class instanceof Php_Parser\Node\Name && $function->get_args()[0]->value->name instanceof Php_Parser\Node\Identifier && strtolower($function->get_args()[0]->value->name->name) === 'class') {
+                $string_value = (string) $function->get_args()[0]->value->class->get_attribute('resolvedName');
             }
-
             if ($string_value && class_exists($string_value)) {
                 $reflection_class = new ReflectionClass($string_value);
-
-                if ($reflection_class->getFileName() !== $file_path) {
-                    $codebase->scanner->queueClassLikeForScanning(
-                        $string_value,
-                    );
-
+                if ($reflection_class->get_file_name() !== $file_path) {
+                    $codebase->scanner->queue_class_like_for_scanning($string_value);
                     return true;
                 }
             }
-
             return false;
         }
-
-        if ($function->name->getParts() === ['interface_exists']
-            && isset($function->getArgs()[0])
-        ) {
+        if ($function->name->get_parts() === ['interface_exists'] && isset($function->get_args()[0])) {
             $string_value = null;
-
-            if ($function->getArgs()[0]->value instanceof PhpParser\Node\Scalar\String_) {
-                $string_value = $function->getArgs()[0]->value->value;
-            } elseif ($function->getArgs()[0]->value instanceof PhpParser\Node\Expr\ClassConstFetch
-                && $function->getArgs()[0]->value->class instanceof PhpParser\Node\Name
-                && $function->getArgs()[0]->value->name instanceof PhpParser\Node\Identifier
-                && strtolower($function->getArgs()[0]->value->name->name) === 'class'
-            ) {
-                $string_value = (string) $function->getArgs()[0]->value->class->getAttribute('resolvedName');
+            if ($function->get_args()[0]->value instanceof Php_Parser\Node\Scalar\String_) {
+                $string_value = $function->get_args()[0]->value->value;
+            } elseif ($function->get_args()[0]->value instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $function->get_args()[0]->value->class instanceof Php_Parser\Node\Name && $function->get_args()[0]->value->name instanceof Php_Parser\Node\Identifier && strtolower($function->get_args()[0]->value->name->name) === 'class') {
+                $string_value = (string) $function->get_args()[0]->value->class->get_attribute('resolvedName');
             }
-
             if ($string_value && interface_exists($string_value)) {
                 $reflection_class = new ReflectionClass($string_value);
-
-                if ($reflection_class->getFileName() !== $file_path) {
-                    $codebase->scanner->queueClassLikeForScanning(
-                        $string_value,
-                    );
-
+                if ($reflection_class->get_file_name() !== $file_path) {
+                    $codebase->scanner->queue_class_like_for_scanning($string_value);
                     return true;
                 }
             }
-
             return false;
         }
-
-        if ($function->name->getParts() === ['enum_exists']
-            && isset($function->getArgs()[0])
-        ) {
+        if ($function->name->get_parts() === ['enum_exists'] && isset($function->get_args()[0])) {
             $string_value = null;
-
-            if ($function->getArgs()[0]->value instanceof PhpParser\Node\Scalar\String_) {
-                $string_value = $function->getArgs()[0]->value->value;
-            } elseif ($function->getArgs()[0]->value instanceof PhpParser\Node\Expr\ClassConstFetch
-                && $function->getArgs()[0]->value->class instanceof PhpParser\Node\Name
-                && $function->getArgs()[0]->value->name instanceof PhpParser\Node\Identifier
-                && strtolower($function->getArgs()[0]->value->name->name) === 'class'
-            ) {
-                $string_value = (string) $function->getArgs()[0]->value->class->getAttribute('resolvedName');
+            if ($function->get_args()[0]->value instanceof Php_Parser\Node\Scalar\String_) {
+                $string_value = $function->get_args()[0]->value->value;
+            } elseif ($function->get_args()[0]->value instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $function->get_args()[0]->value->class instanceof Php_Parser\Node\Name && $function->get_args()[0]->value->name instanceof Php_Parser\Node\Identifier && strtolower($function->get_args()[0]->value->name->name) === 'class') {
+                $string_value = (string) $function->get_args()[0]->value->class->get_attribute('resolvedName');
             }
-
             // We're using class_exists here because enum_exists doesn't exist on old versions of PHP
             // Not sure what happens if we try to autoload or reflect on an enum on an old version of PHP though...
             if ($string_value && class_exists($string_value)) {
                 $reflection_class = new ReflectionClass($string_value);
-
-                if ($reflection_class->getFileName() !== $file_path) {
-                    $codebase->scanner->queueClassLikeForScanning(
-                        $string_value,
-                    );
-
+                if ($reflection_class->get_file_name() !== $file_path) {
+                    $codebase->scanner->queue_class_like_for_scanning($string_value);
                     return true;
                 }
             }
-
             return false;
         }
-
-        if ($function->name->getParts() === ['defined']
-            && isset($function->getArgs()[0])
-            && $function->getArgs()[0]->value instanceof PhpParser\Node\Scalar\String_
-        ) {
+        if ($function->name->get_parts() === ['defined'] && isset($function->get_args()[0]) && $function->get_args()[0]->value instanceof Php_Parser\Node\Scalar\String_) {
             $predefined_constants = get_defined_constants(true);
             if (isset($predefined_constants['user'])) {
                 unset($predefined_constants['user']);
             }
             $predefined_constants = array_merge(...array_values($predefined_constants));
-
-            return isset($predefined_constants[$function->getArgs()[0]->value->value]);
+            return isset($predefined_constants[$function->get_args()[0]->value->value]);
         }
-
         return null;
     }
 }

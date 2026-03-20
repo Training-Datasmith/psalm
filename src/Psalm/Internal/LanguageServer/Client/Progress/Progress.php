@@ -1,124 +1,77 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\LanguageServer\Client\Progress;
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server\Client\Progress;
 
 use LogicException;
 use Override;
-use Psalm\Internal\LanguageServer\ClientHandler;
-
+use Psalm\Internal\Language_Server\Client_Handler;
 /** @internal */
-final class Progress implements ProgressInterface
+final class Progress implements Progress_Interface
 {
     private const STATUS_INACTIVE = 'inactive';
     private const STATUS_ACTIVE = 'active';
     private const STATUS_FINISHED = 'finished';
-
     private string $status = self::STATUS_INACTIVE;
-    private bool $withPercentage = false;
-
-    public function __construct(
-        private readonly ClientHandler $handler,
-        private readonly string $token,
-    ) {
+    private bool $with_percentage = false;
+    public function __construct(private readonly Client_Handler $handler, private readonly string $token)
+    {
     }
-
     #[Override]
-    public function begin(
-        string $title,
-        ?string $message = null,
-        ?int $percentage = null,
-    ): void {
+    public function begin(string $title, ?string $message = null, ?int $percentage = null): void
+    {
         if ($this->status === self::STATUS_ACTIVE) {
             throw new LogicException('Progress has already been started');
         }
-
         if ($this->status === self::STATUS_FINISHED) {
             throw new LogicException('Progress has already been finished');
         }
-
-        $notification = [
-            'token' => $this->token,
-            'value' => [
-                'kind' => 'begin',
-                'title' => $title,
-            ],
-        ];
-
+        $notification = ['token' => $this->token, 'value' => ['kind' => 'begin', 'title' => $title]];
         if ($message !== null) {
             $notification['value']['message'] = $message;
         }
-
         if ($percentage !== null) {
             $notification['value']['percentage'] = $percentage;
-            $this->withPercentage = true;
+            $this->with_percentage = true;
         }
-
         $this->handler->notify('$/progress', $notification);
-
         $this->status = self::STATUS_ACTIVE;
     }
-
     #[Override]
     public function end(?string $message = null): void
     {
         if ($this->status === self::STATUS_FINISHED) {
             throw new LogicException('Progress has already been finished');
         }
-
         if ($this->status === self::STATUS_INACTIVE) {
             throw new LogicException('Progress has not been started yet');
         }
-
-        $notification = [
-            'token' => $this->token,
-            'value' => [
-                'kind' => 'end',
-            ],
-        ];
-
+        $notification = ['token' => $this->token, 'value' => ['kind' => 'end']];
         if ($message !== null) {
             $notification['value']['message'] = $message;
         }
-
         $this->handler->notify('$/progress', $notification);
-
         $this->status = self::STATUS_FINISHED;
     }
-
     #[Override]
     public function update(?string $message = null, ?int $percentage = null): void
     {
         if ($this->status === self::STATUS_FINISHED) {
             throw new LogicException('Progress has already been finished');
         }
-
         if ($this->status === self::STATUS_INACTIVE) {
             throw new LogicException('Progress has not been started yet');
         }
-
-        $notification = [
-            'token' => $this->token,
-            'value' => [
-                'kind' => 'report',
-            ],
-        ];
-
+        $notification = ['token' => $this->token, 'value' => ['kind' => 'report']];
         if ($message !== null) {
             $notification['value']['message'] = $message;
         }
-
         if ($percentage !== null) {
-            if (!$this->withPercentage) {
-                throw new LogicException(
-                    'Cannot update percentage for progress '
-                    . 'that was started without percentage',
-                );
+            if (!$this->with_percentage) {
+                throw new LogicException('Cannot update percentage for progress ' . 'that was started without percentage');
             }
             $notification['value']['percentage'] = $percentage;
         }
-
         $this->handler->notify('$/progress', $notification);
     }
 }

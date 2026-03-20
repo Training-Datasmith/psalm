@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\Scanner\UnresolvedConstant;
+declare (strict_types=1);
+namespace Psalm\Internal\Scanner\Unresolved_Constant;
 
 /**
  * @psalm-immutable
  * @internal
  */
-final class EnumValueFetch extends EnumPropertyFetch
+final class Enum_Value_Fetch extends Enum_Property_Fetch
 {
 }

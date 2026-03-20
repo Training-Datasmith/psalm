@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class TaintedCallable extends TaintedInput
+final class Tainted_Callable extends Tainted_Input
 {
     public const SHORTCODE = 243;
 }

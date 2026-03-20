@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\Clone_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualClone extends Clone_ implements VirtualNode
+use Php_Parser\Node\Expr\Clone_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Clone extends Clone_ implements Virtual_Node
 {
-
 }

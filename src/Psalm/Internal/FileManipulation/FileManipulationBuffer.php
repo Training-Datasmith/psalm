@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\File_Manipulation;
 
-namespace Psalm\Internal\FileManipulation;
-
-use Psalm\CodeLocation;
-use Psalm\CodeLocation\DocblockTypeLocation;
-use Psalm\FileManipulation;
-use Psalm\Internal\Analyzer\ProjectAnalyzer;
-use Psalm\Internal\Provider\FileProvider;
-
+use Psalm\Code_Location;
+use Psalm\Code_Location\Docblock_Type_Location;
+use Psalm\File_Manipulation;
+use Psalm\Internal\Analyzer\Project_Analyzer;
+use Psalm\Internal\Provider\File_Provider;
 use function array_merge;
 use function preg_match;
 use function strlen;
@@ -17,18 +15,15 @@ use function strpos;
 use function strrpos;
 use function substr;
 use function substr_replace;
-
 /**
  * @internal
  */
-final class FileManipulationBuffer
+final class File_Manipulation_Buffer
 {
     /** @var array<string, FileManipulation[]> */
     private static array $file_manipulations = [];
-
     /** @var CodeMigration[] */
     private static array $code_migrations = [];
-
     /**
      * @param FileManipulation[] $file_manipulations
      */
@@ -37,114 +32,69 @@ final class FileManipulationBuffer
         if (!isset(self::$file_manipulations[$file_path])) {
             self::$file_manipulations[$file_path] = [];
         }
-
         foreach ($file_manipulations as $file_manipulation) {
-            self::$file_manipulations[$file_path][$file_manipulation->getKey()] = $file_manipulation;
+            self::$file_manipulations[$file_path][$file_manipulation->get_key()] = $file_manipulation;
         }
     }
-
     /** @param CodeMigration[] $code_migrations */
-    public static function addCodeMigrations(array $code_migrations): void
+    public static function add_code_migrations(array $code_migrations): void
     {
         self::$code_migrations = array_merge(self::$code_migrations, $code_migrations);
     }
-
     /**
      * @return array{int, int}
      */
-    private static function getCodeOffsets(
-        string $source_file_path,
-        int $source_start,
-        int $source_end,
-    ): array {
+    private static function get_code_offsets(string $source_file_path, int $source_start, int $source_end): array
+    {
         if (!isset(self::$file_manipulations[$source_file_path])) {
             return [0, 0];
         }
-
         $start_offset = 0;
         $middle_offset = 0;
-
         foreach (self::$file_manipulations[$source_file_path] as $fm) {
             $offset = strlen($fm->insertion_text) - $fm->end + $fm->start;
-
             if ($fm->end < $source_start) {
                 $start_offset += $offset;
                 $middle_offset += $offset;
-            } elseif ($fm->start > $source_start
-                && $fm->end < $source_end
-            ) {
+            } elseif ($fm->start > $source_start && $fm->end < $source_end) {
                 $middle_offset += $offset;
             }
         }
-
         return [$start_offset, $middle_offset];
     }
-
-    public static function addForCodeLocation(
-        CodeLocation $code_location,
-        string $replacement_text,
-        bool $swallow_newlines = false,
-    ): void {
-        $bounds = $code_location->getSnippetBounds();
-
+    public static function add_for_code_location(Code_Location $code_location, string $replacement_text, bool $swallow_newlines = false): void
+    {
+        $bounds = $code_location->get_snippet_bounds();
         if ($swallow_newlines) {
-            $project_analyzer = ProjectAnalyzer::getInstance();
-
-            $codebase = $project_analyzer->getCodebase();
-
-            $file_contents = $codebase->getFileContents($code_location->file_path);
-
-            if (($file_contents[$bounds[0] - 1] ?? null) === "\n"
-                && ($file_contents[$bounds[0] - 2] ?? null) === "\n"
-            ) {
+            $project_analyzer = Project_Analyzer::get_instance();
+            $codebase = $project_analyzer->get_codebase();
+            $file_contents = $codebase->get_file_contents($code_location->file_path);
+            if (($file_contents[$bounds[0] - 1] ?? null) === "\n" && ($file_contents[$bounds[0] - 2] ?? null) === "\n") {
                 $bounds[0] -= 2;
             }
         }
-
-        self::add(
-            $code_location->file_path,
-            [
-                new FileManipulation(
-                    $bounds[0],
-                    $bounds[1],
-                    $replacement_text,
-                ),
-            ],
-        );
+        self::add($code_location->file_path, [new File_Manipulation($bounds[0], $bounds[1], $replacement_text)]);
     }
-
-    public static function addVarAnnotationToRemove(DocblockTypeLocation $code_location): void
+    public static function add_var_annotation_to_remove(Docblock_Type_Location $code_location): void
     {
-        $bounds = $code_location->getSelectionBounds();
-
-        $project_analyzer = ProjectAnalyzer::getInstance();
-
-        $codebase = $project_analyzer->getCodebase();
-
-        $file_contents = $codebase->getFileContents($code_location->file_path);
-
+        $bounds = $code_location->get_selection_bounds();
+        $project_analyzer = Project_Analyzer::get_instance();
+        $codebase = $project_analyzer->get_codebase();
+        $file_contents = $codebase->get_file_contents($code_location->file_path);
         $comment_start = strrpos($file_contents, '/**', $bounds[0] - strlen($file_contents));
-
         if ($comment_start === false) {
             return;
         }
-
         $comment_end = strpos($file_contents, '*/', $bounds[1]);
-
         if ($comment_end === false) {
             return;
         }
-
         $comment_end += 2;
-
         $comment_text = substr($file_contents, $comment_start, $comment_end - $comment_start);
-
         $var_type_comment_start = $bounds[0] - $comment_start;
         $var_type_comment_end = $bounds[1] - $comment_start;
-
         $var_start = strrpos($comment_text, '@var', $var_type_comment_start - strlen($comment_text));
         $var_end = strpos($comment_text, "\n", $var_type_comment_end);
-
         if ($var_start && $var_end) {
             $var_start = strrpos($comment_text, "\n", $var_start - strlen($comment_text)) ?: $var_start;
             $comment_text = substr_replace($comment_text, '', $var_start, $var_end - $var_start);
@@ -154,91 +104,45 @@ final class FileManipulationBuffer
         } else {
             $comment_text = '';
         }
-
-        self::add(
-            $code_location->file_path,
-            [
-                new FileManipulation(
-                    $comment_start,
-                    $comment_end,
-                    $comment_text,
-                    false,
-                    $comment_text === '',
-                ),
-            ],
-        );
+        self::add($code_location->file_path, [new File_Manipulation($comment_start, $comment_end, $comment_text, false, $comment_text === '')]);
     }
-
     /**
      * @return FileManipulation[]
      */
-    public static function getManipulationsForFile(string $file_path): array
+    public static function get_manipulations_for_file(string $file_path): array
     {
         return self::$file_manipulations[$file_path] ?? [];
     }
-
     /**
      * @return array<string, FileManipulation[]>
      */
-    public static function getMigrationManipulations(FileProvider $file_provider): array
+    public static function get_migration_manipulations(File_Provider $file_provider): array
     {
         $code_migration_manipulations = [];
-
         foreach (self::$code_migrations as $code_migration) {
-            [$start_offset, $middle_offset] = self::getCodeOffsets(
-                $code_migration->source_file_path,
-                $code_migration->source_start,
-                $code_migration->source_end,
-            );
-
+            [$start_offset, $middle_offset] = self::get_code_offsets($code_migration->source_file_path, $code_migration->source_start, $code_migration->source_end);
             if (!isset($code_migration_manipulations[$code_migration->source_file_path])) {
                 $code_migration_manipulations[$code_migration->source_file_path] = [];
             }
-
             if (!isset($code_migration_manipulations[$code_migration->destination_file_path])) {
                 $code_migration_manipulations[$code_migration->destination_file_path] = [];
             }
-
-            $delete_file_manipulation = new FileManipulation(
-                $code_migration->source_start + $start_offset,
-                $code_migration->source_end + $middle_offset,
-                '',
-            );
-
+            $delete_file_manipulation = new File_Manipulation($code_migration->source_start + $start_offset, $code_migration->source_end + $middle_offset, '');
             $code_migration_manipulations[$code_migration->source_file_path][] = $delete_file_manipulation;
-
-            [$destination_start_offset] = self::getCodeOffsets(
-                $code_migration->destination_file_path,
-                $code_migration->destination_start,
-                $code_migration->destination_start,
-            );
-
-            $manipulation = new FileManipulation(
-                $code_migration->destination_start + $destination_start_offset,
-                $code_migration->destination_start + $destination_start_offset,
-                "\n" . substr(
-                    $file_provider->getContents($code_migration->source_file_path),
-                    $delete_file_manipulation->start,
-                    $delete_file_manipulation->end - $delete_file_manipulation->start,
-                ) . "\n",
-            );
-
-            $code_migration_manipulations[$code_migration->destination_file_path][$manipulation->getKey()]
-                = $manipulation;
+            [$destination_start_offset] = self::get_code_offsets($code_migration->destination_file_path, $code_migration->destination_start, $code_migration->destination_start);
+            $manipulation = new File_Manipulation($code_migration->destination_start + $destination_start_offset, $code_migration->destination_start + $destination_start_offset, "\n" . substr($file_provider->get_contents($code_migration->source_file_path), $delete_file_manipulation->start, $delete_file_manipulation->end - $delete_file_manipulation->start) . "\n");
+            $code_migration_manipulations[$code_migration->destination_file_path][$manipulation->get_key()] = $manipulation;
         }
-
         return $code_migration_manipulations;
     }
-
     /**
      * @return array<string, FileManipulation[]>
      */
-    public static function getAll(): array
+    public static function get_all(): array
     {
         return self::$file_manipulations;
     }
-
-    public static function clearCache(): void
+    public static function clear_cache(): void
     {
         self::$file_manipulations = [];
         self::$code_migrations = [];

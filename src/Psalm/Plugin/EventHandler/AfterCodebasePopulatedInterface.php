@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler;
 
-namespace Psalm\Plugin\EventHandler;
-
-use Psalm\Plugin\EventHandler\Event\AfterCodebasePopulatedEvent;
-
-interface AfterCodebasePopulatedInterface
+use Psalm\Plugin\Event_Handler\Event\After_Codebase_Populated_Event;
+interface After_Codebase_Populated_Interface
 {
     /**
      * Called after codebase has been populated
@@ -14,5 +12,5 @@ interface AfterCodebasePopulatedInterface
      * @return void
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ReturnTypeHint
      */
-    public static function afterCodebasePopulated(AfterCodebasePopulatedEvent $event);
+    public static function after_codebase_populated(After_Codebase_Populated_Event $event);
 }

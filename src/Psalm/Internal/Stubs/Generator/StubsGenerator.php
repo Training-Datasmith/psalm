@@ -1,419 +1,247 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 namespace Psalm\Internal\Stubs\Generator;
 
 use Psalm\Codebase;
-use Psalm\Internal\Provider\ClassLikeStorageProvider;
-use Psalm\Internal\Provider\FileStorageProvider;
-use Psalm\Storage\FunctionLikeStorage;
-use Psalm\Type\Atomic\TArray;
-use Psalm\Type\Atomic\TEnumCase;
-use Psalm\Type\Atomic\TFalse;
-use Psalm\Type\Atomic\TIterable;
-use Psalm\Type\Atomic\TKeyedArray;
-use Psalm\Type\Atomic\TLiteralClassString;
-use Psalm\Type\Atomic\TLiteralFloat;
-use Psalm\Type\Atomic\TLiteralInt;
-use Psalm\Type\Atomic\TLiteralString;
-use Psalm\Type\Atomic\TNamedObject;
-use Psalm\Type\Atomic\TNull;
-use Psalm\Type\Atomic\TObject;
-use Psalm\Type\Atomic\TTrue;
+use Psalm\Internal\Provider\Class_Like_Storage_Provider;
+use Psalm\Internal\Provider\File_Storage_Provider;
+use Psalm\Storage\Function_Like_Storage;
+use Psalm\Type\Atomic\T_Array;
+use Psalm\Type\Atomic\T_Enum_Case;
+use Psalm\Type\Atomic\T_False;
+use Psalm\Type\Atomic\T_Iterable;
+use Psalm\Type\Atomic\T_Keyed_Array;
+use Psalm\Type\Atomic\T_Literal_Class_String;
+use Psalm\Type\Atomic\T_Literal_Float;
+use Psalm\Type\Atomic\T_Literal_Int;
+use Psalm\Type\Atomic\T_Literal_String;
+use Psalm\Type\Atomic\T_Named_Object;
+use Psalm\Type\Atomic\T_Null;
+use Psalm\Type\Atomic\T_Object;
+use Psalm\Type\Atomic\T_True;
 use Psalm\Type\Atomic\Scalar;
-use PhpParser;
-use Psalm\Internal\Scanner\ParsedDocblock;
-use Psalm\Node\Expr\VirtualArray;
-use Psalm\Node\VirtualArrayItem;
-use Psalm\Node\Expr\VirtualClassConstFetch;
-use Psalm\Node\Expr\VirtualConstFetch;
-use Psalm\Node\Expr\VirtualVariable;
-use Psalm\Node\Name\VirtualFullyQualified;
-use Psalm\Node\Scalar\VirtualFloat;
-use Psalm\Node\Scalar\VirtualInt;
-use Psalm\Node\Scalar\VirtualString;
-use Psalm\Node\Stmt\VirtualFunction;
-use Psalm\Node\Stmt\VirtualNamespace;
-use Psalm\Node\VirtualConst;
-use Psalm\Node\Stmt\VirtualConst as StmtVirtualConst_;
-use Psalm\Node\VirtualIdentifier;
-use Psalm\Node\VirtualName;
-use Psalm\Node\VirtualNullableType;
-use Psalm\Node\VirtualParam;
+use Php_Parser;
+use Psalm\Internal\Scanner\Parsed_Docblock;
+use Psalm\Node\Expr\Virtual_Array;
+use Psalm\Node\Virtual_Array_Item;
+use Psalm\Node\Expr\Virtual_Class_Const_Fetch;
+use Psalm\Node\Expr\Virtual_Const_Fetch;
+use Psalm\Node\Expr\Virtual_Variable;
+use Psalm\Node\Name\Virtual_Fully_Qualified;
+use Psalm\Node\Scalar\Virtual_Float;
+use Psalm\Node\Scalar\Virtual_Int;
+use Psalm\Node\Scalar\Virtual_String;
+use Psalm\Node\Stmt\Virtual_Function;
+use Psalm\Node\Stmt\Virtual_Namespace;
+use Psalm\Node\Virtual_Const;
+use Psalm\Node\Stmt\Virtual_Const as StmtVirtualConst_;
+use Psalm\Node\Virtual_Identifier;
+use Psalm\Node\Virtual_Name;
+use Psalm\Node\Virtual_Nullable_Type;
+use Psalm\Node\Virtual_Param;
 use Psalm\Type;
 use Psalm\Type\Union;
-
 use UnexpectedValueException;
 use function dirname;
 use function is_int;
 use function rtrim;
 use function strpos;
-
 /**
  * @internal
  */
-final class StubsGenerator
+final class Stubs_Generator
 {
-    public static function getAll(
-        Codebase $codebase,
-        ClassLikeStorageProvider $class_provider,
-        FileStorageProvider $file_provider
-    ): string {
+    public static function get_all(Codebase $codebase, Class_Like_Storage_Provider $class_provider, File_Storage_Provider $file_provider): string
+    {
         $namespaced_nodes = [];
-
         $psalm_base = dirname(__DIR__, 5);
-
-        foreach ($class_provider->getAll() as $storage) {
+        foreach ($class_provider->get_all() as $storage) {
             if (str_starts_with($storage->name, 'Psalm\\')) {
                 continue;
             }
-
-            if ($storage->location
-                && str_starts_with($storage->location->file_path, $psalm_base)
-            ) {
+            if ($storage->location && str_starts_with($storage->location->file_path, $psalm_base)) {
                 continue;
             }
-
             if ($storage->stubbed) {
                 continue;
             }
-
             $name_parts = explode('\\', $storage->name);
-
             $classlike_name = array_pop($name_parts);
             $namespace_name = implode('\\', $name_parts);
-
             if (!isset($namespaced_nodes[$namespace_name])) {
                 $namespaced_nodes[$namespace_name] = [];
             }
-
-            $namespaced_nodes[$namespace_name][$classlike_name] = ClassLikeStubGenerator::getClassLikeNode(
-                $codebase,
-                $storage,
-                $classlike_name
-            );
+            $namespaced_nodes[$namespace_name][$classlike_name] = Class_Like_Stub_Generator::get_class_like_node($codebase, $storage, $classlike_name);
         }
-
         $all_function_names = [];
-
-        foreach ($codebase->functions->getAllStubbedFunctions() as $function_storage) {
-            if ($function_storage->location
-                && str_starts_with($function_storage->location->file_path, $psalm_base)
-            ) {
+        foreach ($codebase->functions->get_all_stubbed_functions() as $function_storage) {
+            if ($function_storage->location && str_starts_with($function_storage->location->file_path, $psalm_base)) {
                 continue;
             }
-
             if (!$function_storage->cased_name) {
                 throw new UnexpectedValueException('very bad');
             }
-
             $fq_name = $function_storage->cased_name;
-
             $all_function_names[$fq_name] = true;
-
             $name_parts = explode('\\', $fq_name);
             $function_name = array_pop($name_parts);
-
             $namespace_name = implode('\\', $name_parts);
-
-            $namespaced_nodes[$namespace_name][$fq_name] = self::getFunctionNode(
-                $function_storage,
-                $function_name,
-                $namespace_name
-            );
+            $namespaced_nodes[$namespace_name][$fq_name] = self::get_function_node($function_storage, $function_name, $namespace_name);
         }
-
-        foreach ($codebase->getAllStubbedConstants() as $fq_name => $type) {
-            if ($type->isMixed()) {
+        foreach ($codebase->get_all_stubbed_constants() as $fq_name => $type) {
+            if ($type->is_mixed()) {
                 continue;
             }
-
             $name_parts = explode('\\', $fq_name);
             $constant_name = array_pop($name_parts);
-
             $namespace_name = implode('\\', $name_parts);
-
-            $namespaced_nodes[$namespace_name][$fq_name] = new StmtVirtualConst_(
-                [
-                    new VirtualConst(
-                        $constant_name,
-                        self::getExpressionFromType($type)
-                    )
-                ]
-            );
+            $namespaced_nodes[$namespace_name][$fq_name] = new Stmt_Virtual_Const_([new Virtual_Const($constant_name, self::get_expression_from_type($type))]);
         }
-
-        foreach ($file_provider->getAll() as $file_storage) {
+        foreach ($file_provider->get_all() as $file_storage) {
             if (str_starts_with($file_storage->file_path, $psalm_base)) {
                 continue;
             }
-
             foreach ($file_storage->functions as $function_storage) {
                 if (!$function_storage->cased_name) {
                     continue;
                 }
-
                 $fq_name = $function_storage->cased_name;
-
                 if (isset($all_function_names[$fq_name])) {
                     continue;
                 }
-
                 $all_function_names[$fq_name] = true;
-
                 $name_parts = explode('\\', $fq_name);
                 $function_name = array_pop($name_parts);
-
                 $namespace_name = implode('\\', $name_parts);
-
-                $namespaced_nodes[$namespace_name][$fq_name] = self::getFunctionNode(
-                    $function_storage,
-                    $function_name,
-                    $namespace_name
-                );
+                $namespaced_nodes[$namespace_name][$fq_name] = self::get_function_node($function_storage, $function_name, $namespace_name);
             }
-
             foreach ($file_storage->constants as $fq_name => $type) {
-                if ($type->isMixed()) {
+                if ($type->is_mixed()) {
                     continue;
                 }
-
                 $name_parts = explode('\\', $fq_name);
                 $constant_name = array_pop($name_parts);
-
                 $namespace_name = implode('\\', $name_parts);
-
-                $namespaced_nodes[$namespace_name][$fq_name] = new StmtVirtualConst_(
-                    [
-                        new VirtualConst(
-                            $constant_name,
-                            self::getExpressionFromType($type)
-                        )
-                    ]
-                );
+                $namespaced_nodes[$namespace_name][$fq_name] = new Stmt_Virtual_Const_([new Virtual_Const($constant_name, self::get_expression_from_type($type))]);
             }
         }
-
         ksort($namespaced_nodes);
-
         $namespace_stmts = [];
-
         foreach ($namespaced_nodes as $namespace_name => $stmts) {
             ksort($stmts);
-
-            $namespace_stmts[] = new VirtualNamespace(
-                $namespace_name ? new VirtualName($namespace_name) : null,
-                array_values($stmts),
-                ['kind' => PhpParser\Node\Stmt\Namespace_::KIND_BRACED]
-            );
+            $namespace_stmts[] = new Virtual_Namespace($namespace_name ? new Virtual_Name($namespace_name) : null, array_values($stmts), ['kind' => Php_Parser\Node\Stmt\Namespace_::KIND_BRACED]);
         }
-
-        $prettyPrinter = new PhpParser\PrettyPrinter\Standard;
-        return $prettyPrinter->prettyPrintFile($namespace_stmts);
+        $pretty_printer = new Php_Parser\Pretty_Printer\Standard();
+        return $pretty_printer->pretty_print_file($namespace_stmts);
     }
-
-    private static function getFunctionNode(
-        FunctionLikeStorage $function_storage,
-        string $function_name,
-        string $namespace_name
-    ) : \Psalm\Node\Stmt\VirtualFunction {
-        $docblock = new ParsedDocblock('', []);
-
+    private static function get_function_node(Function_Like_Storage $function_storage, string $function_name, string $namespace_name): \Psalm\Node\Stmt\Virtual_Function
+    {
+        $docblock = new Parsed_Docblock('', []);
         foreach ($function_storage->template_types ?: [] as $template_name => $map) {
             $type = array_values($map)[0];
-
-            $docblock->tags['template'][] = $template_name . ' as ' . $type->toNamespacedString(
-                $namespace_name,
-                [],
-                null,
-                false
-            );
+            $docblock->tags['template'][] = $template_name . ' as ' . $type->to_namespaced_string($namespace_name, [], null, false);
         }
-
         foreach ($function_storage->params as $param) {
             if ($param->type && $param->type !== $param->signature_type) {
-                $docblock->tags['param'][] = $param->type->toNamespacedString(
-                    $namespace_name,
-                    [],
-                    null,
-                    false
-                ) . ' $' . $param->name;
+                $docblock->tags['param'][] = $param->type->to_namespaced_string($namespace_name, [], null, false) . ' $' . $param->name;
             }
         }
-
-        if ($function_storage->return_type
-            && $function_storage->signature_return_type !== $function_storage->return_type
-        ) {
-            $docblock->tags['return'][] = $function_storage->return_type->toNamespacedString(
-                $namespace_name,
-                [],
-                null,
-                false
-            );
+        if ($function_storage->return_type && $function_storage->signature_return_type !== $function_storage->return_type) {
+            $docblock->tags['return'][] = $function_storage->return_type->to_namespaced_string($namespace_name, [], null, false);
         }
-
         foreach ($function_storage->throws ?: [] as $exception_name => $_) {
-            $docblock->tags['throws'][] = Type::getStringFromFQCLN(
-                $exception_name,
-                $namespace_name,
-                [],
-                null,
-                false
-            );
+            $docblock->tags['throws'][] = Type::get_string_from_fqcln($exception_name, $namespace_name, [], null, false);
         }
-
-        return new VirtualFunction(
-            $function_name,
-            [
-                'params' => self::getFunctionParamNodes($function_storage),
-                'returnType' => $function_storage->signature_return_type
-                    ? self::getParserTypeFromPsalmType($function_storage->signature_return_type)
-                    : null,
-                'stmts' => [],
-            ],
-            [
-                'comments' => $docblock->tags
-                    ? [
-                        new PhpParser\Comment\Doc(
-                            rtrim($docblock->render('        '))
-                        )
-                    ]
-                    : []
-            ]
-        );
+        return new Virtual_Function($function_name, ['params' => self::get_function_param_nodes($function_storage), 'returnType' => $function_storage->signature_return_type ? self::get_parser_type_from_psalm_type($function_storage->signature_return_type) : null, 'stmts' => []], ['comments' => $docblock->tags ? [new Php_Parser\Comment\Doc(rtrim($docblock->render('        ')))] : []]);
     }
-
     /**
      * @return list<PhpParser\Node\Param>
      */
-    public static function getFunctionParamNodes(FunctionLikeStorage $method_storage): array
+    public static function get_function_param_nodes(Function_Like_Storage $method_storage): array
     {
         $param_nodes = [];
-
         foreach ($method_storage->params as $param) {
-            $param_nodes[] = new VirtualParam(
-                new VirtualVariable($param->name),
-                $param->default_type instanceof Union
-                    ? self::getExpressionFromType($param->default_type)
-                    : null,
-                $param->signature_type
-                    ? self::getParserTypeFromPsalmType($param->signature_type)
-                    : null,
-                $param->by_ref,
-                $param->is_variadic
-            );
+            $param_nodes[] = new Virtual_Param(new Virtual_Variable($param->name), $param->default_type instanceof Union ? self::get_expression_from_type($param->default_type) : null, $param->signature_type ? self::get_parser_type_from_psalm_type($param->signature_type) : null, $param->by_ref, $param->is_variadic);
         }
-
         return $param_nodes;
     }
-
     /**
      * @return PhpParser\Node\Identifier|PhpParser\Node\Name\FullyQualified|PhpParser\Node\NullableType|null
      */
-    public static function getParserTypeFromPsalmType(Union $type): ?PhpParser\NodeAbstract
+    public static function get_parser_type_from_psalm_type(Union $type): ?Php_Parser\Node_Abstract
     {
-        $nullable = $type->isNullable();
-
-        foreach ($type->getAtomicTypes() as $atomic_type) {
-            if ($atomic_type instanceof TNull) {
+        $nullable = $type->is_nullable();
+        foreach ($type->get_atomic_types() as $atomic_type) {
+            if ($atomic_type instanceof T_Null) {
                 continue;
             }
-
-            if ($atomic_type instanceof Scalar
-                || $atomic_type instanceof TObject
-                || $atomic_type instanceof TArray
-                || $atomic_type instanceof TIterable
-            ) {
-                $identifier_string = $atomic_type->toPhpString(null, [], null, 8_00_00);
-
+            if ($atomic_type instanceof Scalar || $atomic_type instanceof T_Object || $atomic_type instanceof T_Array || $atomic_type instanceof T_Iterable) {
+                $identifier_string = $atomic_type->to_php_string(null, [], null, 80000);
                 if ($identifier_string === null) {
-                    throw new UnexpectedValueException(
-                        $atomic_type->getId() . ' could not be converted to an identifier'
-                    );
+                    throw new UnexpectedValueException($atomic_type->get_id() . ' could not be converted to an identifier');
                 }
-                $identifier = new VirtualIdentifier($identifier_string);
-
+                $identifier = new Virtual_Identifier($identifier_string);
                 if ($nullable) {
-                    return new VirtualNullableType($identifier);
+                    return new Virtual_Nullable_Type($identifier);
                 }
-
                 return $identifier;
             }
-
-            if ($atomic_type instanceof TNamedObject) {
-                $name_node = new VirtualFullyQualified($atomic_type->value);
-
+            if ($atomic_type instanceof T_Named_Object) {
+                $name_node = new Virtual_Fully_Qualified($atomic_type->value);
                 if ($nullable) {
-                    return new VirtualNullableType($name_node);
+                    return new Virtual_Nullable_Type($name_node);
                 }
-
                 return $name_node;
             }
         }
-
         return null;
     }
-
-    public static function getExpressionFromType(Union $type) : PhpParser\Node\Expr
+    public static function get_expression_from_type(Union $type): Php_Parser\Node\Expr
     {
-        foreach ($type->getAtomicTypes() as $atomic_type) {
-            if ($atomic_type instanceof TLiteralClassString) {
-                return new VirtualClassConstFetch(new VirtualName('\\' . $atomic_type->value), new VirtualIdentifier('class'));
+        foreach ($type->get_atomic_types() as $atomic_type) {
+            if ($atomic_type instanceof T_Literal_Class_String) {
+                return new Virtual_Class_Const_Fetch(new Virtual_Name('\\' . $atomic_type->value), new Virtual_Identifier('class'));
             }
-
-            if ($atomic_type instanceof TLiteralString) {
-                return new VirtualString($atomic_type->value);
+            if ($atomic_type instanceof T_Literal_String) {
+                return new Virtual_String($atomic_type->value);
             }
-
-            if ($atomic_type instanceof TLiteralInt) {
-                return new VirtualInt($atomic_type->value);
+            if ($atomic_type instanceof T_Literal_Int) {
+                return new Virtual_Int($atomic_type->value);
             }
-
-            if ($atomic_type instanceof TLiteralFloat) {
-                return new VirtualFloat($atomic_type->value);
+            if ($atomic_type instanceof T_Literal_Float) {
+                return new Virtual_Float($atomic_type->value);
             }
-
-            if ($atomic_type instanceof TFalse) {
-                return new VirtualConstFetch(new VirtualName('false'));
+            if ($atomic_type instanceof T_False) {
+                return new Virtual_Const_Fetch(new Virtual_Name('false'));
             }
-
-            if ($atomic_type instanceof TTrue) {
-                return new VirtualConstFetch(new VirtualName('true'));
+            if ($atomic_type instanceof T_True) {
+                return new Virtual_Const_Fetch(new Virtual_Name('true'));
             }
-
-            if ($atomic_type instanceof TNull) {
-                return new VirtualConstFetch(new VirtualName('null'));
+            if ($atomic_type instanceof T_Null) {
+                return new Virtual_Const_Fetch(new Virtual_Name('null'));
             }
-
-            if ($atomic_type instanceof TArray) {
-                return new VirtualArray([]);
+            if ($atomic_type instanceof T_Array) {
+                return new Virtual_Array([]);
             }
-
-            if ($atomic_type instanceof TKeyedArray) {
+            if ($atomic_type instanceof T_Keyed_Array) {
                 $new_items = [];
-
                 foreach ($atomic_type->properties as $property_name => $property_type) {
                     if ($atomic_type->is_list) {
                         $key_type = null;
                     } elseif (is_int($property_name)) {
-                        $key_type = new VirtualInt($property_name);
+                        $key_type = new Virtual_Int($property_name);
                     } else {
-                        $key_type = new VirtualString($property_name);
+                        $key_type = new Virtual_String($property_name);
                     }
-
-                    $new_items[] = new VirtualArrayItem(
-                        self::getExpressionFromType($property_type),
-                        $key_type
-                    );
+                    $new_items[] = new Virtual_Array_Item(self::get_expression_from_type($property_type), $key_type);
                 }
-
-                return new VirtualArray($new_items);
+                return new Virtual_Array($new_items);
             }
-
-            if ($atomic_type instanceof TEnumCase) {
-                return new VirtualClassConstFetch(new VirtualName('\\' . $atomic_type->value), new VirtualIdentifier($atomic_type->case_name));
+            if ($atomic_type instanceof T_Enum_Case) {
+                return new Virtual_Class_Const_Fetch(new Virtual_Name('\\' . $atomic_type->value), new Virtual_Identifier($atomic_type->case_name));
             }
         }
-
-        return new VirtualString('Psalm could not infer this type');
+        return new Virtual_String('Psalm could not infer this type');
     }
 }

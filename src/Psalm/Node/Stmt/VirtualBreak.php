@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\Break_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualBreak extends Break_ implements VirtualNode
+use Php_Parser\Node\Stmt\Break_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Break extends Break_ implements Virtual_Node
 {
-
 }

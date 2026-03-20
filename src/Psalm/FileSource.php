@@ -1,33 +1,28 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm;
 
-interface FileSource
+interface File_Source
 {
     /**
      * @psalm-mutation-free
      */
-    public function getFileName(): string;
-
+    public function get_file_name(): string;
     /**
      * @psalm-mutation-free
      */
-    public function getFilePath(): string;
-
+    public function get_file_path(): string;
     /**
      * @psalm-mutation-free
      */
-    public function getRootFileName(): string;
-
+    public function get_root_file_name(): string;
     /**
      * @psalm-mutation-free
      */
-    public function getRootFilePath(): string;
-
+    public function get_root_file_path(): string;
     /**
      * @psalm-mutation-free
      */
-    public function getAliases(): Aliases;
+    public function get_aliases(): Aliases;
 }

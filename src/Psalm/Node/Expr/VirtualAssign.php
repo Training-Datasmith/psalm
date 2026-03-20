@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\Assign;
-use Psalm\Node\VirtualNode;
-
-final class VirtualAssign extends Assign implements VirtualNode
+use Php_Parser\Node\Expr\Assign;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Assign extends Assign implements Virtual_Node
 {
-
 }

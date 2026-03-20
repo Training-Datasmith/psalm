@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Scalar;
 
-use PhpParser\Node\Scalar\Float_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualFloat extends Float_ implements VirtualNode
+use Php_Parser\Node\Scalar\Float_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Float extends Float_ implements Virtual_Node
 {
-
 }

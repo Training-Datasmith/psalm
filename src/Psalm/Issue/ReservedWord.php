@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class ReservedWord extends ClassIssue
+final class Reserved_Word extends Class_Issue
 {
     public const ERROR_LEVEL = 7;
     public const SHORTCODE = 95;

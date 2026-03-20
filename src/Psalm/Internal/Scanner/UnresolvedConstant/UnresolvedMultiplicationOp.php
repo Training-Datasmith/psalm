@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Scanner\Unresolved_Constant;
 
-namespace Psalm\Internal\Scanner\UnresolvedConstant;
-
-use Psalm\Storage\ImmutableNonCloneableTrait;
-
+use Psalm\Storage\Immutable_Non_Cloneable_Trait;
 /**
  * @psalm-immutable
  * @internal
  */
-final class UnresolvedMultiplicationOp extends UnresolvedBinaryOp
+final class Unresolved_Multiplication_Op extends Unresolved_Binary_Op
 {
-    use ImmutableNonCloneableTrait;
+    use Immutable_Non_Cloneable_Trait;
 }

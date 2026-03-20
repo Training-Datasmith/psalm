@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm;
 
-use DOMDocument;
-use DOMElement;
-use Psalm\Exception\ConfigException;
-use Psalm\Internal\Analyzer\IssueData;
-use Psalm\Internal\Provider\FileProvider;
+use Dom_Document;
+use Dom_Element;
+use Psalm\Exception\Config_Exception;
+use Psalm\Internal\Analyzer\Issue_Data;
+use Psalm\Internal\Provider\File_Provider;
 use RuntimeException;
-
 use function array_filter;
 use function array_intersect;
 use function array_map;
@@ -28,272 +26,189 @@ use function sprintf;
 use function str_replace;
 use function trim;
 use function usort;
-
 use const LIBXML_NOBLANKS;
 use const PHP_VERSION;
-
-final class ErrorBaseline
+final class Error_Baseline
 {
     /**
      * @param array<string,array<string,array{o:int, s:array<int, string>}>> $existingIssues
      * @psalm-pure
      */
-    public static function countTotalIssues(array $existingIssues): int
+    public static function count_total_issues(array $existing_issues): int
     {
-        $totalIssues = 0;
-
-        foreach ($existingIssues as $existingIssue) {
-            $totalIssues += array_reduce(
-                $existingIssue,
+        $total_issues = 0;
+        foreach ($existing_issues as $existing_issue) {
+            $total_issues += array_reduce(
+                $existing_issue,
                 /**
                  * @param array{o:int, s:array<int, string>} $existingIssue
                  */
-                static fn(int $carry, array $existingIssue): int => $carry + $existingIssue['o'],
-                0,
+                static fn(int $carry, array $existing_issue): int => $carry + $existing_issue['o'],
+                0
             );
         }
-
-        return $totalIssues;
+        return $total_issues;
     }
-
     /**
      * @param array<string, list<IssueData>> $issues
      */
-    public static function create(
-        FileProvider $fileProvider,
-        string $baselineFile,
-        array $issues,
-        bool $include_php_versions,
-    ): void {
-        $groupedIssues = self::countIssueTypesByFile($issues);
-
-        self::writeToFile($fileProvider, $baselineFile, $groupedIssues, $include_php_versions);
+    public static function create(File_Provider $file_provider, string $baseline_file, array $issues, bool $include_php_versions): void
+    {
+        $grouped_issues = self::count_issue_types_by_file($issues);
+        self::write_to_file($file_provider, $baseline_file, $grouped_issues, $include_php_versions);
     }
-
     /**
      * @return array<string,array<string,array{o:int, s: list<string>}>>
      * @throws ConfigException
      */
-    public static function read(FileProvider $fileProvider, string $baselineFile): array
+    public static function read(File_Provider $file_provider, string $baseline_file): array
     {
-        if (!$fileProvider->fileExists($baselineFile)) {
-            throw new ConfigException("{$baselineFile} does not exist or is not readable");
+        if (!$file_provider->file_exists($baseline_file)) {
+            throw new Config_Exception("{$baseline_file} does not exist or is not readable");
         }
-
-        $xmlSource = $fileProvider->getContents($baselineFile);
-
-        if ($xmlSource === '') {
-            throw new ConfigException('Baseline file is empty');
+        $xml_source = $file_provider->get_contents($baseline_file);
+        if ($xml_source === '') {
+            throw new Config_Exception('Baseline file is empty');
         }
-
-        $baselineDoc = new DOMDocument();
-        $baselineDoc->loadXML($xmlSource, LIBXML_NOBLANKS);
-
-        $filesElement = $baselineDoc->getElementsByTagName('files');
-
-        if ($filesElement->length === 0) {
-            throw new ConfigException('Baseline file does not contain <files>');
+        $baseline_doc = new Dom_Document();
+        $baseline_doc->load_xml($xml_source, LIBXML_NOBLANKS);
+        $files_element = $baseline_doc->get_elements_by_tag_name('files');
+        if ($files_element->length === 0) {
+            throw new Config_Exception('Baseline file does not contain <files>');
         }
-
         $files = [];
-
         /** @var DOMElement $filesElement */
-        $filesElement = $filesElement[0];
-
-        foreach ($filesElement->getElementsByTagName('file') as $file) {
-            $fileName = $file->getAttribute('src');
-
-            $fileName = str_replace('\\', '/', $fileName);
-
-            $files[$fileName] = [];
-
-            foreach ($file->childNodes as $issue) {
-                if (!$issue instanceof DOMElement) {
+        $files_element = $files_element[0];
+        foreach ($files_element->get_elements_by_tag_name('file') as $file) {
+            $file_name = $file->get_attribute('src');
+            $file_name = str_replace('\\', '/', $file_name);
+            $files[$file_name] = [];
+            foreach ($file->child_nodes as $issue) {
+                if (!$issue instanceof Dom_Element) {
                     continue;
                 }
-
-                $issueType = $issue->tagName;
-
-                $files[$fileName][$issueType] = ['o' => 0, 's' => []];
-                $codeSamples = $issue->getElementsByTagName('code');
-
-                foreach ($codeSamples as $codeSample) {
-                    $files[$fileName][$issueType]['o'] += 1;
-                    $files[$fileName][$issueType]['s'][] = str_replace("\r\n", "\n", trim($codeSample->textContent));
+                $issue_type = $issue->tag_name;
+                $files[$file_name][$issue_type] = ['o' => 0, 's' => []];
+                $code_samples = $issue->get_elements_by_tag_name('code');
+                foreach ($code_samples as $code_sample) {
+                    $files[$file_name][$issue_type]['o'] += 1;
+                    $files[$file_name][$issue_type]['s'][] = str_replace("\r\n", "\n", trim($code_sample->text_content));
                 }
             }
         }
-
         return $files;
     }
-
     /**
      * @param array<string, list<IssueData>> $issues
      * @return array<string, array<string, array{o: int, s: list<string>}>>
      * @throws ConfigException
      */
-    public static function update(
-        FileProvider $fileProvider,
-        string $baselineFile,
-        array $issues,
-        bool $include_php_versions,
-    ): array {
-        $existingIssues = self::read($fileProvider, $baselineFile);
-        $newIssues = self::countIssueTypesByFile($issues);
-
-        foreach ($existingIssues as $file => &$existingIssuesCount) {
-            if (!isset($newIssues[$file])) {
-                unset($existingIssues[$file]);
-
+    public static function update(File_Provider $file_provider, string $baseline_file, array $issues, bool $include_php_versions): array
+    {
+        $existing_issues = self::read($file_provider, $baseline_file);
+        $new_issues = self::count_issue_types_by_file($issues);
+        foreach ($existing_issues as $file => &$existing_issues_count) {
+            if (!isset($new_issues[$file])) {
+                unset($existing_issues[$file]);
                 continue;
             }
-
-            foreach ($existingIssuesCount as $issueType => $existingIssueType) {
-                if (!isset($newIssues[$file][$issueType])) {
-                    unset($existingIssuesCount[$issueType]);
-
+            foreach ($existing_issues_count as $issue_type => $existing_issue_type) {
+                if (!isset($new_issues[$file][$issue_type])) {
+                    unset($existing_issues_count[$issue_type]);
                     continue;
                 }
-
-                $existingIssuesCount[$issueType]['o'] = min(
-                    $existingIssueType['o'],
-                    $newIssues[$file][$issueType]['o'],
-                );
-                $existingIssuesCount[$issueType]['s'] = array_intersect(
-                    $existingIssueType['s'],
-                    $newIssues[$file][$issueType]['s'],
-                );
+                $existing_issues_count[$issue_type]['o'] = min($existing_issue_type['o'], $new_issues[$file][$issue_type]['o']);
+                $existing_issues_count[$issue_type]['s'] = array_intersect($existing_issue_type['s'], $new_issues[$file][$issue_type]['s']);
             }
         }
-
-        $groupedIssues = array_filter($existingIssues);
-
-        self::writeToFile($fileProvider, $baselineFile, $groupedIssues, $include_php_versions);
-
-        return $groupedIssues;
+        $grouped_issues = array_filter($existing_issues);
+        self::write_to_file($file_provider, $baseline_file, $grouped_issues, $include_php_versions);
+        return $grouped_issues;
     }
-
     /**
      * @param array<string, list<IssueData>> $issues
      * @return array<string,array<string,array{o:int, s:array<int, string>}>>
      */
-    private static function countIssueTypesByFile(array $issues): array
+    private static function count_issue_types_by_file(array $issues): array
     {
         if ($issues === []) {
             return [];
         }
-        $groupedIssues = array_reduce(
+        $grouped_issues = array_reduce(
             array_merge(...array_values($issues)),
             /**
              * @param array<string,array<string,array{o:int, s:array<int, string>}>> $carry
              * @return array<string,array<string,array{o:int, s:array<int, string>}>>
              */
-            static function (array $carry, IssueData $issue): array {
+            static function (array $carry, Issue_Data $issue): array {
                 if ($issue->severity !== Config::REPORT_ERROR) {
                     return $carry;
                 }
-
-                $fileName = $issue->file_name;
-                $fileName = str_replace('\\', '/', $fileName);
-                $issueType = $issue->type;
-
-                if (!isset($carry[$fileName])) {
-                    $carry[$fileName] = [];
+                $file_name = $issue->file_name;
+                $file_name = str_replace('\\', '/', $file_name);
+                $issue_type = $issue->type;
+                if (!isset($carry[$file_name])) {
+                    $carry[$file_name] = [];
                 }
-
-                if (!isset($carry[$fileName][$issueType])) {
-                    $carry[$fileName][$issueType] = ['o' => 0, 's' => []];
+                if (!isset($carry[$file_name][$issue_type])) {
+                    $carry[$file_name][$issue_type] = ['o' => 0, 's' => []];
                 }
-
-                ++$carry[$fileName][$issueType]['o'];
-                $carry[$fileName][$issueType]['s'][] = $issue->selected_text;
-
+                ++$carry[$file_name][$issue_type]['o'];
+                $carry[$file_name][$issue_type]['s'][] = $issue->selected_text;
                 return $carry;
             },
-            [],
+            []
         );
-
         // Sort files first
-        ksort($groupedIssues);
-
-        foreach ($groupedIssues as &$issues) {
+        ksort($grouped_issues);
+        foreach ($grouped_issues as &$issues) {
             ksort($issues);
         }
         unset($issues);
-
-        return $groupedIssues;
+        return $grouped_issues;
     }
-
     /**
      * @param array<string,array<string,array{o:int, s:array<int, string>}>> $groupedIssues
      */
-    private static function writeToFile(
-        FileProvider $fileProvider,
-        string $baselineFile,
-        array $groupedIssues,
-        bool $include_php_versions,
-    ): void {
-        $baselineDoc = new DOMDocument('1.0', 'UTF-8');
-        $filesNode = $baselineDoc->createElement('files');
-        $filesNode->setAttribute('psalm-version', PSALM_VERSION);
-
+    private static function write_to_file(File_Provider $file_provider, string $baseline_file, array $grouped_issues, bool $include_php_versions): void
+    {
+        $baseline_doc = new Dom_Document('1.0', 'UTF-8');
+        $files_node = $baseline_doc->create_element('files');
+        $files_node->set_attribute('psalm-version', PSALM_VERSION);
         if ($include_php_versions) {
             $extensions = [...get_loaded_extensions(), ...get_loaded_extensions(true)];
-
             usort($extensions, strnatcasecmp(...));
-
-            $filesNode->setAttribute('php-version', implode(";\n\t", [
-                'php:' . PHP_VERSION,
-                ...array_map(
-                    static fn(string $extension): string => $extension . ':' . phpversion($extension),
-                    $extensions,
-                ),
-            ]));
+            $files_node->set_attribute('php-version', implode(";\n\t", ['php:' . PHP_VERSION, ...array_map(static fn(string $extension): string => $extension . ':' . phpversion($extension), $extensions)]));
         }
-
-        foreach ($groupedIssues as $file => $issueTypes) {
-            $fileNode = $baselineDoc->createElement('file');
-
-            $fileNode->setAttribute('src', $file);
-
-            foreach ($issueTypes as $issueType => $existingIssueType) {
-                $issueNode = $baselineDoc->createElement($issueType);
-
-                sort($existingIssueType['s']);
-
-                foreach ($existingIssueType['s'] as $selection) {
-                    $codeNode = $baselineDoc->createElement('code');
-                    $textContent = trim($selection);
-                    $codeNode->appendChild($baselineDoc->createCDATASection($textContent));
-                    $issueNode->appendChild($codeNode);
+        foreach ($grouped_issues as $file => $issue_types) {
+            $file_node = $baseline_doc->create_element('file');
+            $file_node->set_attribute('src', $file);
+            foreach ($issue_types as $issue_type => $existing_issue_type) {
+                $issue_node = $baseline_doc->create_element($issue_type);
+                sort($existing_issue_type['s']);
+                foreach ($existing_issue_type['s'] as $selection) {
+                    $code_node = $baseline_doc->create_element('code');
+                    $text_content = trim($selection);
+                    $code_node->append_child($baseline_doc->create_cdata_section($text_content));
+                    $issue_node->append_child($code_node);
                 }
-                $fileNode->appendChild($issueNode);
+                $file_node->append_child($issue_node);
             }
-
-            $filesNode->appendChild($fileNode);
+            $files_node->append_child($file_node);
         }
-
-        $baselineDoc->appendChild($filesNode);
-        $baselineDoc->formatOutput = true;
-
+        $baseline_doc->append_child($files_node);
+        $baseline_doc->format_output = true;
         $xml = preg_replace_callback(
             '/<files (psalm-version="[^"]+") php-version="(.+)"(\/?>)\n/',
             /**
              * @param string[] $matches
              */
-            static fn(array $matches): string => sprintf(
-                "<files\n  %s\n  php-version=\"\n    %s\n  \"\n%s\n",
-                $matches[1],
-                str_replace('&#10;&#9;', "\n    ", $matches[2]),
-                $matches[3],
-            ),
-            $baselineDoc->saveXML(),
+            static fn(array $matches): string => sprintf("<files\n  %s\n  php-version=\"\n    %s\n  \"\n%s\n", $matches[1], str_replace('&#10;&#9;', "\n    ", $matches[2]), $matches[3]),
+            $baseline_doc->save_xml()
         );
-
         if ($xml === null) {
             throw new RuntimeException('Failed to reformat opening attributes!');
         }
-
-        $fileProvider->setContents($baselineFile, $xml);
+        $file_provider->set_contents($baseline_file, $xml);
     }
 }

@@ -1,18 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Exception;
 
 use LogicException;
-
-final class UnpopulatedClasslikeException extends LogicException
+final class Unpopulated_Classlike_Exception extends LogicException
 {
     public function __construct(string $fq_classlike_name)
     {
-        parent::__construct(
-            'Cannot check inheritance - \'' . $fq_classlike_name . '\' has not been populated yet.'
-            . ' You may need to defer this check to a later phase.',
-        );
+        parent::__construct('Cannot check inheritance - \'' . $fq_classlike_name . '\' has not been populated yet.' . ' You may need to defer this check to a later phase.');
     }
 }

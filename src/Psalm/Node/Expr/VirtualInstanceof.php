@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\Instanceof_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualInstanceof extends Instanceof_ implements VirtualNode
+use Php_Parser\Node\Expr\Instanceof_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Instanceof extends Instanceof_ implements Virtual_Node
 {
-
 }

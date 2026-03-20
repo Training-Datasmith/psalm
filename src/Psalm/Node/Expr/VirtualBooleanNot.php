@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\BooleanNot;
-use Psalm\Node\VirtualNode;
-
-final class VirtualBooleanNot extends BooleanNot implements VirtualNode
+use Php_Parser\Node\Expr\Boolean_Not;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Boolean_Not extends Boolean_Not implements Virtual_Node
 {
-
 }

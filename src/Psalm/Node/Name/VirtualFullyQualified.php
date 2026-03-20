@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Name;
 
-use PhpParser\Node\Name\FullyQualified;
-use Psalm\Node\VirtualNode;
-
-final class VirtualFullyQualified extends FullyQualified implements VirtualNode
+use Php_Parser\Node\Name\Fully_Qualified;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Fully_Qualified extends Fully_Qualified implements Virtual_Node
 {
-
 }

@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\StaticCall;
-use Psalm\Node\VirtualNode;
-
-final class VirtualStaticCall extends StaticCall implements VirtualNode
+use Php_Parser\Node\Expr\Static_Call;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Static_Call extends Static_Call implements Virtual_Node
 {
-
 }

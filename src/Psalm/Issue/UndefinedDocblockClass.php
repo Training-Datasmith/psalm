@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class UndefinedDocblockClass extends ClassIssue
+final class Undefined_Docblock_Class extends Class_Issue
 {
     public const ERROR_LEVEL = -1;
     public const SHORTCODE = 200;

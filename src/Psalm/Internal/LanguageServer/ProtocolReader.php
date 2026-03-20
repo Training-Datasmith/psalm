@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\LanguageServer;
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server;
 
 /**
  * Must emit a "message" event with a Message object as parameter
@@ -10,6 +9,6 @@ namespace Psalm\Internal\LanguageServer;
  *
  * Must emit a "close" event when the stream closes
  */
-interface ProtocolReader extends EmitterInterface
+interface Protocol_Reader extends Emitter_Interface
 {
 }

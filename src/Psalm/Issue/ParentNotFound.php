@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class ParentNotFound extends CodeIssue
+final class Parent_Not_Found extends Code_Issue
 {
     public const ERROR_LEVEL = -1;
     public const SHORTCODE = 17;

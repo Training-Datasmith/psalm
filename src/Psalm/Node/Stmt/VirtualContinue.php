@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\Continue_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualContinue extends Continue_ implements VirtualNode
+use Php_Parser\Node\Stmt\Continue_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Continue extends Continue_ implements Virtual_Node
 {
-
 }

@@ -1,23 +1,18 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Scanner\Unresolved_Constant;
 
-namespace Psalm\Internal\Scanner\UnresolvedConstant;
-
-use Psalm\Internal\Scanner\UnresolvedConstantComponent;
-use Psalm\Storage\ImmutableNonCloneableTrait;
-
+use Psalm\Internal\Scanner\Unresolved_Constant_Component;
+use Psalm\Storage\Immutable_Non_Cloneable_Trait;
 /**
  * @psalm-immutable
  * @internal
  */
-abstract class UnresolvedBinaryOp extends UnresolvedConstantComponent
+abstract class Unresolved_Binary_Op extends Unresolved_Constant_Component
 {
-    use ImmutableNonCloneableTrait;
-
-    public function __construct(
-        public readonly UnresolvedConstantComponent $left,
-        public readonly UnresolvedConstantComponent $right,
-    ) {
+    use Immutable_Non_Cloneable_Trait;
+    public function __construct(public readonly Unresolved_Constant_Component $left, public readonly Unresolved_Constant_Component $right)
+    {
     }
 }

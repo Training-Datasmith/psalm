@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\PhpVisitor;
+declare (strict_types=1);
+namespace Psalm\Internal\Php_Visitor;
 
 use Override;
-use PhpParser\Node;
-use PhpParser\NodeVisitorAbstract;
-
+use Php_Parser\Node;
+use Php_Parser\Node_Visitor_Abstract;
 /**
  * Visitor cloning all nodes and linking to the original nodes using an attribute.
  *
@@ -15,22 +13,19 @@ use PhpParser\NodeVisitorAbstract;
  *
  * @internal
  */
-final class CloningVisitor extends NodeVisitorAbstract
+final class Cloning_Visitor extends Node_Visitor_Abstract
 {
     #[Override]
-    public function enterNode(Node $node): Node
+    public function enter_node(Node $node): Node
     {
         $node = clone $node;
-
-        if (($cs = $node->getComments()) !== []) {
+        if (($cs = $node->get_comments()) !== []) {
             $comments = [];
             foreach ($cs as $i => $comment) {
                 $comments[$i] = clone $comment;
             }
-
-            $node->setAttribute('comments', $comments);
+            $node->set_attribute('comments', $comments);
         }
-
         return $node;
     }
 }

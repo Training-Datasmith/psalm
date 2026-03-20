@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class InvalidScalarArgument extends ArgumentIssue
+final class Invalid_Scalar_Argument extends Argument_Issue
 {
     public const ERROR_LEVEL = 4;
     public const SHORTCODE = 12;

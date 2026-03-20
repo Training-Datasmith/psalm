@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Scalar\Magic_Const;
 
-namespace Psalm\Node\Scalar\MagicConst;
-
-use PhpParser\Node\Scalar\MagicConst\Line;
-use Psalm\Node\VirtualNode;
-
-final class VirtualLine extends Line implements VirtualNode
+use Php_Parser\Node\Scalar\Magic_Const\Line;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Line extends Line implements Virtual_Node
 {
-
 }

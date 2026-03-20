@@ -1,24 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\PhpVisitor;
+declare (strict_types=1);
+namespace Psalm\Internal\Php_Visitor;
 
 use Override;
-use PhpParser;
-
+use Php_Parser;
 /**
  * @internal
  */
-final class NodeCounterVisitor extends PhpParser\NodeVisitorAbstract
+final class Node_Counter_Visitor extends Php_Parser\Node_Visitor_Abstract
 {
     public int $count = 0;
-
     #[Override]
-    public function enterNode(PhpParser\Node $node): ?int
+    public function enter_node(Php_Parser\Node $node): ?int
     {
         $this->count++;
-
         return null;
     }
 }

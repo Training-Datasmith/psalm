@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler;
 
-namespace Psalm\Plugin\EventHandler;
-
-use Psalm\Plugin\EventHandler\Event\BeforeAddIssueEvent;
-
-interface BeforeAddIssueInterface
+use Psalm\Plugin\Event_Handler\Event\Before_Add_Issue_Event;
+interface Before_Add_Issue_Interface
 {
     /**
      * Called before adding a code issue.
@@ -20,5 +18,5 @@ interface BeforeAddIssueInterface
      *  + `true` stops event handling & keeps issue
      *  + `false` stops event handling & ignores issue
      */
-    public static function beforeAddIssue(BeforeAddIssueEvent $event): ?bool;
+    public static function before_add_issue(Before_Add_Issue_Event $event): ?bool;
 }

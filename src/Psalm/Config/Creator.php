@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Config;
 
-use JsonException;
+use Json_Exception;
 use Psalm\Config;
-use Psalm\Exception\ConfigCreationException;
-use Psalm\Internal\Analyzer\IssueData;
+use Psalm\Exception\Config_Creation_Exception;
+use Psalm\Internal\Analyzer\Issue_Data;
 use Psalm\Internal\Composer;
-
 use function array_filter;
 use function array_keys;
 use function array_merge;
@@ -34,11 +32,9 @@ use function preg_replace;
 use function sort;
 use function str_replace;
 use function strpos;
-
 use const DIRECTORY_SEPARATOR;
 use const GLOB_NOSORT;
 use const JSON_THROW_ON_ERROR;
-
 /** @internal */
 final class Creator
 {
@@ -60,71 +56,38 @@ final class Creator
     </projectFiles>
 </psalm>
 ';
-
     /**
      * @return non-empty-string
      */
-    public static function getContents(
-        string $current_dir,
-        ?string $suggested_dir,
-        int $level,
-        string $vendor_dir,
-    ): string {
-        $paths = self::getPaths($current_dir, $suggested_dir);
-
-        $template = str_replace(
-            '<directory name="src" />',
-            implode("\n        ", $paths),
-            self::TEMPLATE,
-        );
-
+    public static function get_contents(string $current_dir, ?string $suggested_dir, int $level, string $vendor_dir): string
+    {
+        $paths = self::get_paths($current_dir, $suggested_dir);
+        $template = str_replace('<directory name="src" />', implode("\n        ", $paths), self::TEMPLATE);
         if (is_dir($current_dir . DIRECTORY_SEPARATOR . $vendor_dir)) {
-            $template = str_replace(
-                '<directory name="vendor" />',
-                '<directory name="' . $vendor_dir . '" />',
-                $template,
-            );
+            $template = str_replace('<directory name="vendor" />', '<directory name="' . $vendor_dir . '" />', $template);
         } else {
-            $template = str_replace(
-                '<directory name="vendor" />',
-                '',
-                $template,
-            );
+            $template = str_replace('<directory name="vendor" />', '', $template);
         }
-
         /** @var non-empty-string */
-        return str_replace(
-            'errorLevel="1"',
-            'errorLevel="' . $level . '"',
-            $template,
-        );
+        return str_replace('errorLevel="1"', 'errorLevel="' . $level . '"', $template);
     }
-
-    public static function createBareConfig(
-        string $current_dir,
-        ?string $suggested_dir,
-        string $vendor_dir,
-    ): Config {
-        $config_contents = self::getContents($current_dir, $suggested_dir, 1, $vendor_dir);
-
-        return Config::loadFromXML($current_dir, $config_contents);
+    public static function create_bare_config(string $current_dir, ?string $suggested_dir, string $vendor_dir): Config
+    {
+        $config_contents = self::get_contents($current_dir, $suggested_dir, 1, $vendor_dir);
+        return Config::load_from_xml($current_dir, $config_contents);
     }
-
     /**
      * @param  array<IssueData>  $issues
      */
-    public static function getLevel(array $issues, int $counted_types): int
+    public static function get_level(array $issues, int $counted_types): int
     {
         if ($counted_types === 0) {
             $counted_types = 1;
         }
-
         $issues_at_level = [];
-
         foreach ($issues as $issue) {
             $issue_type = $issue->type;
             $issue_level = $issue->error_level;
-
             if ($issue_level < 1) {
                 continue;
             }
@@ -135,173 +98,114 @@ final class Creator
             if (strpos($issue->file_path, 'stub')) {
                 continue;
             }
-
             if (!isset($issues_at_level[$issue_level][$issue_type])) {
                 $issues_at_level[$issue_level][$issue_type] = 0;
             }
-
             $issues_at_level[$issue_level][$issue_type] += 100 / $counted_types;
         }
-
         foreach ($issues_at_level as $level => $issues) {
             ksort($issues);
-
             // remove any issues where < 0.1% of expressions are affected
-            $filtered_issues = array_filter(
-                $issues,
-                static fn($amount): bool => $amount > 0.1,
-            );
-
+            $filtered_issues = array_filter($issues, static fn($amount): bool => $amount > 0.1);
             if (array_sum($filtered_issues) > 0.5) {
                 $issues_at_level[$level] = $filtered_issues;
             } else {
                 unset($issues_at_level[$level]);
             }
         }
-
         if (!$issues_at_level) {
             return 1;
         }
-
         if (count($issues_at_level) === 1) {
             return array_keys($issues_at_level)[0] + 1;
         }
-
         return max(...array_keys($issues_at_level)) + 1;
     }
-
     /**
      * @return non-empty-list<string>
      */
-    public static function getPaths(string $current_dir, ?string $suggested_dir): array
+    public static function get_paths(string $current_dir, ?string $suggested_dir): array
     {
         $replacements = [];
-
         if ($suggested_dir) {
             if (is_dir($current_dir . DIRECTORY_SEPARATOR . $suggested_dir)) {
                 $replacements[] = '<directory name="' . $suggested_dir . '" />';
             } else {
                 $bad_dir_path = $current_dir . DIRECTORY_SEPARATOR . $suggested_dir;
-
-                throw new ConfigCreationException(
-                    'The given path "' . $bad_dir_path . '" does not appear to be a directory',
-                );
+                throw new Config_Creation_Exception('The given path "' . $bad_dir_path . '" does not appear to be a directory');
             }
         } elseif (is_dir($current_dir . DIRECTORY_SEPARATOR . 'src')) {
             $replacements[] = '<directory name="src" />';
         } else {
-            $composer_json_location = Composer::getJsonFilePath($current_dir);
-
+            $composer_json_location = Composer::get_json_file_path($current_dir);
             if (!file_exists($composer_json_location)) {
-                throw new ConfigCreationException(
-                    'Problem during source autodiscovery - could not find composer.json during initialization. '
-                    . 'If your project doesn\'t use Composer autoloader you will need to run '
-                    . '`psalm --init source_folder`, e.g. `psalm --init library` if your source files '
-                    . 'reside in `library` folder',
-                );
+                throw new Config_Creation_Exception('Problem during source autodiscovery - could not find composer.json during initialization. ' . 'If your project doesn\'t use Composer autoloader you will need to run ' . '`psalm --init source_folder`, e.g. `psalm --init library` if your source files ' . 'reside in `library` folder');
             }
             try {
                 $composer_json_contents = file_get_contents($composer_json_location);
                 assert($composer_json_contents !== false);
-                $composer_json = json_decode(
-                    $composer_json_contents,
-                    true,
-                    512,
-                    JSON_THROW_ON_ERROR,
-                );
-            } catch (JsonException $e) {
-                throw new ConfigCreationException(
-                    'Invalid composer.json at ' . $composer_json_location . ': ' . $e->getMessage(),
-                );
+                $composer_json = json_decode($composer_json_contents, true, 512, JSON_THROW_ON_ERROR);
+            } catch (Json_Exception $e) {
+                throw new Config_Creation_Exception('Invalid composer.json at ' . $composer_json_location . ': ' . $e->get_message());
             }
             if (!$composer_json) {
-                throw new ConfigCreationException('Invalid composer.json at ' . $composer_json_location);
+                throw new Config_Creation_Exception('Invalid composer.json at ' . $composer_json_location);
             }
-
             if (!is_array($composer_json)) {
-                throw new ConfigCreationException('Invalid composer.json at ' . $composer_json_location);
+                throw new Config_Creation_Exception('Invalid composer.json at ' . $composer_json_location);
             }
-
-            $replacements = self::getPsr4Or0Paths($current_dir, $composer_json);
-
+            $replacements = self::get_psr4or0paths($current_dir, $composer_json);
             if (!$replacements) {
-                throw new ConfigCreationException(
-                    'Could not located any PSR-0 or PSR-4-compatible paths in ' . $composer_json_location,
-                );
+                throw new Config_Creation_Exception('Could not located any PSR-0 or PSR-4-compatible paths in ' . $composer_json_location);
             }
         }
-
         return $replacements;
     }
-
     /**
      * @return list<string>
      * @psalm-suppress MixedAssignment
      * @psalm-suppress MixedArgument
      */
-    private static function getPsr4Or0Paths(string $current_dir, array $composer_json): array
+    private static function get_psr4or0paths(string $current_dir, array $composer_json): array
     {
-        $psr_paths = array_merge(
-            $composer_json['autoload']['psr-4'] ?? [],
-            $composer_json['autoload']['psr-0'] ?? [],
-        );
-
+        $psr_paths = array_merge($composer_json['autoload']['psr-4'] ?? [], $composer_json['autoload']['psr-0'] ?? []);
         if (!$psr_paths) {
-            return self::guessPhpFileDirs($current_dir);
+            return self::guess_php_file_dirs($current_dir);
         }
-
         $nodes = [];
-
         foreach ($psr_paths as $paths) {
             if (!is_array($paths)) {
                 $paths = [$paths];
             }
-
             foreach ($paths as $path) {
                 if (!is_string($path)) {
                     continue;
                 }
-
                 if ($path === '') {
-                    $nodes = [...$nodes, ...self::guessPhpFileDirs($current_dir)];
-
+                    $nodes = [...$nodes, ...self::guess_php_file_dirs($current_dir)];
                     continue;
                 }
-
-                $path = (string) preg_replace('@[/\\\]$@', '', $path, 1);
-
+                $path = (string) preg_replace('@[/\\\\]$@', '', $path, 1);
                 if ($path !== 'tests') {
                     $nodes[] = '<directory name="' . $path . '" />';
                 }
             }
         }
-
         $nodes = array_unique($nodes);
-
         sort($nodes);
-
         return $nodes;
     }
-
     /**
      * @return list<string>
      */
-    private static function guessPhpFileDirs(string $current_dir): array
+    private static function guess_php_file_dirs(string $current_dir): array
     {
         $nodes = [];
-
         /** @var string[] */
-        $php_files = [
-            ...glob($current_dir . DIRECTORY_SEPARATOR . '*.php', GLOB_NOSORT) ?: [],
-            ...glob($current_dir . DIRECTORY_SEPARATOR . '**/*.php', GLOB_NOSORT) ?: [],
-            ...glob($current_dir . DIRECTORY_SEPARATOR . '**/**/*.php', GLOB_NOSORT) ?: [],
-        ];
-
+        $php_files = [...glob($current_dir . DIRECTORY_SEPARATOR . '*.php', GLOB_NOSORT) ?: [], ...glob($current_dir . DIRECTORY_SEPARATOR . '**/*.php', GLOB_NOSORT) ?: [], ...glob($current_dir . DIRECTORY_SEPARATOR . '**/**/*.php', GLOB_NOSORT) ?: []];
         foreach ($php_files as $php_file) {
             $php_file = str_replace($current_dir . DIRECTORY_SEPARATOR, '', $php_file);
-
             $parts = explode(DIRECTORY_SEPARATOR, $php_file);
-
             if (!$parts[0]) {
                 array_shift($parts);
             }
@@ -311,14 +215,12 @@ final class Creator
             if ($parts[0] === 'tests') {
                 continue;
             }
-
             if (count($parts) === 1) {
                 $nodes[] = '<file name="' . $php_file . '" />';
             } else {
                 $nodes[] = '<directory name="' . $parts[0] . '" />';
             }
         }
-
         return array_values(array_unique($nodes));
     }
 }

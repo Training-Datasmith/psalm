@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class ClassMustBeFinal extends ClassIssue
+final class Class_Must_Be_Final extends Class_Issue
 {
     public const ERROR_LEVEL = 2;
     public const SHORTCODE = 361;

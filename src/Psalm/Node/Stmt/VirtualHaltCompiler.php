@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\HaltCompiler;
-use Psalm\Node\VirtualNode;
-
-final class VirtualHaltCompiler extends HaltCompiler implements VirtualNode
+use Php_Parser\Node\Stmt\Halt_Compiler;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Halt_Compiler extends Halt_Compiler implements Virtual_Node
 {
-
 }

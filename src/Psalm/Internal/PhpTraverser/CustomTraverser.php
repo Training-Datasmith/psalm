@@ -1,155 +1,130 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\PhpTraverser;
+declare (strict_types=1);
+namespace Psalm\Internal\Php_Traverser;
 
 use LogicException;
-use PhpParser\Node;
-use PhpParser\NodeTraverser;
-
+use Php_Parser\Node;
+use Php_Parser\Node_Traverser;
 use function array_pop;
 use function array_splice;
 use function gettype;
 use function is_array;
-
 /**
  * @internal
  */
-final class CustomTraverser extends NodeTraverser
+final class Custom_Traverser extends Node_Traverser
 {
     public function __construct()
     {
-        $this->stopTraversal = false;
+        $this->stop_traversal = false;
     }
-
     /**
      * Recursively traverse a node.
      *
      * @param Node $node node to traverse
      */
-    protected function traverseNode(Node $node): void
+    protected function traverse_node(Node $node): void
     {
-        foreach ($node->getSubNodeNames() as $name) {
-            $subNode = &$node->$name;
-
-            if (is_array($subNode)) {
-                $subNode = $this->traverseArray($subNode);
-                if ($this->stopTraversal) {
+        foreach ($node->get_sub_node_names() as $name) {
+            $sub_node =& $node->{$name};
+            if (is_array($sub_node)) {
+                $sub_node = $this->traverse_array($sub_node);
+                if ($this->stop_traversal) {
                     break;
                 }
-            } elseif ($subNode instanceof Node) {
-                $traverseChildren = true;
+            } elseif ($sub_node instanceof Node) {
+                $traverse_children = true;
                 foreach ($this->visitors as $visitor) {
-                    $return = $visitor->enterNode($subNode, $traverseChildren);
+                    $return = $visitor->enter_node($sub_node, $traverse_children);
                     if (null !== $return) {
                         if ($return instanceof Node) {
-                            $subNode = $return;
+                            $sub_node = $return;
                         } elseif (self::DONT_TRAVERSE_CHILDREN === $return) {
-                            $traverseChildren = false;
+                            $traverse_children = false;
                         } elseif (self::STOP_TRAVERSAL === $return) {
-                            $this->stopTraversal = true;
+                            $this->stop_traversal = true;
                             break 2;
                         } else {
-                            throw new LogicException(
-                                'enterNode() returned invalid value of type ' . gettype($return),
-                            );
+                            throw new LogicException('enterNode() returned invalid value of type ' . gettype($return));
                         }
                     }
                 }
-
-                if ($traverseChildren) {
-                    $this->traverseNode($subNode);
-                    if ($this->stopTraversal) {
+                if ($traverse_children) {
+                    $this->traverse_node($sub_node);
+                    if ($this->stop_traversal) {
                         break;
                     }
                 }
-
                 foreach ($this->visitors as $visitor) {
-                    $return = $visitor->leaveNode($subNode);
+                    $return = $visitor->leave_node($sub_node);
                     if (null !== $return) {
                         if ($return instanceof Node) {
-                            $subNode = $return;
+                            $sub_node = $return;
                         } elseif (self::STOP_TRAVERSAL === $return) {
-                            $this->stopTraversal = true;
+                            $this->stop_traversal = true;
                             break 2;
                         } elseif (is_array($return)) {
-                            throw new LogicException(
-                                'leaveNode() may only return an array ' .
-                                'if the parent structure is an array',
-                            );
+                            throw new LogicException('leaveNode() may only return an array ' . 'if the parent structure is an array');
                         } else {
-                            throw new LogicException(
-                                'leaveNode() returned invalid value of type ' . gettype($return),
-                            );
+                            throw new LogicException('leaveNode() returned invalid value of type ' . gettype($return));
                         }
                     }
                 }
             }
         }
     }
-
     /**
      * Recursively traverse array (usually of nodes).
      *
      * @param array $nodes Array to traverse
      * @return array Result of traversal (may be original array or changed one)
      */
-    protected function traverseArray(array $nodes): array
+    protected function traverse_array(array $nodes): array
     {
-        $doNodes = [];
-
+        $do_nodes = [];
         foreach ($nodes as $i => &$node) {
             if ($node instanceof Node) {
-                $traverseChildren = true;
+                $traverse_children = true;
                 foreach ($this->visitors as $visitor) {
-                    $return = $visitor->enterNode($node, $traverseChildren);
+                    $return = $visitor->enter_node($node, $traverse_children);
                     if (null !== $return) {
                         if ($return instanceof Node) {
                             $node = $return;
                         } elseif (self::DONT_TRAVERSE_CHILDREN === $return) {
-                            $traverseChildren = false;
+                            $traverse_children = false;
                         } elseif (self::STOP_TRAVERSAL === $return) {
-                            $this->stopTraversal = true;
+                            $this->stop_traversal = true;
                             break 2;
                         } else {
-                            throw new LogicException(
-                                'enterNode() returned invalid value of type ' . gettype($return),
-                            );
+                            throw new LogicException('enterNode() returned invalid value of type ' . gettype($return));
                         }
                     }
                 }
-
-                if ($traverseChildren) {
-                    $this->traverseNode($node);
-                    if ($this->stopTraversal) {
+                if ($traverse_children) {
+                    $this->traverse_node($node);
+                    if ($this->stop_traversal) {
                         break;
                     }
                 }
-
                 foreach ($this->visitors as $visitor) {
-                    $return = $visitor->leaveNode($node);
+                    $return = $visitor->leave_node($node);
                     if (null !== $return) {
                         if ($return instanceof Node) {
                             $node = $return;
                         } elseif (is_array($return)) {
-                            $doNodes[] = [$i, $return];
+                            $do_nodes[] = [$i, $return];
                             break;
                         } elseif (self::REMOVE_NODE === $return) {
-                            $doNodes[] = [$i, []];
+                            $do_nodes[] = [$i, []];
                             break;
                         } elseif (self::STOP_TRAVERSAL === $return) {
-                            $this->stopTraversal = true;
+                            $this->stop_traversal = true;
                             break 2;
                         } elseif (false === $return) {
-                            throw new LogicException(
-                                'bool(false) return from leaveNode() no longer supported. ' .
-                                'Return NodeVisitor::REMOVE_NODE instead',
-                            );
+                            throw new LogicException('bool(false) return from leaveNode() no longer supported. ' . 'Return NodeVisitor::REMOVE_NODE instead');
                         } else {
-                            throw new LogicException(
-                                'leaveNode() returned invalid value of type ' . gettype($return),
-                            );
+                            throw new LogicException('leaveNode() returned invalid value of type ' . gettype($return));
                         }
                     }
                 }
@@ -157,13 +132,11 @@ final class CustomTraverser extends NodeTraverser
                 throw new LogicException('Invalid node structure: Contains nested arrays');
             }
         }
-
-        if (!empty($doNodes)) {
-            while ([$i, $replace] = array_pop($doNodes)) {
+        if (!empty($do_nodes)) {
+            while ([$i, $replace] = array_pop($do_nodes)) {
                 array_splice($nodes, $i, 1, $replace);
             }
         }
-
         return $nodes;
     }
 }

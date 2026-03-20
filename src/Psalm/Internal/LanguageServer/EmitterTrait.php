@@ -1,17 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Psalm\Internal\LanguageServer;
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server;
 
 use Override;
-
 use function array_multisort;
 use function call_user_func_array;
 use function count;
-
 use const SORT_NUMERIC;
-
 /**
  * Event Emitter Trait
  *
@@ -26,7 +22,7 @@ use const SORT_NUMERIC;
  * @license http://sabre.io/license/ Modified BSD License
  * @internal
  */
-trait EmitterTrait
+trait Emitter_Trait
 {
     /**
      * The list of listeners
@@ -34,26 +30,26 @@ trait EmitterTrait
      * @var array<string, array{0: bool, 1: int[], 2: callable[]}>
      */
     protected array $listeners = [];
-
     /**
      * Subscribe to an event.
      */
     #[Override]
-    public function on(string $eventName, callable $callBack, int $priority = 100): void
+    public function on(string $event_name, callable $call_back, int $priority = 100): void
     {
-        if (!isset($this->listeners[$eventName])) {
-            $this->listeners[$eventName] = [
-                true,  // If there's only one item, it's sorted
+        if (!isset($this->listeners[$event_name])) {
+            $this->listeners[$event_name] = [
+                true,
+                // If there's only one item, it's sorted
                 [$priority],
-                [$callBack],
+                [$call_back],
             ];
         } else {
-            $this->listeners[$eventName][0] = false; // marked as unsorted
-            $this->listeners[$eventName][1][] = $priority;
-            $this->listeners[$eventName][2][] = $callBack;
+            $this->listeners[$event_name][0] = false;
+            // marked as unsorted
+            $this->listeners[$event_name][1][] = $priority;
+            $this->listeners[$event_name][2][] = $call_back;
         }
     }
-
     /**
      * Emits an event.
      *
@@ -78,13 +74,10 @@ trait EmitterTrait
      * @param list<mixed> $arguments
      */
     #[Override]
-    public function emit(
-        string $eventName,
-        array $arguments = [],
-        ?callable $continueCallBack = null,
-    ): void {
-        if ($continueCallBack === null) {
-            foreach ($this->listeners($eventName) as $listener) {
+    public function emit(string $event_name, array $arguments = [], ?callable $continue_call_back = null): void
+    {
+        if ($continue_call_back === null) {
+            foreach ($this->listeners($event_name) as $listener) {
                 /** @psalm-suppress MixedAssignment */
                 $result = call_user_func_array($listener, $arguments);
                 if ($result === false) {
@@ -92,9 +85,8 @@ trait EmitterTrait
                 }
             }
         } else {
-            $listeners = $this->listeners($eventName);
+            $listeners = $this->listeners($event_name);
             $counter = count($listeners);
-
             foreach ($listeners as $listener) {
                 --$counter;
                 /** @psalm-suppress MixedAssignment */
@@ -102,16 +94,14 @@ trait EmitterTrait
                 if ($result === false) {
                     return;
                 }
-
                 if ($counter > 0) {
-                    if (!$continueCallBack()) {
+                    if (!$continue_call_back()) {
                         break;
                     }
                 }
             }
         }
     }
-
     /**
      * Returns the list of listeners for an event.
      *
@@ -121,24 +111,20 @@ trait EmitterTrait
      * @return callable[]
      */
     #[Override]
-    public function listeners(string $eventName): array
+    public function listeners(string $event_name): array
     {
-        if (!isset($this->listeners[$eventName])) {
+        if (!isset($this->listeners[$event_name])) {
             return [];
         }
-
         // The list is not sorted
-        if (!$this->listeners[$eventName][0]) {
+        if (!$this->listeners[$event_name][0]) {
             // Sorting
-            array_multisort($this->listeners[$eventName][1], SORT_NUMERIC, $this->listeners[$eventName][2]);
-
+            array_multisort($this->listeners[$event_name][1], SORT_NUMERIC, $this->listeners[$event_name][2]);
             // Marking the listeners as sorted
-            $this->listeners[$eventName][0] = true;
+            $this->listeners[$event_name][0] = true;
         }
-
-        return $this->listeners[$eventName][2];
+        return $this->listeners[$event_name][2];
     }
-
     /**
      * Removes a specific listener from an event.
      *
@@ -146,19 +132,17 @@ trait EmitterTrait
      * was removed it will return true.
      */
     #[Override]
-    public function removeListener(string $eventName, callable $listener): bool
+    public function remove_listener(string $event_name, callable $listener): bool
     {
-        if (!isset($this->listeners[$eventName])) {
+        if (!isset($this->listeners[$event_name])) {
             return false;
         }
-        foreach ($this->listeners[$eventName][2] as $index => $check) {
+        foreach ($this->listeners[$event_name][2] as $index => $check) {
             if ($check === $listener) {
-                unset($this->listeners[$eventName][1][$index], $this->listeners[$eventName][2][$index]);
-
+                unset($this->listeners[$event_name][1][$index], $this->listeners[$event_name][2][$index]);
                 return true;
             }
         }
-
         return false;
     }
 }

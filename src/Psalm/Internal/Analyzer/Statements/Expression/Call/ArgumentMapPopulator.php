@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Analyzer\Statements\Expression\Call;
 
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Expr\StaticCall;
+use Php_Parser\Node\Expr;
+use Php_Parser\Node\Expr\Func_Call;
+use Php_Parser\Node\Expr\Method_Call;
+use Php_Parser\Node\Expr\New_;
+use Php_Parser\Node\Expr\Static_Call;
 use Psalm\Codebase;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
-
+use Psalm\Internal\Analyzer\Statements_Analyzer;
 use function array_reverse;
 use function array_shift;
 use function is_string;
@@ -19,129 +17,85 @@ use function reset;
 use function strlen;
 use function substr;
 use function token_get_all;
-
 /**
  * @internal
  */
-final class ArgumentMapPopulator
+final class Argument_Map_Populator
 {
     /**
      * @param MethodCall|StaticCall|FuncCall|New_ $stmt
      */
-    public static function recordArgumentPositions(
-        StatementsAnalyzer $statements_analyzer,
-        Expr $stmt,
-        Codebase $codebase,
-        string $function_reference,
-    ): void {
-        $file_content = $codebase->file_provider->getContents($statements_analyzer->getFilePath());
-
+    public static function record_argument_positions(Statements_Analyzer $statements_analyzer, Expr $stmt, Codebase $codebase, string $function_reference): void
+    {
+        $file_content = $codebase->file_provider->get_contents($statements_analyzer->get_file_path());
         // Find opening paren
-        $first_argument = $stmt->getArgs()[0] ?? null;
-        $first_argument_character = $first_argument !== null
-            ? $first_argument->getStartFilePos()
-            : $stmt->getEndFilePos();
-        $method_name_and_first_paren_source_code_length = $first_argument_character - $stmt->getStartFilePos();
+        $first_argument = $stmt->get_args()[0] ?? null;
+        $first_argument_character = $first_argument !== null ? $first_argument->get_start_file_pos() : $stmt->get_end_file_pos();
+        $method_name_and_first_paren_source_code_length = $first_argument_character - $stmt->get_start_file_pos();
         // FIXME: There are weird ::__construct calls in the AST for `extends`
         if ($method_name_and_first_paren_source_code_length <= 0) {
             return;
         }
-        $method_name_and_first_paren_source_code = substr(
-            $file_content,
-            $stmt->getStartFilePos(),
-            $method_name_and_first_paren_source_code_length,
-        );
+        $method_name_and_first_paren_source_code = substr($file_content, $stmt->get_start_file_pos(), $method_name_and_first_paren_source_code_length);
         $method_name_and_first_paren_tokens = token_get_all('<?php ' . $method_name_and_first_paren_source_code);
         $opening_paren_position = $first_argument_character;
         foreach (array_reverse($method_name_and_first_paren_tokens) as $token) {
             $token = is_string($token) ? $token : $token[1];
             $opening_paren_position -= strlen($token);
-
             if ($token === '(') {
                 break;
             }
         }
-
         // New instances can be created without parens
-        if ($opening_paren_position < $stmt->getStartFilePos()) {
+        if ($opening_paren_position < $stmt->get_start_file_pos()) {
             return;
         }
-
         // Record ranges of the source code that need to be tokenized to find commas
         /** @var array{0: int, 1: int}[] $ranges */
         $ranges = [];
-
         // Add range between opening paren and first argument
-        $first_argument = $stmt->getArgs()[0] ?? null;
-        $first_argument_starting_position = $first_argument !== null
-            ? $first_argument->getStartFilePos()
-            : $stmt->getEndFilePos();
+        $first_argument = $stmt->get_args()[0] ?? null;
+        $first_argument_starting_position = $first_argument !== null ? $first_argument->get_start_file_pos() : $stmt->get_end_file_pos();
         $first_range_starting_position = $opening_paren_position + 1;
         if ($first_range_starting_position !== $first_argument_starting_position) {
             $ranges[] = [$first_range_starting_position, $first_argument_starting_position];
         }
-
         // Add range between arguments
-        foreach ($stmt->getArgs() as $i => $argument) {
-            $range_start = $argument->getEndFilePos() + 1;
-            $next_argument = $stmt->getArgs()[$i + 1] ?? null;
-            $range_end = $next_argument !== null
-                ? $next_argument->getStartFilePos()
-                : $stmt->getEndFilePos();
-
+        foreach ($stmt->get_args() as $i => $argument) {
+            $range_start = $argument->get_end_file_pos() + 1;
+            $next_argument = $stmt->get_args()[$i + 1] ?? null;
+            $range_end = $next_argument !== null ? $next_argument->get_start_file_pos() : $stmt->get_end_file_pos();
             if ($range_start !== $range_end) {
                 $ranges[] = [$range_start, $range_end];
             }
         }
-
         $commas = [];
         foreach ($ranges as $range) {
             $position = $range[0];
             $length = $range[1] - $position;
-
             if ($length > 0) {
                 $range_source_code = substr($file_content, $position, $length);
                 $range_tokens = token_get_all('<?php ' . $range_source_code);
-
                 array_shift($range_tokens);
-
                 $current_position = $position;
                 foreach ($range_tokens as $token) {
                     $token = is_string($token) ? $token : $token[1];
-
                     if ($token === ',') {
                         $commas[] = $current_position;
                     }
-
                     $current_position += strlen($token);
                 }
             }
         }
-
         $argument_start_position = $opening_paren_position + 1;
         $argument_number = 0;
         while (!empty($commas)) {
             $comma = reset($commas);
             array_shift($commas);
-
-            $codebase->analyzer->addNodeArgument(
-                $statements_analyzer->getFilePath(),
-                $argument_start_position,
-                $comma,
-                $function_reference,
-                $argument_number,
-            );
-
+            $codebase->analyzer->add_node_argument($statements_analyzer->get_file_path(), $argument_start_position, $comma, $function_reference, $argument_number);
             ++$argument_number;
             $argument_start_position = $comma + 1;
         }
-
-        $codebase->analyzer->addNodeArgument(
-            $statements_analyzer->getFilePath(),
-            $argument_start_position,
-            $stmt->getEndFilePos(),
-            $function_reference,
-            $argument_number,
-        );
+        $codebase->analyzer->add_node_argument($statements_analyzer->get_file_path(), $argument_start_position, $stmt->get_end_file_pos(), $function_reference, $argument_number);
     }
 }

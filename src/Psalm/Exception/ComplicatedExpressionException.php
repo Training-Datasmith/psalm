@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Exception;
 
 use Exception;
-
-final class ComplicatedExpressionException extends Exception
+final class Complicated_Expression_Exception extends Exception
 {
 }

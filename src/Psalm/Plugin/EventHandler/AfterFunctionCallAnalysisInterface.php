@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler;
 
-namespace Psalm\Plugin\EventHandler;
-
-use Psalm\Plugin\EventHandler\Event\AfterFunctionCallAnalysisEvent;
-
-interface AfterFunctionCallAnalysisInterface
+use Psalm\Plugin\Event_Handler\Event\After_Function_Call_Analysis_Event;
+interface After_Function_Call_Analysis_Interface
 {
-    public static function afterFunctionCallAnalysis(AfterFunctionCallAnalysisEvent $event): void;
+    public static function after_function_call_analysis(After_Function_Call_Analysis_Event $event): void;
 }

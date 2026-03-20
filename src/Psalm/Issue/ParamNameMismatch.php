@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class ParamNameMismatch extends CodeIssue
+final class Param_Name_Mismatch extends Code_Issue
 {
     public const ERROR_LEVEL = 7;
     public const SHORTCODE = 230;

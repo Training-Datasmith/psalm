@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr;
 
-use PhpParser\Node\Expr\Print_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualPrint extends Print_ implements VirtualNode
+use Php_Parser\Node\Expr\Print_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Print extends Print_ implements Virtual_Node
 {
-
 }

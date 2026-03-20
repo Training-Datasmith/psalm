@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\Coalesce;
-use Psalm\Node\VirtualNode;
-
-final class VirtualCoalesce extends Coalesce implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Coalesce;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Coalesce extends Coalesce implements Virtual_Node
 {
-
 }

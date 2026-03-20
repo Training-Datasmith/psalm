@@ -1,50 +1,41 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Scope;
 
-use PhpParser;
+use Php_Parser;
 use Psalm\Internal\Clause;
 use Psalm\Type\Union;
-
 /**
  * @internal
  */
-final class SwitchScope
+final class Switch_Scope
 {
     /**
      * @var array<string, Union>|null
      */
     public ?array $new_vars_in_scope = null;
-
     /**
      * @var array<string, bool>
      */
     public array $new_vars_possibly_in_scope = [];
-
     /**
      * @var array<string, Union>|null
      */
     public ?array $redefined_vars = null;
-
     /**
      * @var array<string, Union>|null
      */
     public ?array $possibly_redefined_vars = null;
-
     /**
      * @var array<PhpParser\Node\Stmt>
      */
     public array $leftover_statements = [];
-
-    public ?PhpParser\Node\Expr $leftover_case_equality_expr = null;
-
+    public ?Php_Parser\Node\Expr $leftover_case_equality_expr = null;
     /**
      * @var list<Clause>
      */
     public array $negated_clauses = [];
-
     /**
      * @var array<string, bool>|null
      */

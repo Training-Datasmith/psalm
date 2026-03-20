@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class MixedArrayAccess extends CodeIssue implements MixedIssue
+final class Mixed_Array_Access extends Code_Issue implements Mixed_Issue
 {
     public const ERROR_LEVEL = 1;
     public const SHORTCODE = 51;
-
-    use MixedIssueTrait;
+    use Mixed_Issue_Trait;
 }

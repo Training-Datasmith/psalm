@@ -1,21 +1,18 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm;
 
-use PhpParser;
+use Php_Parser;
 use Psalm\Type\Union;
-
-interface NodeTypeProvider
+interface Node_Type_Provider
 {
     /**
      * @param PhpParser\Node\Expr|PhpParser\Node\Name|PhpParser\Node\Stmt\Return_ $node
      */
-    public function setType(PhpParser\NodeAbstract $node, Union $type): void;
-
+    public function set_type(Php_Parser\Node_Abstract $node, Union $type): void;
     /**
      * @param PhpParser\Node\Expr|PhpParser\Node\Name|PhpParser\Node\Stmt\Return_ $node
      */
-    public function getType(PhpParser\NodeAbstract $node): ?Union;
+    public function get_type(Php_Parser\Node_Abstract $node): ?Union;
 }

@@ -1,236 +1,142 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Analyzer\Statements\Expression;
 
-use PhpParser;
+use Php_Parser;
 use Psalm\Config;
-use Psalm\FileSource;
-use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
-
+use Psalm\File_Source;
+use Psalm\Internal\Analyzer\Class_Like_Analyzer;
+use Psalm\Internal\Analyzer\Statements_Analyzer;
 use function count;
 use function implode;
 use function in_array;
 use function is_string;
 use function strtolower;
-
 /**
  * @internal
  */
-final class ExpressionIdentifier
+final class Expression_Identifier
 {
-    public static function getVarId(
-        PhpParser\Node\Expr $stmt,
-        ?string $this_class_name,
-        ?FileSource $source = null,
-        ?int &$nesting = null,
-    ): ?string {
-        if ($stmt instanceof PhpParser\Node\Expr\Variable && is_string($stmt->name)) {
+    public static function get_var_id(Php_Parser\Node\Expr $stmt, ?string $this_class_name, ?File_Source $source = null, ?int &$nesting = null): ?string
+    {
+        if ($stmt instanceof Php_Parser\Node\Expr\Variable && is_string($stmt->name)) {
             return '$' . $stmt->name;
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\StaticPropertyFetch
-            && $stmt->name instanceof PhpParser\Node\Identifier
-            && $stmt->class instanceof PhpParser\Node\Name
-        ) {
-            if (count($stmt->class->getParts()) === 1
-                && in_array(strtolower($stmt->class->getFirst()), ['self', 'static', 'parent'], true)
-            ) {
+        if ($stmt instanceof Php_Parser\Node\Expr\Static_Property_Fetch && $stmt->name instanceof Php_Parser\Node\Identifier && $stmt->class instanceof Php_Parser\Node\Name) {
+            if (count($stmt->class->get_parts()) === 1 && in_array(strtolower($stmt->class->get_first()), ['self', 'static', 'parent'], true)) {
                 if (!$this_class_name) {
-                    $fq_class_name = $stmt->class->getFirst();
+                    $fq_class_name = $stmt->class->get_first();
                 } else {
                     $fq_class_name = $this_class_name;
                 }
             } else {
-                $fq_class_name = $source
-                    ? ClassLikeAnalyzer::getFQCLNFromNameObject(
-                        $stmt->class,
-                        $source->getAliases(),
-                    )
-                    : implode('\\', $stmt->class->getParts());
+                $fq_class_name = $source ? Class_Like_Analyzer::get_fqcln_from_name_object($stmt->class, $source->get_aliases()) : implode('\\', $stmt->class->get_parts());
             }
-
             return $fq_class_name . '::$' . $stmt->name->name;
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\PropertyFetch && $stmt->name instanceof PhpParser\Node\Identifier) {
-            $object_id = self::getVarId($stmt->var, $this_class_name, $source);
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Property_Fetch && $stmt->name instanceof Php_Parser\Node\Identifier) {
+            $object_id = self::get_var_id($stmt->var, $this_class_name, $source);
             if (!$object_id) {
                 return null;
             }
-
             return $object_id . '->' . $stmt->name->name;
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\ArrayDimFetch && $nesting !== null) {
+        if ($stmt instanceof Php_Parser\Node\Expr\Array_Dim_Fetch && $nesting !== null) {
             ++$nesting;
-
-            return self::getVarId($stmt->var, $this_class_name, $source, $nesting);
+            return self::get_var_id($stmt->var, $this_class_name, $source, $nesting);
         }
-
         return null;
     }
-
-    public static function getRootVarId(
-        PhpParser\Node\Expr $stmt,
-        ?string $this_class_name,
-        ?FileSource $source = null,
-    ): ?string {
-        if ($stmt instanceof PhpParser\Node\Expr\Variable
-            || $stmt instanceof PhpParser\Node\Expr\StaticPropertyFetch
-        ) {
-            return self::getVarId($stmt, $this_class_name, $source);
+    public static function get_root_var_id(Php_Parser\Node\Expr $stmt, ?string $this_class_name, ?File_Source $source = null): ?string
+    {
+        if ($stmt instanceof Php_Parser\Node\Expr\Variable || $stmt instanceof Php_Parser\Node\Expr\Static_Property_Fetch) {
+            return self::get_var_id($stmt, $this_class_name, $source);
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\PropertyFetch && $stmt->name instanceof PhpParser\Node\Identifier) {
-            $property_root = self::getRootVarId($stmt->var, $this_class_name, $source);
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Property_Fetch && $stmt->name instanceof Php_Parser\Node\Identifier) {
+            $property_root = self::get_root_var_id($stmt->var, $this_class_name, $source);
             if ($property_root) {
                 return $property_root . '->' . $stmt->name->name;
             }
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\ArrayDimFetch) {
-            return self::getRootVarId($stmt->var, $this_class_name, $source);
+        if ($stmt instanceof Php_Parser\Node\Expr\Array_Dim_Fetch) {
+            return self::get_root_var_id($stmt->var, $this_class_name, $source);
         }
-
         return null;
     }
-
-    public static function getExtendedVarId(
-        PhpParser\Node\Expr $stmt,
-        ?string $this_class_name,
-        ?FileSource $source = null,
-    ): ?string {
-        if ($stmt instanceof PhpParser\Node\Expr\Assign) {
-            return self::getExtendedVarId($stmt->var, $this_class_name, $source);
+    public static function get_extended_var_id(Php_Parser\Node\Expr $stmt, ?string $this_class_name, ?File_Source $source = null): ?string
+    {
+        if ($stmt instanceof Php_Parser\Node\Expr\Assign) {
+            return self::get_extended_var_id($stmt->var, $this_class_name, $source);
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\ArrayDimFetch) {
-            $root_var_id = self::getExtendedVarId($stmt->var, $this_class_name, $source);
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Array_Dim_Fetch) {
+            $root_var_id = self::get_extended_var_id($stmt->var, $this_class_name, $source);
             $offset = null;
-
             if ($root_var_id) {
-                if ($stmt->dim instanceof PhpParser\Node\Scalar\String_
-                    || $stmt->dim instanceof PhpParser\Node\Scalar\Int_
-                ) {
-                    $string_to_int = ArrayAnalyzer::getLiteralArrayKeyInt($stmt->dim->value);
-                    $offset = $string_to_int === false
-                        ? '\'' . $stmt->dim->value . '\''
-                        : (int) $stmt->dim->value;
-                } elseif ($stmt->dim instanceof PhpParser\Node\Expr\Variable
-                    && is_string($stmt->dim->name)
-                ) {
+                if ($stmt->dim instanceof Php_Parser\Node\Scalar\String_ || $stmt->dim instanceof Php_Parser\Node\Scalar\Int_) {
+                    $string_to_int = Array_Analyzer::get_literal_array_key_int($stmt->dim->value);
+                    $offset = $string_to_int === false ? '\'' . $stmt->dim->value . '\'' : (int) $stmt->dim->value;
+                } elseif ($stmt->dim instanceof Php_Parser\Node\Expr\Variable && is_string($stmt->dim->name)) {
                     $offset = '$' . $stmt->dim->name;
-                } elseif ($stmt->dim instanceof PhpParser\Node\Expr\ConstFetch) {
-                    $offset = implode('\\', $stmt->dim->name->getParts());
-                } elseif ($stmt->dim instanceof PhpParser\Node\Expr\PropertyFetch) {
-                    $object_id = self::getExtendedVarId($stmt->dim->var, $this_class_name, $source);
-
-                    if ($object_id && $stmt->dim->name instanceof PhpParser\Node\Identifier) {
+                } elseif ($stmt->dim instanceof Php_Parser\Node\Expr\Const_Fetch) {
+                    $offset = implode('\\', $stmt->dim->name->get_parts());
+                } elseif ($stmt->dim instanceof Php_Parser\Node\Expr\Property_Fetch) {
+                    $object_id = self::get_extended_var_id($stmt->dim->var, $this_class_name, $source);
+                    if ($object_id && $stmt->dim->name instanceof Php_Parser\Node\Identifier) {
                         $offset = $object_id . '->' . $stmt->dim->name;
                     }
-                } elseif ($stmt->dim instanceof PhpParser\Node\Expr\ClassConstFetch
-                    && $stmt->dim->name instanceof PhpParser\Node\Identifier
-                    && $stmt->dim->class instanceof PhpParser\Node\Name
-                    && $stmt->dim->class->getFirst() === 'static'
-                ) {
+                } elseif ($stmt->dim instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $stmt->dim->name instanceof Php_Parser\Node\Identifier && $stmt->dim->class instanceof Php_Parser\Node\Name && $stmt->dim->class->get_first() === 'static') {
                     $offset = 'static::' . $stmt->dim->name;
-                } elseif ($stmt->dim
-                    && $source instanceof StatementsAnalyzer
-                    && ($stmt_dim_type = $source->node_data->getType($stmt->dim))
-                    && (!$stmt->dim instanceof PhpParser\Node\Expr\ClassConstFetch
-                        || !$stmt->dim->name instanceof PhpParser\Node\Identifier
-                        || $stmt->dim->name->name !== 'class'
-                    )
-                ) {
-                    if ($stmt_dim_type->isSingleStringLiteral()) {
-                        $string_to_int = ArrayAnalyzer::getLiteralArrayKeyInt(
-                            $stmt_dim_type->getSingleStringLiteral()->value,
-                        );
-
-                        $offset = $string_to_int === false
-                            ? '\'' . $stmt_dim_type->getSingleStringLiteral()->value . '\''
-                            : (int) $stmt_dim_type->getSingleStringLiteral()->value;
-                    } elseif ($stmt_dim_type->isSingleIntLiteral()) {
-                        $offset = $stmt_dim_type->getSingleIntLiteral()->value;
+                } elseif ($stmt->dim && $source instanceof Statements_Analyzer && ($stmt_dim_type = $source->node_data->get_type($stmt->dim)) && (!$stmt->dim instanceof Php_Parser\Node\Expr\Class_Const_Fetch || !$stmt->dim->name instanceof Php_Parser\Node\Identifier || $stmt->dim->name->name !== 'class')) {
+                    if ($stmt_dim_type->is_single_string_literal()) {
+                        $string_to_int = Array_Analyzer::get_literal_array_key_int($stmt_dim_type->get_single_string_literal()->value);
+                        $offset = $string_to_int === false ? '\'' . $stmt_dim_type->get_single_string_literal()->value . '\'' : (int) $stmt_dim_type->get_single_string_literal()->value;
+                    } elseif ($stmt_dim_type->is_single_int_literal()) {
+                        $offset = $stmt_dim_type->get_single_int_literal()->value;
                     }
-                } elseif ($stmt->dim instanceof PhpParser\Node\Expr\ClassConstFetch
-                    && $stmt->dim->name instanceof PhpParser\Node\Identifier
-                ) {
+                } elseif ($stmt->dim instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $stmt->dim->name instanceof Php_Parser\Node\Identifier) {
                     /** @var string|null */
-                    $resolved_name = $stmt->dim->class->getAttribute('resolvedName');
-
+                    $resolved_name = $stmt->dim->class->get_attribute('resolvedName');
                     if ($resolved_name) {
                         $offset = $resolved_name . '::' . $stmt->dim->name;
                     }
                 }
-
                 return $offset !== null ? $root_var_id . '[' . $offset . ']' : null;
             }
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\PropertyFetch) {
-            $object_id = self::getExtendedVarId($stmt->var, $this_class_name, $source);
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Property_Fetch) {
+            $object_id = self::get_extended_var_id($stmt->var, $this_class_name, $source);
             if (!$object_id) {
                 return null;
             }
-
-            if ($stmt->name instanceof PhpParser\Node\Identifier) {
+            if ($stmt->name instanceof Php_Parser\Node\Identifier) {
                 return $object_id . '->' . $stmt->name;
             }
-
-            if ($source instanceof StatementsAnalyzer
-                && ($stmt_name_type = $source->node_data->getType($stmt->name))
-                && $stmt_name_type->isSingleStringLiteral()) {
-                return $object_id . '->' . $stmt_name_type->getSingleStringLiteral()->value;
+            if ($source instanceof Statements_Analyzer && ($stmt_name_type = $source->node_data->get_type($stmt->name)) && $stmt_name_type->is_single_string_literal()) {
+                return $object_id . '->' . $stmt_name_type->get_single_string_literal()->value;
             }
-
             return null;
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\ClassConstFetch
-            && $stmt->name instanceof PhpParser\Node\Identifier
-        ) {
+        if ($stmt instanceof Php_Parser\Node\Expr\Class_Const_Fetch && $stmt->name instanceof Php_Parser\Node\Identifier) {
             /** @var string|null */
-            $resolved_name = $stmt->class->getAttribute('resolvedName');
-
+            $resolved_name = $stmt->class->get_attribute('resolvedName');
             if ($resolved_name) {
                 if (($resolved_name === 'self' || $resolved_name === 'static') && $this_class_name) {
                     $resolved_name = $this_class_name;
                 }
-
                 return $resolved_name . '::' . $stmt->name;
             }
         }
-
-        if ($stmt instanceof PhpParser\Node\Expr\MethodCall
-            && $stmt->name instanceof PhpParser\Node\Identifier
-            && !$stmt->isFirstClassCallable()
-            && !$stmt->getArgs()
-        ) {
-            $config = Config::getInstance();
-
-            if ($config->memoize_method_calls || $stmt->getAttribute('memoizable', false)) {
-                $lhs_var_name = self::getExtendedVarId(
-                    $stmt->var,
-                    $this_class_name,
-                    $source,
-                );
-
+        if ($stmt instanceof Php_Parser\Node\Expr\Method_Call && $stmt->name instanceof Php_Parser\Node\Identifier && !$stmt->is_first_class_callable() && !$stmt->get_args()) {
+            $config = Config::get_instance();
+            if ($config->memoize_method_calls || $stmt->get_attribute('memoizable', false)) {
+                $lhs_var_name = self::get_extended_var_id($stmt->var, $this_class_name, $source);
                 if (!$lhs_var_name) {
                     return null;
                 }
-
                 return $lhs_var_name . '->' . strtolower($stmt->name->name) . '()';
             }
         }
-
-        return self::getVarId($stmt, $this_class_name, $source);
+        return self::get_var_id($stmt, $this_class_name, $source);
     }
 }

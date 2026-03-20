@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Expr\Binary_Op;
 
-namespace Psalm\Node\Expr\BinaryOp;
-
-use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
-use Psalm\Node\VirtualNode;
-
-final class VirtualBitwiseOr extends BitwiseOr implements VirtualNode
+use Php_Parser\Node\Expr\Binary_Op\Bitwise_Or;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Bitwise_Or extends Bitwise_Or implements Virtual_Node
 {
-
 }

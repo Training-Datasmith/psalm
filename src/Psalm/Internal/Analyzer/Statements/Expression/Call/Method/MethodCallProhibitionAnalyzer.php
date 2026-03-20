@@ -1,71 +1,39 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Analyzer\Statements\Expression\Call\Method;
 
-use Psalm\CodeLocation;
+use Psalm\Code_Location;
 use Psalm\Codebase;
 use Psalm\Context;
-use Psalm\Internal\Analyzer\NamespaceAnalyzer;
-use Psalm\Internal\MethodIdentifier;
-use Psalm\Issue\DeprecatedMethod;
-use Psalm\Issue\InternalClass;
-use Psalm\Issue\InternalMethod;
-use Psalm\IssueBuffer;
-
+use Psalm\Internal\Analyzer\Namespace_Analyzer;
+use Psalm\Internal\Method_Identifier;
+use Psalm\Issue\Deprecated_Method;
+use Psalm\Issue\Internal_Class;
+use Psalm\Issue\Internal_Method;
+use Psalm\Issue_Buffer;
 /**
  * @internal
  */
-final class MethodCallProhibitionAnalyzer
+final class Method_Call_Prohibition_Analyzer
 {
     /**
      * @param  string[]     $suppressed_issues
      */
-    public static function analyze(
-        Codebase $codebase,
-        Context $context,
-        MethodIdentifier $method_id,
-        ?string $caller_identifier,
-        CodeLocation $code_location,
-        array $suppressed_issues,
-    ): void {
+    public static function analyze(Codebase $codebase, Context $context, Method_Identifier $method_id, ?string $caller_identifier, Code_Location $code_location, array $suppressed_issues): void
+    {
         $codebase_methods = $codebase->methods;
-
-        $method_id = $codebase_methods->getDeclaringMethodId($method_id);
-
+        $method_id = $codebase_methods->get_declaring_method_id($method_id);
         if ($method_id === null) {
             return;
         }
-
-        $storage = $codebase_methods->getStorage($method_id);
-
+        $storage = $codebase_methods->get_storage($method_id);
         if ($storage->deprecated) {
-            IssueBuffer::maybeAdd(
-                new DeprecatedMethod(
-                    'The method ' . $codebase_methods->getCasedMethodId($method_id) .
-                        ' has been marked as deprecated',
-                    $code_location,
-                    (string) $method_id,
-                ),
-                $suppressed_issues,
-            );
+            Issue_Buffer::maybe_add(new Deprecated_Method('The method ' . $codebase_methods->get_cased_method_id($method_id) . ' has been marked as deprecated', $code_location, (string) $method_id), $suppressed_issues);
         }
-
-        if (!$context->collect_initializations
-            && !$context->collect_mutations
-        ) {
-            if (!NamespaceAnalyzer::isWithinAny($caller_identifier ?? "", $storage->internal)) {
-                IssueBuffer::maybeAdd(
-                    new InternalMethod(
-                        'The method ' . $codebase_methods->getCasedMethodId($method_id)
-                            . ' is internal to ' . InternalClass::listToPhrase($storage->internal)
-                            . ' but called from ' . ($caller_identifier ?: 'root namespace'),
-                        $code_location,
-                        (string) $method_id,
-                    ),
-                    $suppressed_issues,
-                );
+        if (!$context->collect_initializations && !$context->collect_mutations) {
+            if (!Namespace_Analyzer::is_within_any($caller_identifier ?? "", $storage->internal)) {
+                Issue_Buffer::maybe_add(new Internal_Method('The method ' . $codebase_methods->get_cased_method_id($method_id) . ' is internal to ' . Internal_Class::list_to_phrase($storage->internal) . ' but called from ' . ($caller_identifier ?: 'root namespace'), $code_location, (string) $method_id), $suppressed_issues);
             }
         }
     }

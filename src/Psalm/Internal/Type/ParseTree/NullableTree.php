@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Type\Parse_Tree;
 
-namespace Psalm\Internal\Type\ParseTree;
-
-use Psalm\Internal\Type\ParseTree;
-
+use Psalm\Internal\Type\Parse_Tree;
 /**
  * @internal
  */
-final class NullableTree extends ParseTree
+final class Nullable_Tree extends Parse_Tree
 {
 }

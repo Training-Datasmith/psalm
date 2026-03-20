@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler;
 
-namespace Psalm\Plugin\EventHandler;
-
-use Psalm\Plugin\EventHandler\Event\BeforeStatementAnalysisEvent;
-
-interface BeforeStatementAnalysisInterface
+use Psalm\Plugin\Event_Handler\Event\Before_Statement_Analysis_Event;
+interface Before_Statement_Analysis_Interface
 {
     /**
      * Called before a statement has been checked
@@ -15,5 +13,5 @@ interface BeforeStatementAnalysisInterface
      *  + `null` continues with next event handler
      *  + `false` stops analyzing current statement in StatementsAnalyzer
      */
-    public static function beforeStatementAnalysis(BeforeStatementAnalysisEvent $event): ?bool;
+    public static function before_statement_analysis(Before_Statement_Analysis_Event $event): ?bool;
 }

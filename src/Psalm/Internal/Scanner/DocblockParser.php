@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Internal\Scanner;
 
-use Psalm\Exception\DocblockParseException;
-
+use Psalm\Exception\Docblock_Parse_Exception;
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -28,45 +26,36 @@ use function strpos;
 use function strspn;
 use function substr;
 use function trim;
-
 use const PREG_OFFSET_CAPTURE;
-
 /**
  * This class will parse Docblocks in order to extract known tags from them
  *
  * @internal
  */
-final class DocblockParser
+final class Docblock_Parser
 {
     /**
      * $offsetStart is the absolute position of the docblock in the file. It'll be used to add to the position of some
      * special tags (like `psalm-suppress`) for future uses
      */
-    public static function parse(string $docblock, int $offsetStart): ParsedDocblock
+    public static function parse(string $docblock, int $offset_start): Parsed_Docblock
     {
         // Strip off comments.
         $docblock = trim($docblock);
-
         if (str_starts_with($docblock, '/**')) {
             $docblock = substr($docblock, 3);
         }
-
         if (str_ends_with($docblock, '*/')) {
             $docblock = substr($docblock, 0, -2);
-
             if (str_ends_with($docblock, '*')) {
                 $docblock = substr($docblock, 0, -1);
             }
         }
-
         // Normalize multi-line @specials.
         $lines = explode("\n", str_replace("\t", ' ', $docblock));
         $has_r = !str_contains($docblock, "\r") ? false : true;
-
         $special = [];
-
         $first_line_padding = null;
-
         $last = false;
         foreach ($lines as $k => $line) {
             if (str_contains($line, '@') && preg_match('/^ *\*?\s*@\w/', $line)) {
@@ -76,48 +65,36 @@ final class DocblockParser
             } elseif ($last !== false) {
                 $old_last_line = $lines[$last];
                 $lines[$last] = $old_last_line . "\n" . $line;
-
                 unset($lines[$k]);
             }
         }
-
         $line_offset = 0;
-
         foreach ($lines as $k => $line) {
             $original_line_length = strlen($line);
             if ($has_r === true) {
                 $line = str_replace("\r", '', $line);
             }
-
             if ($first_line_padding === null) {
                 $asterisk_pos = strpos($line, '*');
-
                 if ($asterisk_pos === 0 || $asterisk_pos === 1) {
                     $first_line_padding = '';
                 } elseif ($asterisk_pos > 1) {
                     $first_line_padding = substr($line, 0, $asterisk_pos - 1);
                 }
             }
-
-            if (preg_match('/^ *\*?\s*@([\w\-\\\:]+) *(.*)$/sm', $line, $matches, PREG_OFFSET_CAPTURE)) {
+            if (preg_match('/^ *\*?\s*@([\w\-\\\\:]+) *(.*)$/sm', $line, $matches, PREG_OFFSET_CAPTURE)) {
                 /** @var array<int, array{string, int}> $matches */
                 [, $type_info, $data_info] = $matches;
-
                 [$type] = $type_info;
                 [$data, $data_offset] = $data_info;
-
                 if (str_contains($data, '*')) {
                     $data = rtrim((string) preg_replace('/^ *\*\s*$/m', '', $data));
                 }
-
                 if (empty($special[$type])) {
                     $special[$type] = [];
                 }
-
                 $data_offset += $line_offset;
-
-                $special[$type][$data_offset + 3 + $offsetStart] = $data;
-
+                $special[$type][$data_offset + 3 + $offset_start] = $data;
                 unset($lines[$k]);
             } else {
                 // Strip the leading *, if present.
@@ -125,10 +102,8 @@ final class DocblockParser
                 // however it's slower and removing all spaces and * is fine
                 $lines[$k] = ltrim($lines[$k], ' *');
             }
-
             $line_offset += $original_line_length + 1;
         }
-
         // Smush the whole docblock to the left edge.
         $min_indent = 80;
         $reached_first_non_empty_line = false;
@@ -157,86 +132,31 @@ final class DocblockParser
         }
         $docblock = implode("\n", $lines);
         $docblock = rtrim($docblock);
-
-        $parsed = new ParsedDocblock($docblock, $special, $first_line_padding ?: '');
-
-        self::resolveTags($parsed);
-
+        $parsed = new Parsed_Docblock($docblock, $special, $first_line_padding ?: '');
+        self::resolve_tags($parsed);
         return $parsed;
     }
-
-    private static function resolveTags(ParsedDocblock $docblock): void
+    private static function resolve_tags(Parsed_Docblock $docblock): void
     {
-        if (isset($docblock->tags['template'])
-            || isset($docblock->tags['psalm-template'])
-            || isset($docblock->tags['phpstan-template'])
-        ) {
-            $docblock->combined_tags['template']
-                = ($docblock->tags['template'] ?? [])
-                + ($docblock->tags['phpstan-template'] ?? [])
-                + ($docblock->tags['psalm-template'] ?? []);
+        if (isset($docblock->tags['template']) || isset($docblock->tags['psalm-template']) || isset($docblock->tags['phpstan-template'])) {
+            $docblock->combined_tags['template'] = ($docblock->tags['template'] ?? []) + ($docblock->tags['phpstan-template'] ?? []) + ($docblock->tags['psalm-template'] ?? []);
         }
-
-        if (isset($docblock->tags['template-covariant'])
-            || isset($docblock->tags['psalm-template-covariant'])
-            || isset($docblock->tags['phpstan-template-covariant'])
-        ) {
-            $docblock->combined_tags['template-covariant']
-                = ($docblock->tags['template-covariant'] ?? [])
-                + ($docblock->tags['phpstan-template-covariant'] ?? [])
-                + ($docblock->tags['psalm-template-covariant'] ?? []);
+        if (isset($docblock->tags['template-covariant']) || isset($docblock->tags['psalm-template-covariant']) || isset($docblock->tags['phpstan-template-covariant'])) {
+            $docblock->combined_tags['template-covariant'] = ($docblock->tags['template-covariant'] ?? []) + ($docblock->tags['phpstan-template-covariant'] ?? []) + ($docblock->tags['psalm-template-covariant'] ?? []);
         }
-
-        if (isset($docblock->tags['template-extends'])
-            || isset($docblock->tags['inherits'])
-            || isset($docblock->tags['extends'])
-            || isset($docblock->tags['psalm-extends'])
-            || isset($docblock->tags['phpstan-extends'])
-        ) {
-            $docblock->combined_tags['extends']
-                = ($docblock->tags['template-extends'] ?? [])
-                + ($docblock->tags['inherits'] ?? [])
-                + ($docblock->tags['extends'] ?? [])
-                + ($docblock->tags['psalm-extends'] ?? [])
-                + ($docblock->tags['phpstan-extends'] ?? []);
+        if (isset($docblock->tags['template-extends']) || isset($docblock->tags['inherits']) || isset($docblock->tags['extends']) || isset($docblock->tags['psalm-extends']) || isset($docblock->tags['phpstan-extends'])) {
+            $docblock->combined_tags['extends'] = ($docblock->tags['template-extends'] ?? []) + ($docblock->tags['inherits'] ?? []) + ($docblock->tags['extends'] ?? []) + ($docblock->tags['psalm-extends'] ?? []) + ($docblock->tags['phpstan-extends'] ?? []);
         }
-
-        if (isset($docblock->tags['template-implements'])
-            || isset($docblock->tags['implements'])
-            || isset($docblock->tags['phpstan-implements'])
-            || isset($docblock->tags['psalm-implements'])
-        ) {
-            $docblock->combined_tags['implements']
-                = ($docblock->tags['template-implements'] ?? [])
-                + ($docblock->tags['implements'] ?? [])
-                + ($docblock->tags['phpstan-implements'] ?? [])
-                + ($docblock->tags['psalm-implements'] ?? []);
+        if (isset($docblock->tags['template-implements']) || isset($docblock->tags['implements']) || isset($docblock->tags['phpstan-implements']) || isset($docblock->tags['psalm-implements'])) {
+            $docblock->combined_tags['implements'] = ($docblock->tags['template-implements'] ?? []) + ($docblock->tags['implements'] ?? []) + ($docblock->tags['phpstan-implements'] ?? []) + ($docblock->tags['psalm-implements'] ?? []);
         }
-
-        if (isset($docblock->tags['template-use'])
-            || isset($docblock->tags['use'])
-            || isset($docblock->tags['phpstan-use'])
-            || isset($docblock->tags['psalm-use'])
-        ) {
-            $docblock->combined_tags['use']
-                = ($docblock->tags['template-use'] ?? [])
-                + ($docblock->tags['use'] ?? [])
-                + ($docblock->tags['phpstan-use'] ?? [])
-                + ($docblock->tags['psalm-use'] ?? []);
+        if (isset($docblock->tags['template-use']) || isset($docblock->tags['use']) || isset($docblock->tags['phpstan-use']) || isset($docblock->tags['psalm-use'])) {
+            $docblock->combined_tags['use'] = ($docblock->tags['template-use'] ?? []) + ($docblock->tags['use'] ?? []) + ($docblock->tags['phpstan-use'] ?? []) + ($docblock->tags['psalm-use'] ?? []);
         }
-
-        if (isset($docblock->tags['method'])
-            || isset($docblock->tags['psalm-method'])
-        ) {
-            $docblock->combined_tags['method']
-                = ($docblock->tags['method'] ?? [])
-                + ($docblock->tags['psalm-method'] ?? []);
+        if (isset($docblock->tags['method']) || isset($docblock->tags['psalm-method'])) {
+            $docblock->combined_tags['method'] = ($docblock->tags['method'] ?? []) + ($docblock->tags['psalm-method'] ?? []);
         }
-
-        if (isset($docblock->tags['return'])
-            || isset($docblock->tags['psalm-return'])
-            || isset($docblock->tags['phpstan-return'])
-        ) {
+        if (isset($docblock->tags['return']) || isset($docblock->tags['psalm-return']) || isset($docblock->tags['phpstan-return'])) {
             if (isset($docblock->tags['psalm-return'])) {
                 $docblock->combined_tags['return'] = $docblock->tags['psalm-return'];
             } elseif (isset($docblock->tags['phpstan-return'])) {
@@ -245,72 +165,43 @@ final class DocblockParser
                 $docblock->combined_tags['return'] = $docblock->tags['return'];
             }
         }
-
-        if (isset($docblock->tags['param'])
-            || isset($docblock->tags['psalm-param'])
-            || isset($docblock->tags['phpstan-param'])
-        ) {
-            $docblock->combined_tags['param']
-                = ($docblock->tags['param'] ?? [])
-                + ($docblock->tags['phpstan-param'] ?? [])
-                + ($docblock->tags['psalm-param'] ?? []);
+        if (isset($docblock->tags['param']) || isset($docblock->tags['psalm-param']) || isset($docblock->tags['phpstan-param'])) {
+            $docblock->combined_tags['param'] = ($docblock->tags['param'] ?? []) + ($docblock->tags['phpstan-param'] ?? []) + ($docblock->tags['psalm-param'] ?? []);
         }
-
-        if (isset($docblock->tags['var'])
-            || isset($docblock->tags['psalm-var'])
-            || isset($docblock->tags['phpstan-var'])
-        ) {
-            if (!isset($docblock->tags['ignore-var'])
-                && !isset($docblock->tags['psalm-ignore-var'])
-            ) {
-                $docblock->combined_tags['var']
-                    = ($docblock->tags['var'] ?? [])
-                    + ($docblock->tags['phpstan-var'] ?? [])
-                    + ($docblock->tags['psalm-var'] ?? []);
+        if (isset($docblock->tags['var']) || isset($docblock->tags['psalm-var']) || isset($docblock->tags['phpstan-var'])) {
+            if (!isset($docblock->tags['ignore-var']) && !isset($docblock->tags['psalm-ignore-var'])) {
+                $docblock->combined_tags['var'] = ($docblock->tags['var'] ?? []) + ($docblock->tags['phpstan-var'] ?? []) + ($docblock->tags['psalm-var'] ?? []);
             }
         }
-
-        if (isset($docblock->tags['param-out'])
-            || isset($docblock->tags['psalm-param-out'])
-            || isset($docblock->tags['phpstan-param-out'])
-        ) {
-            $docblock->combined_tags['param-out']
-                = ($docblock->tags['param-out'] ?? [])
-                + ($docblock->tags['phpstan-param-out'] ?? [])
-                + ($docblock->tags['psalm-param-out'] ?? []);
+        if (isset($docblock->tags['param-out']) || isset($docblock->tags['psalm-param-out']) || isset($docblock->tags['phpstan-param-out'])) {
+            $docblock->combined_tags['param-out'] = ($docblock->tags['param-out'] ?? []) + ($docblock->tags['phpstan-param-out'] ?? []) + ($docblock->tags['psalm-param-out'] ?? []);
         }
     }
-
     /**
      * @return list<non-empty-string>
      * @throws DocblockParseException when a @psalm-internal tag doesn't include a namespace
      */
-    public static function handlePsalmInternal(ParsedDocblock $parsed_docblock): array
+    public static function handle_psalm_internal(Parsed_Docblock $parsed_docblock): array
     {
         if (isset($parsed_docblock->tags['psalm-internal'])) {
             $psalm_internal = array_map(trim(...), $parsed_docblock->tags['psalm-internal']);
-
             if (count($psalm_internal) !== count(array_filter($psalm_internal))) {
-                throw new DocblockParseException('psalm-internal annotation used without specifying namespace');
+                throw new Docblock_Parse_Exception('psalm-internal annotation used without specifying namespace');
             }
             // assert($psalm_internal === array_filter($psalm_internal)); // TODO get this to work
-            assert(self::assertArrayOfNonEmptyString($psalm_internal));
-
+            assert(self::assert_array_of_non_empty_string($psalm_internal));
             return array_values($psalm_internal);
         }
-
         return [];
     }
-
     /** @psalm-assert-if-true array<array-key, non-empty-string> $arr */
-    private static function assertArrayOfNonEmptyString(array $arr): bool
+    private static function assert_array_of_non_empty_string(array $arr): bool
     {
         foreach ($arr as $val) {
             if (!is_string($val) || $val === "") {
                 return false;
             }
         }
-
         return true;
     }
 }

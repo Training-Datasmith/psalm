@@ -1,20 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Type\Type_Alias;
 
-namespace Psalm\Internal\Type\TypeAlias;
-
-use Psalm\Internal\Type\TypeAlias;
-use Psalm\Storage\ImmutableNonCloneableTrait;
-
+use Psalm\Internal\Type\Type_Alias;
+use Psalm\Storage\Immutable_Non_Cloneable_Trait;
 /**
  * @psalm-immutable
  * @internal
  */
-final class InlineTypeAlias implements TypeAlias
+final class Inline_Type_Alias implements Type_Alias
 {
-    use ImmutableNonCloneableTrait;
-
+    use Immutable_Non_Cloneable_Trait;
     /**
      * @param list<array{0: string, 1: int, 2?: string}> $replacement_tokens
      */

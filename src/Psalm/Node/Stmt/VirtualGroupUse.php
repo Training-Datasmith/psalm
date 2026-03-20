@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\GroupUse;
-use Psalm\Node\VirtualNode;
-
-final class VirtualGroupUse extends GroupUse implements VirtualNode
+use Php_Parser\Node\Stmt\Group_Use;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Group_Use extends Group_Use implements Virtual_Node
 {
-
 }

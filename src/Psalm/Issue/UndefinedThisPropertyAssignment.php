@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class UndefinedThisPropertyAssignment extends PropertyIssue
+final class Undefined_This_Property_Assignment extends Property_Issue
 {
     public const ERROR_LEVEL = 5;
     public const SHORTCODE = 40;

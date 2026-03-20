@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class DeprecatedProperty extends PropertyIssue
+final class Deprecated_Property extends Property_Issue
 {
     public const ERROR_LEVEL = 2;
     public const SHORTCODE = 99;

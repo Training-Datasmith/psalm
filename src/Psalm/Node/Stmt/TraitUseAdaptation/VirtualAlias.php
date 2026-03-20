@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Node\Stmt\Trait_Use_Adaptation;
 
-namespace Psalm\Node\Stmt\TraitUseAdaptation;
-
-use PhpParser\Node\Stmt\TraitUseAdaptation\Alias;
-use Psalm\Node\VirtualNode;
-
-final class VirtualAlias extends Alias implements VirtualNode
+use Php_Parser\Node\Stmt\Trait_Use_Adaptation\Alias;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Alias extends Alias implements Virtual_Node
 {
-
 }

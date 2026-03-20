@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node;
 
-use PhpParser\Node\UseItem;
-use Psalm\Node\VirtualNode;
-
-final class VirtualUseItem extends UseItem implements VirtualNode
+use Php_Parser\Node\Use_Item;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Use_Item extends Use_Item implements Virtual_Node
 {
-
 }

@@ -1,16 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\Expression;
-use Psalm\Node\VirtualNode;
-
+use Php_Parser\Node\Stmt\Expression;
+use Psalm\Node\Virtual_Node;
 /**
  * Represents statements of type "expr;"
  */
-final class VirtualExpression extends Expression implements VirtualNode
+final class Virtual_Expression extends Expression implements Virtual_Node
 {
-
 }

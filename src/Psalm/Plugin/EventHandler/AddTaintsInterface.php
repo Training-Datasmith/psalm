@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Plugin\Event_Handler;
 
-namespace Psalm\Plugin\EventHandler;
-
-use Psalm\Plugin\EventHandler\Event\AddRemoveTaintsEvent;
-
-interface AddTaintsInterface
+use Psalm\Plugin\Event_Handler\Event\Add_Remove_Taints_Event;
+interface Add_Taints_Interface
 {
     /**
      * Called to see what taints should be added
      *
      * @return list<string>
      */
-    public static function addTaints(AddRemoveTaintsEvent $event): array;
+    public static function add_taints(Add_Remove_Taints_Event $event): array;
 }

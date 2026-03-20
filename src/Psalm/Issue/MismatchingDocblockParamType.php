@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Issue;
 
-final class MismatchingDocblockParamType extends CodeIssue
+final class Mismatching_Docblock_Param_Type extends Code_Issue
 {
     public const ERROR_LEVEL = 4;
     public const SHORTCODE = 141;

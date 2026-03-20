@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Type\Parse_Tree;
 
-namespace Psalm\Internal\Type\ParseTree;
-
-use Psalm\Internal\Type\ParseTree;
-
+use Psalm\Internal\Type\Parse_Tree;
 /**
  * @internal
  */
-final class ConditionalTree extends ParseTree
+final class Conditional_Tree extends Parse_Tree
 {
-    public function __construct(public TemplateIsTree $condition, ?ParseTree $parent = null)
+    public function __construct(public Template_Is_Tree $condition, ?Parse_Tree $parent = null)
     {
         $this->parent = $parent;
     }

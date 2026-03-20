@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node;
 
-use PhpParser\Node\VarLikeIdentifier;
-
+use Php_Parser\Node\Var_Like_Identifier;
 /**
  * Represents a name that is written in source code with a leading dollar,
  * but is not a proper variable. The leading dollar is not stored as part of the name.
@@ -13,7 +11,6 @@ use PhpParser\Node\VarLikeIdentifier;
  * Examples: Names in property declarations are formatted as variables. Names in static property
  * lookups are also formatted as variables.
  */
-final class VirtualVarLikeIdentifier extends VarLikeIdentifier implements VirtualNode
+final class Virtual_Var_Like_Identifier extends Var_Like_Identifier implements Virtual_Node
 {
-
 }

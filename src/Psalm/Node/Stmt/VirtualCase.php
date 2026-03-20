@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Stmt;
 
-use PhpParser\Node\Stmt\Case_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualCase extends Case_ implements VirtualNode
+use Php_Parser\Node\Stmt\Case_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_Case extends Case_ implements Virtual_Node
 {
-
 }

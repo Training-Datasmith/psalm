@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Psalm\Node\Expr\Cast;
 
-use PhpParser\Node\Expr\Cast\String_;
-use Psalm\Node\VirtualNode;
-
-final class VirtualString extends String_ implements VirtualNode
+use Php_Parser\Node\Expr\Cast\String_;
+use Psalm\Node\Virtual_Node;
+final class Virtual_String extends String_ implements Virtual_Node
 {
-
 }

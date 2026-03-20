@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Psalm\Internal\Language_Server;
 
-namespace Psalm\Internal\LanguageServer;
-
-use LanguageServerProtocol\Range;
-
+use Language_Server_Protocol\Range;
 /**
  * @internal
  */
